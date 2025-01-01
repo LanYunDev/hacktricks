@@ -1,0 +1,362 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Stego Tricks</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="stego-tricks"><a class="header" href="#stego-tricks">Stego Tricks</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="从文件中提取数据"><a class="header" href="#从文件中提取数据"><strong>从文件中提取数据</strong></a></h2>
+<h3 id="binwalk"><a class="header" href="#binwalk"><strong>Binwalk</strong></a></h3>
+<p>一个用于搜索二进制文件中嵌入的隐藏文件和数据的工具。它通过 <code>apt</code> 安装，源代码可在 <a href="https://github.com/ReFirmLabs/binwalk">GitHub</a> 上获取。</p>
+<pre><code class="language-bash">binwalk file # Displays the embedded data
+binwalk -e file # Extracts the data
+binwalk --dd ".*" file # Extracts all data
+</code></pre>
+<h3 id="foremost"><a class="header" href="#foremost"><strong>Foremost</strong></a></h3>
+<p>根据文件的头部和尾部恢复文件，对 png 图像非常有用。通过 <code>apt</code> 安装，源代码在 <a href="https://github.com/korczis/foremost">GitHub</a> 上。</p>
+<pre><code class="language-bash">foremost -i file # Extracts data
+</code></pre>
+<h3 id="exiftool"><a class="header" href="#exiftool"><strong>Exiftool</strong></a></h3>
+<p>帮助查看文件元数据，访问 <a href="https://www.sno.phy.queensu.ca/~phil/exiftool/">这里</a>。</p>
+<pre><code class="language-bash">exiftool file # Shows the metadata
+</code></pre>
+<h3 id="exiv2"><a class="header" href="#exiv2"><strong>Exiv2</strong></a></h3>
+<p>类似于 exiftool，用于查看元数据。可以通过 <code>apt</code> 安装，源代码在 <a href="https://github.com/Exiv2/exiv2">GitHub</a>，并且有一个 <a href="http://www.exiv2.org/">官方网站</a>。</p>
+<pre><code class="language-bash">exiv2 file # Shows the metadata
+</code></pre>
+<h3 id="文件"><a class="header" href="#文件"><strong>文件</strong></a></h3>
+<p>识别您正在处理的文件类型。</p>
+<h3 id="字符串"><a class="header" href="#字符串"><strong>字符串</strong></a></h3>
+<p>从文件中提取可读字符串，使用各种编码设置来过滤输出。</p>
+<pre><code class="language-bash">strings -n 6 file # Extracts strings with a minimum length of 6
+strings -n 6 file | head -n 20 # First 20 strings
+strings -n 6 file | tail -n 20 # Last 20 strings
+strings -e s -n 6 file # 7bit strings
+strings -e S -n 6 file # 8bit strings
+strings -e l -n 6 file # 16bit strings (little-endian)
+strings -e b -n 6 file # 16bit strings (big-endian)
+strings -e L -n 6 file # 32bit strings (little-endian)
+strings -e B -n 6 file # 32bit strings (big-endian)
+</code></pre>
+<h3 id="比较-cmp"><a class="header" href="#比较-cmp"><strong>比较 (cmp)</strong></a></h3>
+<p>用于将修改过的文件与在线找到的原始版本进行比较。</p>
+<pre><code class="language-bash">cmp original.jpg stego.jpg -b -l
+</code></pre>
+<h2 id="提取文本中的隐藏数据"><a class="header" href="#提取文本中的隐藏数据"><strong>提取文本中的隐藏数据</strong></a></h2>
+<h3 id="空格中的隐藏数据"><a class="header" href="#空格中的隐藏数据"><strong>空格中的隐藏数据</strong></a></h3>
+<p>看似空白的空间中的不可见字符可能隐藏着信息。要提取这些数据，请访问 <a href="https://www.irongeek.com/i.php?page=security/unicode-steganography-homoglyph-encoder">https://www.irongeek.com/i.php?page=security/unicode-steganography-homoglyph-encoder</a>。</p>
+<h2 id="从图像中提取数据"><a class="header" href="#从图像中提取数据"><strong>从图像中提取数据</strong></a></h2>
+<h3 id="使用-graphicmagick-识别图像细节"><a class="header" href="#使用-graphicmagick-识别图像细节"><strong>使用 GraphicMagick 识别图像细节</strong></a></h3>
+<p><a href="https://imagemagick.org/script/download.php">GraphicMagick</a> 用于确定图像文件类型并识别潜在的损坏。执行以下命令以检查图像：</p>
+<pre><code class="language-bash">./magick identify -verbose stego.jpg
+</code></pre>
+<p>要尝试修复损坏的图像，添加元数据注释可能会有所帮助：</p>
+<pre><code class="language-bash">./magick mogrify -set comment 'Extraneous bytes removed' stego.jpg
+</code></pre>
+<h3 id="steghide用于数据隐藏"><a class="header" href="#steghide用于数据隐藏"><strong>Steghide用于数据隐藏</strong></a></h3>
+<p>Steghide 方便地在 <code>JPEG, BMP, WAV, 和 AU</code> 文件中隐藏数据，能够嵌入和提取加密数据。使用 <code>apt</code> 安装非常简单，其 <a href="https://github.com/StefanoDeVuono/steghide">源代码可在GitHub上获取</a>。</p>
+<p><strong>命令：</strong></p>
+<ul>
+<li><code>steghide info file</code> 显示文件是否包含隐藏数据。</li>
+<li><code>steghide extract -sf file [--passphrase password]</code> 提取隐藏数据，密码可选。</li>
+</ul>
+<p>要进行基于网页的提取，请访问 <a href="https://futureboy.us/stegano/decinput.html">此网站</a>。</p>
+<p><strong>使用Stegcracker进行暴力破解攻击：</strong></p>
+<ul>
+<li>要尝试对Steghide进行密码破解，请使用 <a href="https://github.com/Paradoxis/StegCracker.git">stegcracker</a> 如下：</li>
+</ul>
+<pre><code class="language-bash">stegcracker &lt;file&gt; [&lt;wordlist&gt;]
+</code></pre>
+<h3 id="zsteg-for-png-and-bmp-files"><a class="header" href="#zsteg-for-png-and-bmp-files"><strong>zsteg for PNG and BMP Files</strong></a></h3>
+<p>zsteg 专注于揭示 PNG 和 BMP 文件中的隐藏数据。安装通过 <code>gem install zsteg</code> 完成，其 <a href="https://github.com/zed-0xff/zsteg">源代码在 GitHub</a>。</p>
+<p><strong>Commands:</strong></p>
+<ul>
+<li><code>zsteg -a file</code> 对文件应用所有检测方法。</li>
+<li><code>zsteg -E file</code> 指定用于数据提取的有效载荷。</li>
+</ul>
+<h3 id="stegoveritas-and-stegsolve"><a class="header" href="#stegoveritas-and-stegsolve"><strong>StegoVeritas and Stegsolve</strong></a></h3>
+<p><strong>stegoVeritas</strong> 检查元数据，执行图像转换，并应用 LSB 暴力破解等功能。使用 <code>stegoveritas.py -h</code> 获取完整选项列表，使用 <code>stegoveritas.py stego.jpg</code> 执行所有检查。</p>
+<p><strong>Stegsolve</strong> 应用各种颜色滤镜以揭示图像中的隐藏文本或消息。它可在 <a href="https://github.com/eugenekolo/sec-tools/tree/master/stego/stegsolve/stegsolve">GitHub</a> 上获取。</p>
+<h3 id="fft-for-hidden-content-detection"><a class="header" href="#fft-for-hidden-content-detection"><strong>FFT for Hidden Content Detection</strong></a></h3>
+<p>快速傅里叶变换 (FFT) 技术可以揭示图像中的隐蔽内容。有用的资源包括：</p>
+<ul>
+<li><a href="http://bigwww.epfl.ch/demo/ip/demos/FFT/">EPFL Demo</a></li>
+<li><a href="https://www.ejectamenta.com/Fourifier-fullscreen/">Ejectamenta</a></li>
+<li><a href="https://github.com/0xcomposure/FFTStegPic">FFTStegPic on GitHub</a></li>
+</ul>
+<h3 id="stegpy-for-audio-and-image-files"><a class="header" href="#stegpy-for-audio-and-image-files"><strong>Stegpy for Audio and Image Files</strong></a></h3>
+<p>Stegpy 允许将信息嵌入图像和音频文件，支持 PNG、BMP、GIF、WebP 和 WAV 等格式。它可在 <a href="https://github.com/dhsdshdhk/stegpy">GitHub</a> 上获取。</p>
+<h3 id="pngcheck-for-png-file-analysis"><a class="header" href="#pngcheck-for-png-file-analysis"><strong>Pngcheck for PNG File Analysis</strong></a></h3>
+<p>要分析 PNG 文件或验证其真实性，请使用：</p>
+<pre><code class="language-bash">apt-get install pngcheck
+pngcheck stego.png
+</code></pre>
+<h3 id="额外的图像分析工具"><a class="header" href="#额外的图像分析工具"><strong>额外的图像分析工具</strong></a></h3>
+<p>进一步探索，请考虑访问：</p>
+<ul>
+<li><a href="http://magiceye.ecksdee.co.uk/">Magic Eye Solver</a></li>
+<li><a href="https://29a.ch/sandbox/2012/imageerrorlevelanalysis/">图像误差级别分析</a></li>
+<li><a href="https://github.com/resurrecting-open-source-projects/outguess">Outguess</a></li>
+<li><a href="https://www.openstego.com/">OpenStego</a></li>
+<li><a href="https://diit.sourceforge.net/">DIIT</a></li>
+</ul>
+<h2 id="从音频中提取数据"><a class="header" href="#从音频中提取数据"><strong>从音频中提取数据</strong></a></h2>
+<p><strong>音频隐写术</strong>提供了一种独特的方法，将信息隐藏在声音文件中。使用不同的工具来嵌入或检索隐藏的内容。</p>
+<h3 id="steghide-jpeg-bmp-wav-au"><a class="header" href="#steghide-jpeg-bmp-wav-au"><strong>Steghide (JPEG, BMP, WAV, AU)</strong></a></h3>
+<p>Steghide是一个多功能工具，旨在将数据隐藏在JPEG、BMP、WAV和AU文件中。详细说明请参见<a href="stego-tricks.html#steghide">隐写技巧文档</a>。</p>
+<h3 id="stegpy-png-bmp-gif-webp-wav"><a class="header" href="#stegpy-png-bmp-gif-webp-wav"><strong>Stegpy (PNG, BMP, GIF, WebP, WAV)</strong></a></h3>
+<p>该工具兼容多种格式，包括PNG、BMP、GIF、WebP和WAV。有关更多信息，请参阅<a href="stego-tricks.html#stegpy-png-bmp-gif-webp-wav">Stegpy的部分</a>。</p>
+<h3 id="ffmpeg"><a class="header" href="#ffmpeg"><strong>ffmpeg</strong></a></h3>
+<p>ffmpeg对于评估音频文件的完整性至关重要，突出详细信息并指出任何差异。</p>
+<pre><code class="language-bash">ffmpeg -v info -i stego.mp3 -f null -
+</code></pre>
+<h3 id="wavsteg-wav"><a class="header" href="#wavsteg-wav"><strong>WavSteg (WAV)</strong></a></h3>
+<p>WavSteg 擅长使用最低有效位策略在 WAV 文件中隐藏和提取数据。它可以在 <a href="https://github.com/ragibson/Steganography#WavSteg">GitHub</a> 上获取。命令包括：</p>
+<pre><code class="language-bash">python3 WavSteg.py -r -b 1 -s soundfile -o outputfile
+
+python3 WavSteg.py -r -b 2 -s soundfile -o outputfile
+</code></pre>
+<h3 id="deepsound"><a class="header" href="#deepsound"><strong>Deepsound</strong></a></h3>
+<p>Deepsound 允许使用 AES-256 对声音文件中的信息进行加密和检测。可以从 <a href="http://jpinsoft.net/deepsound/download.aspx">the official page</a> 下载。</p>
+<h3 id="sonic-visualizer"><a class="header" href="#sonic-visualizer"><strong>Sonic Visualizer</strong></a></h3>
+<p>Sonic Visualizer 是一个用于音频文件的视觉和分析检查的宝贵工具，可以揭示其他方法无法检测到的隐藏元素。访问 <a href="https://www.sonicvisualiser.org/">official website</a> 了解更多信息。</p>
+<h3 id="dtmf-tones---dial-tones"><a class="header" href="#dtmf-tones---dial-tones"><strong>DTMF Tones - Dial Tones</strong></a></h3>
+<p>通过在线工具，如 <a href="https://unframework.github.io/dtmf-detect/">this DTMF detector</a> 和 <a href="http://dialabc.com/sound/detect/index.html">DialABC</a>，可以检测音频文件中的 DTMF 音调。</p>
+<h2 id="other-techniques"><a class="header" href="#other-techniques"><strong>Other Techniques</strong></a></h2>
+<h3 id="binary-length-sqrt---qr-code"><a class="header" href="#binary-length-sqrt---qr-code"><strong>Binary Length SQRT - QR Code</strong></a></h3>
+<p>平方为整数的二进制数据可能表示 QR 码。使用此代码片段进行检查：</p>
+<pre><code class="language-python">import math
+math.sqrt(2500) #50
+</code></pre>
+<p>对于二进制到图像的转换，请查看 <a href="https://www.dcode.fr/binary-image">dcode</a>。要读取二维码，请使用 <a href="https://online-barcode-reader.inliteresearch.com/">this online barcode reader</a>。</p>
+<h3 id="盲文翻译"><a class="header" href="#盲文翻译"><strong>盲文翻译</strong></a></h3>
+<p>对于盲文翻译，<a href="https://www.branah.com/braille-translator">Branah Braille Translator</a> 是一个很好的资源。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献"><strong>参考文献</strong></a></h2>
+<ul>
+<li><a href="https://0xrick.github.io/lists/stego/"><strong>https://0xrick.github.io/lists/stego/</strong></a></li>
+<li><a href="https://github.com/DominicBreuker/stego-toolkit"><strong>https://github.com/DominicBreuker/stego-toolkit</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../crypto-and-stego/rc4-encrypt-and-decrypt.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../crypto-and-stego/esoteric-languages.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../crypto-and-stego/rc4-encrypt-and-decrypt.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../crypto-and-stego/esoteric-languages.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

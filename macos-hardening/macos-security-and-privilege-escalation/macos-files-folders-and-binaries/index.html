@@ -1,0 +1,442 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Files, Folders, Binaries &amp; Memory</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-文件文件夹二进制文件和内存"><a class="header" href="#macos-文件文件夹二进制文件和内存">macOS 文件、文件夹、二进制文件和内存</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="文件层次结构"><a class="header" href="#文件层次结构">文件层次结构</a></h2>
+<ul>
+<li><strong>/Applications</strong>: 安装的应用程序应在此处。所有用户都可以访问它们。</li>
+<li><strong>/bin</strong>: 命令行二进制文件</li>
+<li><strong>/cores</strong>: 如果存在，用于存储核心转储</li>
+<li><strong>/dev</strong>: 一切都被视为文件，因此您可能会看到存储在此处的硬件设备。</li>
+<li><strong>/etc</strong>: 配置文件</li>
+<li><strong>/Library</strong>: 可以在此找到许多与偏好设置、缓存和日志相关的子目录和文件。根目录和每个用户目录中都有一个 Library 文件夹。</li>
+<li><strong>/private</strong>: 未记录，但许多提到的文件夹是指向私有目录的符号链接。</li>
+<li><strong>/sbin</strong>: 重要的系统二进制文件（与管理相关）</li>
+<li><strong>/System</strong>: 使 OS X 运行的文件。您应该在此处找到大多数仅与 Apple 相关的文件（而非第三方）。</li>
+<li><strong>/tmp</strong>: 文件在 3 天后被删除（这是一个指向 /private/tmp 的软链接）</li>
+<li><strong>/Users</strong>: 用户的主目录。</li>
+<li><strong>/usr</strong>: 配置和系统二进制文件</li>
+<li><strong>/var</strong>: 日志文件</li>
+<li><strong>/Volumes</strong>: 挂载的驱动器将在此处出现。</li>
+<li><strong>/.vol</strong>: 运行 <code>stat a.txt</code> 您将获得类似 <code>16777223 7545753 -rw-r--r-- 1 username wheel ...</code> 的内容，其中第一个数字是文件所在卷的 ID 号，第二个是 inode 号。您可以通过 /.vol/ 使用该信息访问此文件的内容，运行 <code>cat /.vol/16777223/7545753</code></li>
+</ul>
+<h3 id="应用程序文件夹"><a class="header" href="#应用程序文件夹">应用程序文件夹</a></h3>
+<ul>
+<li><strong>系统应用程序</strong>位于 <code>/System/Applications</code> 下</li>
+<li><strong>已安装</strong>的应用程序通常安装在 <code>/Applications</code> 或 <code>~/Applications</code> 中</li>
+<li><strong>应用程序数据</strong>可以在 <code>/Library/Application Support</code> 中找到，适用于以 root 身份运行的应用程序，以及在 <code>~/Library/Application Support</code> 中找到，适用于以用户身份运行的应用程序。</li>
+<li>需要以 root 身份运行的第三方应用程序 <strong>守护进程</strong> 通常位于 <code>/Library/PrivilegedHelperTools/</code></li>
+<li><strong>沙盒</strong>应用程序映射到 <code>~/Library/Containers</code> 文件夹。每个应用程序都有一个根据应用程序的包 ID 命名的文件夹（<code>com.apple.Safari</code>）。</li>
+<li><strong>内核</strong>位于 <code>/System/Library/Kernels/kernel</code></li>
+<li><strong>Apple 的内核扩展</strong>位于 <code>/System/Library/Extensions</code></li>
+<li><strong>第三方内核扩展</strong>存储在 <code>/Library/Extensions</code></li>
+</ul>
+<h3 id="包含敏感信息的文件"><a class="header" href="#包含敏感信息的文件">包含敏感信息的文件</a></h3>
+<p>MacOS 在多个地方存储信息，例如密码：</p>
+<p>{% content-ref url="macos-sensitive-locations.md" %}
+<a href="macos-sensitive-locations.html">macos-sensitive-locations.md</a>
+{% endcontent-ref %}</p>
+<h3 id="易受攻击的-pkg-安装程序"><a class="header" href="#易受攻击的-pkg-安装程序">易受攻击的 pkg 安装程序</a></h3>
+<p>{% content-ref url="macos-installers-abuse.md" %}
+<a href="macos-installers-abuse.html">macos-installers-abuse.md</a>
+{% endcontent-ref %}</p>
+<h2 id="os-x-特定扩展"><a class="header" href="#os-x-特定扩展">OS X 特定扩展</a></h2>
+<ul>
+<li><strong><code>.dmg</code></strong>: Apple 磁盘映像文件在安装程序中非常常见。</li>
+<li><strong><code>.kext</code></strong>: 必须遵循特定结构，是 OS X 版本的驱动程序。（这是一个包）</li>
+<li><strong><code>.plist</code></strong>: 也称为属性列表，以 XML 或二进制格式存储信息。</li>
+<li>可以是 XML 或二进制。二进制文件可以使用以下命令读取：</li>
+<li><code>defaults read config.plist</code></li>
+<li><code>/usr/libexec/PlistBuddy -c print config.plsit</code></li>
+<li><code>plutil -p ~/Library/Preferences/com.apple.screensaver.plist</code></li>
+<li><code>plutil -convert xml1 ~/Library/Preferences/com.apple.screensaver.plist -o -</code></li>
+<li><code>plutil -convert json ~/Library/Preferences/com.apple.screensaver.plist -o -</code></li>
+<li><strong><code>.app</code></strong>: Apple 应用程序，遵循目录结构（这是一个包）。</li>
+<li><strong><code>.dylib</code></strong>: 动态库（如 Windows DLL 文件）</li>
+<li><strong><code>.pkg</code></strong>: 与 xar（可扩展归档格式）相同。安装命令可用于安装这些文件的内容。</li>
+<li><strong><code>.DS_Store</code></strong>: 此文件位于每个目录中，保存目录的属性和自定义设置。</li>
+<li><strong><code>.Spotlight-V100</code></strong>: 此文件夹出现在系统中每个卷的根目录上。</li>
+<li><strong><code>.metadata_never_index</code></strong>: 如果此文件位于卷的根目录，Spotlight 将不会索引该卷。</li>
+<li><strong><code>.noindex</code></strong>: 具有此扩展名的文件和文件夹将不会被 Spotlight 索引。</li>
+<li><strong><code>.sdef</code></strong>: 包内的文件，指定如何通过 AppleScript 与应用程序进行交互。</li>
+</ul>
+<h3 id="macos-包"><a class="header" href="#macos-包">macOS 包</a></h3>
+<p>包是一个 <strong>目录</strong>，在 Finder 中 <strong>看起来像一个对象</strong>（包的示例是 <code>*.app</code> 文件）。</p>
+<p>{% content-ref url="macos-bundles.md" %}
+<a href="macos-bundles.html">macos-bundles.md</a>
+{% endcontent-ref %}</p>
+<h2 id="dyld-共享库缓存-slc"><a class="header" href="#dyld-共享库缓存-slc">Dyld 共享库缓存 (SLC)</a></h2>
+<p>在 macOS（和 iOS）中，所有系统共享库，如框架和 dylibs，<strong>合并为一个单一文件</strong>，称为 <strong>dyld 共享缓存</strong>。这提高了性能，因为代码可以更快地加载。</p>
+<p>在 macOS 中，这位于 <code>/System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/</code>，在旧版本中，您可能会在 <strong><code>/System/Library/dyld/</code></strong> 中找到 <strong>共享缓存</strong>。<br />
+在 iOS 中，您可以在 <strong><code>/System/Library/Caches/com.apple.dyld/</code></strong> 中找到它们。</p>
+<p>与 dyld 共享缓存类似，内核和内核扩展也被编译到内核缓存中，该缓存在启动时加载。</p>
+<p>为了从单一文件 dylib 共享缓存中提取库，可以使用二进制文件 <a href="https://www.mbsplugins.de/files/dyld_shared_cache_util-dyld-733.8.zip">dyld_shared_cache_util</a>，虽然现在可能无法使用，但您也可以使用 <a href="https://github.com/arandomdev/dyldextractor"><strong>dyldextractor</strong></a>：</p>
+<pre><code class="language-bash"># dyld_shared_cache_util
+dyld_shared_cache_util -extract ~/shared_cache/ /System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e
+
+# dyldextractor
+dyldex -l [dyld_shared_cache_path] # List libraries
+dyldex_all [dyld_shared_cache_path] # Extract all
+# More options inside the readme
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% hint style="success" %}
+请注意，即使 <code>dyld_shared_cache_util</code> 工具无法工作，您也可以将 <strong>共享 dyld 二进制文件传递给 Hopper</strong>，Hopper 将能够识别所有库并让您 <strong>选择要调查的库</strong>：
+{% endhint %}</p>
+<figure><img src="../../../.gitbook/assets/image (1152).png" alt="" width="563"><figcaption></figcaption></figure>
+<p>一些提取器可能无法工作，因为 dylibs 是与硬编码地址预链接的，因此它们可能会跳转到未知地址。</p>
+<p>{% hint style="success" %}
+在 macos 中，使用 Xcode 中的模拟器也可以下载其他 *OS 设备的共享库缓存。它们将下载到：ls <code>$HOME/Library/Developer/Xcode/&lt;*&gt;OS\ DeviceSupport/&lt;version&gt;/Symbols/System/Library/Caches/com.apple.dyld/</code>，例如：<code>$HOME/Library/Developer/Xcode/iOS\ DeviceSupport/14.1\ (18A8395)/Symbols/System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64</code>
+{% endhint %}</p>
+<h3 id="映射-slc"><a class="header" href="#映射-slc">映射 SLC</a></h3>
+<p><strong><code>dyld</code></strong> 使用系统调用 <strong><code>shared_region_check_np</code></strong> 来知道 SLC 是否已被映射（返回地址），并使用 <strong><code>shared_region_map_and_slide_np</code></strong> 来映射 SLC。</p>
+<p>请注意，即使 SLC 在第一次使用时被滑动，所有 <strong>进程</strong> 也使用 <strong>相同的副本</strong>，这 <strong>消除了 ASLR</strong> 保护，如果攻击者能够在系统中运行进程。这在过去实际上被利用过，并通过共享区域分页器修复。</p>
+<p>分支池是小的 Mach-O dylibs，它们在映像映射之间创建小空间，使得无法插入函数。</p>
+<h3 id="覆盖-slcs"><a class="header" href="#覆盖-slcs">覆盖 SLCs</a></h3>
+<p>使用环境变量：</p>
+<ul>
+<li><strong><code>DYLD_DHARED_REGION=private DYLD_SHARED_CACHE_DIR=&lt;/path/dir&gt; DYLD_SHARED_CACHE_DONT_VALIDATE=1</code></strong> -&gt; 这将允许加载新的共享库缓存</li>
+<li><strong><code>DYLD_SHARED_CACHE_DIR=avoid</code></strong> 并手动用指向共享缓存的符号链接替换库与真实库（您需要提取它们）</li>
+</ul>
+<h2 id="特殊文件权限"><a class="header" href="#特殊文件权限">特殊文件权限</a></h2>
+<h3 id="文件夹权限"><a class="header" href="#文件夹权限">文件夹权限</a></h3>
+<p>在一个 <strong>文件夹</strong> 中，<strong>读取</strong> 允许 <strong>列出它</strong>，<strong>写入</strong> 允许 <strong>删除</strong> 和 <strong>写入</strong> 其中的文件，<strong>执行</strong> 允许 <strong>遍历</strong> 目录。因此，例如，具有 <strong>文件读取权限</strong> 的用户在一个他 <strong>没有执行</strong> 权限的目录中 <strong>将无法读取</strong> 该文件。</p>
+<h3 id="标志修饰符"><a class="header" href="#标志修饰符">标志修饰符</a></h3>
+<p>文件中可以设置一些标志，这将使文件表现得不同。您可以使用 <code>ls -lO /path/directory</code> <strong>检查目录中文件的标志</strong>。</p>
+<ul>
+<li><strong><code>uchg</code></strong>：被称为 <strong>uchange</strong> 标志将 <strong>防止任何操作</strong> 更改或删除 <strong>文件</strong>。要设置它，请执行：<code>chflags uchg file.txt</code></li>
+<li>root 用户可以 <strong>移除标志</strong> 并修改文件</li>
+<li><strong><code>restricted</code></strong>：此标志使文件受到 <strong>SIP 保护</strong>（您无法将此标志添加到文件）。</li>
+<li><strong><code>Sticky bit</code></strong>：如果目录具有粘滞位，<strong>只有</strong> 该 <strong>目录的所有者或 root 可以重命名或删除</strong> 文件。通常，这在 /tmp 目录上设置，以防止普通用户删除或移动其他用户的文件。</li>
+</ul>
+<p>所有标志可以在文件 <code>sys/stat.h</code> 中找到（使用 <code>mdfind stat.h | grep stat.h</code> 查找），并且是：</p>
+<ul>
+<li><code>UF_SETTABLE</code> 0x0000ffff：可更改的所有者标志的掩码。</li>
+<li><code>UF_NODUMP</code> 0x00000001：不转储文件。</li>
+<li><code>UF_IMMUTABLE</code> 0x00000002：文件不可更改。</li>
+<li><code>UF_APPEND</code> 0x00000004：对文件的写入只能追加。</li>
+<li><code>UF_OPAQUE</code> 0x00000008：目录在联合方面是透明的。</li>
+<li><code>UF_COMPRESSED</code> 0x00000020：文件被压缩（某些文件系统）。</li>
+<li><code>UF_TRACKED</code> 0x00000040：对于设置此标志的文件，不会有删除/重命名的通知。</li>
+<li><code>UF_DATAVAULT</code> 0x00000080：读取和写入需要权限。</li>
+<li><code>UF_HIDDEN</code> 0x00008000：提示该项不应在 GUI 中显示。</li>
+<li><code>SF_SUPPORTED</code> 0x009f0000：超级用户支持标志的掩码。</li>
+<li><code>SF_SETTABLE</code> 0x3fff0000：超级用户可更改标志的掩码。</li>
+<li><code>SF_SYNTHETIC</code> 0xc0000000：系统只读合成标志的掩码。</li>
+<li><code>SF_ARCHIVED</code> 0x00010000：文件已归档。</li>
+<li><code>SF_IMMUTABLE</code> 0x00020000：文件不可更改。</li>
+<li><code>SF_APPEND</code> 0x00040000：对文件的写入只能追加。</li>
+<li><code>SF_RESTRICTED</code> 0x00080000：写入需要权限。</li>
+<li><code>SF_NOUNLINK</code> 0x00100000：项目不可被移除、重命名或挂载。</li>
+<li><code>SF_FIRMLINK</code> 0x00800000：文件是一个 firmlink。</li>
+<li><code>SF_DATALESS</code> 0x40000000：文件是无数据对象。</li>
+</ul>
+<h3 id="文件-acls"><a class="header" href="#文件-acls"><strong>文件 ACLs</strong></a></h3>
+<p>文件 <strong>ACLs</strong> 包含 <strong>ACE</strong>（访问控制条目），可以为不同用户分配更 <strong>细粒度的权限</strong>。</p>
+<p>可以为 <strong>目录</strong> 授予这些权限：<code>list</code>、<code>search</code>、<code>add_file</code>、<code>add_subdirectory</code>、<code>delete_child</code>、<code>delete_child</code>。<br />
+对于 <strong>文件</strong>：<code>read</code>、<code>write</code>、<code>append</code>、<code>execute</code>。</p>
+<p>当文件包含 ACLs 时，您将 <strong>在列出权限时找到一个 "+"，如</strong>：</p>
+<pre><code class="language-bash">ls -ld Movies
+drwx------+   7 username  staff     224 15 Apr 19:42 Movies
+</code></pre>
+<p>您可以使用以下命令<strong>读取文件的ACL</strong>：</p>
+<pre><code class="language-bash">ls -lde Movies
+drwx------+ 7 username  staff  224 15 Apr 19:42 Movies
+0: group:everyone deny delete
+</code></pre>
+<p>您可以找到 <strong>所有具有 ACL 的文件</strong> 使用（这非常慢）：</p>
+<pre><code class="language-bash">ls -RAle / 2&gt;/dev/null | grep -E -B1 "\d: "
+</code></pre>
+<h3 id="扩展属性"><a class="header" href="#扩展属性">扩展属性</a></h3>
+<p>扩展属性具有名称和任何所需的值，可以使用 <code>ls -@</code> 查看，并使用 <code>xattr</code> 命令进行操作。一些常见的扩展属性包括：</p>
+<ul>
+<li><code>com.apple.resourceFork</code>: 资源分叉兼容性。也可显示为 <code>filename/..namedfork/rsrc</code></li>
+<li><code>com.apple.quarantine</code>: MacOS: Gatekeeper 隔离机制 (III/6)</li>
+<li><code>metadata:*</code>: MacOS: 各种元数据，例如 <code>_backup_excludeItem</code> 或 <code>kMD*</code></li>
+<li><code>com.apple.lastuseddate</code> (#PS): 最后文件使用日期</li>
+<li><code>com.apple.FinderInfo</code>: MacOS: Finder 信息（例如，颜色标签）</li>
+<li><code>com.apple.TextEncoding</code>: 指定 ASCII 文本文件的文本编码</li>
+<li><code>com.apple.logd.metadata</code>: logd 在 <code>/var/db/diagnostics</code> 中使用的文件</li>
+<li><code>com.apple.genstore.*</code>: 代际存储（文件系统根目录中的 <code>/.DocumentRevisions-V100</code>）</li>
+<li><code>com.apple.rootless</code>: MacOS: 由系统完整性保护用于标记文件 (III/10)</li>
+<li><code>com.apple.uuidb.boot-uuid</code>: logd 对具有唯一 UUID 的启动时期的标记</li>
+<li><code>com.apple.decmpfs</code>: MacOS: 透明文件压缩 (II/7)</li>
+<li><code>com.apple.cprotect</code>: *OS: 每个文件的加密数据 (III/11)</li>
+<li><code>com.apple.installd.*</code>: *OS: installd 使用的元数据，例如 <code>installType</code>，<code>uniqueInstallID</code></li>
+</ul>
+<h3 id="资源分叉--macos-ads"><a class="header" href="#资源分叉--macos-ads">资源分叉 | macOS ADS</a></h3>
+<p>这是一种在 MacOS 机器中获取 <strong>备用数据流</strong> 的方法。您可以通过将内容保存在名为 <strong>com.apple.ResourceFork</strong> 的扩展属性中，将其保存在 <strong>file/..namedfork/rsrc</strong> 中。</p>
+<pre><code class="language-bash">echo "Hello" &gt; a.txt
+echo "Hello Mac ADS" &gt; a.txt/..namedfork/rsrc
+
+xattr -l a.txt #Read extended attributes
+com.apple.ResourceFork: Hello Mac ADS
+
+ls -l a.txt #The file length is still q
+-rw-r--r--@ 1 username  wheel  6 17 Jul 01:15 a.txt
+</code></pre>
+<p>您可以<strong>找到所有包含此扩展属性的文件</strong>，方法是：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">find / -type f -exec ls -ld {} \; 2&gt;/dev/null | grep -E "[x\-]@ " | awk '{printf $9; printf "\n"}' | xargs -I {} xattr -lv {} | grep "com.apple.ResourceFork"
+</code></pre>
+<p>{% endcode %}</p>
+<h3 id="decmpfs"><a class="header" href="#decmpfs">decmpfs</a></h3>
+<p>扩展属性 <code>com.apple.decmpfs</code> 表示文件是加密存储的，<code>ls -l</code> 将报告 <strong>大小为 0</strong>，压缩数据在此属性中。每当访问该文件时，它将在内存中解密。</p>
+<p>此属性可以通过 <code>ls -lO</code> 查看，标记为压缩，因为压缩文件也带有标志 <code>UF_COMPRESSED</code>。如果通过 <code>chflags nocompressed &lt;/path/to/file&gt;</code> 删除压缩文件的此标志，系统将不知道该文件是压缩的，因此无法解压并访问数据（它会认为文件实际上是空的）。</p>
+<p>工具 afscexpand 可用于强制解压文件。</p>
+<h2 id="通用二进制文件--mach-o-格式"><a class="header" href="#通用二进制文件--mach-o-格式"><strong>通用二进制文件 &amp;</strong> Mach-o 格式</a></h2>
+<p>Mac OS 二进制文件通常编译为 <strong>通用二进制文件</strong>。一个 <strong>通用二进制文件</strong> 可以 <strong>在同一文件中支持多种架构</strong>。</p>
+<p>{% content-ref url="universal-binaries-and-mach-o-format.md" %}
+<a href="universal-binaries-and-mach-o-format.html">universal-binaries-and-mach-o-format.md</a>
+{% endcontent-ref %}</p>
+<h2 id="macos-进程内存"><a class="header" href="#macos-进程内存">macOS 进程内存</a></h2>
+<h2 id="macos-内存转储"><a class="header" href="#macos-内存转储">macOS 内存转储</a></h2>
+<p>{% content-ref url="macos-memory-dumping.md" %}
+<a href="macos-memory-dumping.html">macos-memory-dumping.md</a>
+{% endcontent-ref %}</p>
+<h2 id="风险类别文件-mac-os"><a class="header" href="#风险类别文件-mac-os">风险类别文件 Mac OS</a></h2>
+<p>目录 <code>/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/System</code> 存储有关 <strong>不同文件扩展名相关风险的信息</strong>。该目录将文件分类为不同的风险级别，影响 Safari 下载这些文件时的处理方式。类别如下：</p>
+<ul>
+<li><strong>LSRiskCategorySafe</strong>：此类别中的文件被认为是 <strong>完全安全的</strong>。Safari 会在下载后自动打开这些文件。</li>
+<li><strong>LSRiskCategoryNeutral</strong>：这些文件没有警告，Safari <strong>不会自动打开</strong>。</li>
+<li><strong>LSRiskCategoryUnsafeExecutable</strong>：此类别下的文件 <strong>触发警告</strong>，指示该文件是一个应用程序。这是一个安全措施，用于提醒用户。</li>
+<li><strong>LSRiskCategoryMayContainUnsafeExecutable</strong>：此类别用于可能包含可执行文件的文件，例如归档文件。除非 Safari 能验证所有内容是安全或中性的，否则将 <strong>触发警告</strong>。</li>
+</ul>
+<h2 id="日志文件"><a class="header" href="#日志文件">日志文件</a></h2>
+<ul>
+<li><strong><code>$HOME/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV2</code></strong>：包含有关下载文件的信息，例如下载来源的 URL。</li>
+<li><strong><code>/var/log/system.log</code></strong>：OSX 系统的主日志。com.apple.syslogd.plist 负责执行 syslogging（您可以通过在 <code>launchctl list</code> 中查找 "com.apple.syslogd" 来检查它是否被禁用）。</li>
+<li><strong><code>/private/var/log/asl/*.asl</code></strong>：这些是 Apple 系统日志，可能包含有趣的信息。</li>
+<li><strong><code>$HOME/Library/Preferences/com.apple.recentitems.plist</code></strong>：通过 "Finder" 存储最近访问的文件和应用程序。</li>
+<li><strong><code>$HOME/Library/Preferences/com.apple.loginitems.plsit</code></strong>：存储系统启动时要启动的项目。</li>
+<li><strong><code>$HOME/Library/Logs/DiskUtility.log</code></strong>：DiskUtility 应用程序的日志文件（有关驱动器的信息，包括 USB）。</li>
+<li><strong><code>/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist</code></strong>：有关无线接入点的数据。</li>
+<li><strong><code>/private/var/db/launchd.db/com.apple.launchd/overrides.plist</code></strong>：已停用的守护进程列表。</li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-file-extension-apps.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-bundles.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-file-extension-apps.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-bundles.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

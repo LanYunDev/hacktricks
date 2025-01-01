@@ -1,0 +1,421 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS SIP</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-sip"><a class="header" href="#macos-sip">macOS SIP</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息"><strong>基本信息</strong></a></h2>
+<p><strong>系统完整性保护 (SIP)</strong> 在 macOS 中是一种机制，旨在防止即使是最特权的用户也无法对关键系统文件夹进行未经授权的更改。此功能在维护系统完整性方面发挥着至关重要的作用，通过限制在受保护区域内添加、修改或删除文件等操作。SIP 保护的主要文件夹包括：</p>
+<ul>
+<li><strong>/System</strong></li>
+<li><strong>/bin</strong></li>
+<li><strong>/sbin</strong></li>
+<li><strong>/usr</strong></li>
+</ul>
+<p>管理 SIP 行为的规则定义在位于 <strong><code>/System/Library/Sandbox/rootless.conf</code></strong> 的配置文件中。在此文件中，以星号（*）为前缀的路径被视为对其他严格 SIP 限制的例外。</p>
+<p>考虑以下示例：</p>
+<pre><code class="language-javascript">/usr
+* /usr/libexec/cups
+* /usr/local
+* /usr/share/man
+</code></pre>
+<p>这个片段暗示，虽然 SIP 通常保护 <strong><code>/usr</code></strong> 目录，但有特定的子目录（<code>/usr/libexec/cups</code>、<code>/usr/local</code> 和 <code>/usr/share/man</code>）可以进行修改，如路径前的星号（*）所示。</p>
+<p>要验证某个目录或文件是否受到 SIP 保护，可以使用 <strong><code>ls -lOd</code></strong> 命令检查是否存在 <strong><code>restricted</code></strong> 或 <strong><code>sunlnk</code></strong> 标志。例如：</p>
+<pre><code class="language-bash">ls -lOd /usr/libexec/cups
+drwxr-xr-x  11 root  wheel  sunlnk 352 May 13 00:29 /usr/libexec/cups
+</code></pre>
+<p>在这种情况下，<strong><code>sunlnk</code></strong> 标志表示 <code>/usr/libexec/cups</code> 目录本身 <strong>无法被删除</strong>，尽管可以创建、修改或删除其中的文件。</p>
+<p>另一方面：</p>
+<pre><code class="language-bash">ls -lOd /usr/libexec
+drwxr-xr-x  338 root  wheel  restricted 10816 May 13 00:29 /usr/libexec
+</code></pre>
+<p>这里，<strong><code>restricted</code></strong> 标志表示 <code>/usr/libexec</code> 目录受到 SIP 保护。在 SIP 保护的目录中，文件无法被创建、修改或删除。</p>
+<p>此外，如果一个文件包含属性 <strong><code>com.apple.rootless</code></strong> 扩展 <strong>属性</strong>，该文件也将受到 <strong>SIP 保护</strong>。</p>
+<p>{% hint style="success" %}
+请注意，<strong>Sandbox</strong> 钩子 <strong><code>hook_vnode_check_setextattr</code></strong> 阻止任何尝试修改扩展属性 <strong><code>com.apple.rootless</code></strong> 的行为。
+{% endhint %}</p>
+<p><strong>SIP 还限制其他根操作</strong>，例如：</p>
+<ul>
+<li>加载不受信任的内核扩展</li>
+<li>获取 Apple 签名进程的任务端口</li>
+<li>修改 NVRAM 变量</li>
+<li>允许内核调试</li>
+</ul>
+<p>选项以位标志的形式保存在 nvram 变量中（在 Intel 上为 <code>csr-active-config</code>，在 ARM 上从启动的设备树读取 <code>lp-sip0</code>）。您可以在 <code>csr.sh</code> 的 XNU 源代码中找到这些标志：</p>
+<figure><img src="../../../.gitbook/assets/image (1192).png" alt=""><figcaption></figcaption></figure>
+<h3 id="sip-状态"><a class="header" href="#sip-状态">SIP 状态</a></h3>
+<p>您可以使用以下命令检查系统上是否启用了 SIP：</p>
+<pre><code class="language-bash">csrutil status
+</code></pre>
+<p>如果您需要禁用 SIP，您必须在恢复模式下重启计算机（在启动时按 Command+R），然后执行以下命令：</p>
+<pre><code class="language-bash">csrutil disable
+</code></pre>
+<p>如果您希望保持 SIP 启用但移除调试保护，可以使用：</p>
+<pre><code class="language-bash">csrutil enable --without debug
+</code></pre>
+<h3 id="其他限制"><a class="header" href="#其他限制">其他限制</a></h3>
+<ul>
+<li><strong>禁止加载未签名的内核扩展</strong>（kexts），确保只有经过验证的扩展与系统内核交互。</li>
+<li><strong>防止调试</strong> macOS 系统进程，保护核心系统组件免受未经授权的访问和修改。</li>
+<li><strong>抑制工具</strong> 如 dtrace 检查系统进程，进一步保护系统操作的完整性。</li>
+</ul>
+<p><a href="https://www.slideshare.net/i0n1c/syscan360-stefan-esser-os-x-el-capitan-sinking-the-ship"><strong>在此演讲中了解有关 SIP 的更多信息</strong></a><strong>.</strong></p>
+<h3 id="与-sip-相关的权限"><a class="header" href="#与-sip-相关的权限"><strong>与 SIP 相关的权限</strong></a></h3>
+<ul>
+<li><code>com.apple.rootless.xpc.bootstrap</code>: 控制 launchd</li>
+<li><code>com.apple.rootless.install[.heritable]</code>: 访问文件系统</li>
+<li><code>com.apple.rootless.kext-management</code>: <code>kext_request</code></li>
+<li><code>com.apple.rootless.datavault.controller</code>: 管理 UF_DATAVAULT</li>
+<li><code>com.apple.rootless.xpc.bootstrap</code>: XPC 设置能力</li>
+<li><code>com.apple.rootless.xpc.effective-root</code>: 通过 launchd XPC 获取 root 权限</li>
+<li><code>com.apple.rootless.restricted-block-devices</code>: 访问原始块设备</li>
+<li><code>com.apple.rootless.internal.installer-equivalent</code>: 不受限制的文件系统访问</li>
+<li><code>com.apple.rootless.restricted-nvram-variables[.heritable]</code>: 完全访问 NVRAM</li>
+<li><code>com.apple.rootless.storage.label</code>: 修改由 com.apple.rootless xattr 限制的文件，使用相应的标签</li>
+<li><code>com.apple.rootless.volume.VM.label</code>: 在卷上维护 VM 交换</li>
+</ul>
+<h2 id="sip-绕过"><a class="header" href="#sip-绕过">SIP 绕过</a></h2>
+<p>绕过 SIP 使攻击者能够：</p>
+<ul>
+<li><strong>访问用户数据</strong>：读取所有用户帐户的敏感用户数据，如邮件、消息和 Safari 历史记录。</li>
+<li><strong>TCC 绕过</strong>：直接操纵 TCC（透明性、同意和控制）数据库，以授予对网络摄像头、麦克风和其他资源的未经授权访问。</li>
+<li><strong>建立持久性</strong>：在 SIP 保护的位置放置恶意软件，使其即使在 root 权限下也能抵抗删除。这还包括篡改恶意软件删除工具（MRT）的潜力。</li>
+<li><strong>加载内核扩展</strong>：尽管有额外的保护，绕过 SIP 简化了加载未签名内核扩展的过程。</li>
+</ul>
+<h3 id="安装包"><a class="header" href="#安装包">安装包</a></h3>
+<p><strong>使用 Apple 证书签名的安装包</strong> 可以绕过其保护。这意味着即使是标准开发者签名的包，如果尝试修改 SIP 保护的目录，也会被阻止。</p>
+<h3 id="不存在的-sip-文件"><a class="header" href="#不存在的-sip-文件">不存在的 SIP 文件</a></h3>
+<p>一个潜在的漏洞是，如果在 <strong><code>rootless.conf</code> 中指定了一个文件但当前不存在</strong>，则可以创建它。恶意软件可以利用这一点在系统上 <strong>建立持久性</strong>。例如，如果恶意程序在 <code>rootless.conf</code> 中列出但不存在，它可以在 <code>/System/Library/LaunchDaemons</code> 中创建一个 .plist 文件。</p>
+<h3 id="comapplerootlessinstallheritable"><a class="header" href="#comapplerootlessinstallheritable">com.apple.rootless.install.heritable</a></h3>
+<p>{% hint style="danger" %}
+权限 <strong><code>com.apple.rootless.install.heritable</code></strong> 允许绕过 SIP
+{% endhint %}</p>
+<h4 id="cve-2019-8561"><a class="header" href="#cve-2019-8561"><a href="https://objective-see.org/blog/blog_0x42.html">CVE-2019-8561</a> <a href="#cve" id="cve"></a></a></h4>
+<p>发现可以在 <strong>系统验证其代码</strong> 签名后 <strong>交换安装包</strong>，然后系统将安装恶意包而不是原始包。由于这些操作是由 <strong><code>system_installd</code></strong> 执行的，因此可以绕过 SIP。</p>
+<h4 id="cve-20209854"><a class="header" href="#cve-20209854"><a href="https://objective-see.org/blog/blog_0x4D.html">CVE-2020–9854</a> <a href="#cve-unauthd-chain" id="cve-unauthd-chain"></a></a></h4>
+<p>如果从挂载的映像或外部驱动器安装包，<strong>安装程序</strong> 将 <strong>执行</strong> 来自 <strong>该文件系统</strong> 的二进制文件（而不是来自 SIP 保护的位置），使 <strong><code>system_installd</code></strong> 执行任意二进制文件。</p>
+<h4 id="cve-2021-30892---shrootless"><a class="header" href="#cve-2021-30892---shrootless">CVE-2021-30892 - Shrootless</a></h4>
+<p><a href="https://www.microsoft.com/en-us/security/blog/2021/10/28/microsoft-finds-new-macos-vulnerability-shrootless-that-could-bypass-system-integrity-protection/"><strong>来自此博客文章的研究人员</strong></a> 发现了 macOS 的系统完整性保护（SIP）机制中的一个漏洞，称为 'Shrootless' 漏洞。该漏洞围绕 <strong><code>system_installd</code></strong> 守护进程，该进程具有权限 <strong><code>com.apple.rootless.install.heritable</code></strong>，允许其任何子进程绕过 SIP 的文件系统限制。</p>
+<p><strong><code>system_installd</code></strong> 守护进程将安装由 <strong>Apple</strong> 签名的包。</p>
+<p>研究人员发现，在安装 Apple 签名的包（.pkg 文件）期间，<strong><code>system_installd</code></strong> <strong>运行</strong> 包中包含的任何 <strong>后安装</strong> 脚本。这些脚本由默认 shell <strong><code>zsh</code></strong> 执行，如果存在，它会自动 <strong>运行</strong> 来自 <strong><code>/etc/zshenv</code></strong> 文件的命令，即使在非交互模式下。攻击者可以利用这种行为：通过创建恶意的 <code>/etc/zshenv</code> 文件并等待 <strong><code>system_installd</code> 调用 <code>zsh</code></strong>，他们可以在设备上执行任意操作。</p>
+<p>此外，发现 <strong><code>/etc/zshenv</code> 可以作为一种通用攻击技术</strong>，不仅仅用于 SIP 绕过。每个用户配置文件都有一个 <code>~/.zshenv</code> 文件，其行为与 <code>/etc/zshenv</code> 相同，但不需要 root 权限。该文件可以用作持久性机制，每次 <code>zsh</code> 启动时触发，或作为提升权限的机制。如果管理员用户使用 <code>sudo -s</code> 或 <code>sudo &lt;command&gt;</code> 提升到 root，<code>~/.zshenv</code> 文件将被触发，有效地提升到 root。</p>
+<h4 id="cve-2022-22583"><a class="header" href="#cve-2022-22583"><a href="https://perception-point.io/blog/technical-analysis-cve-2022-22583/"><strong>CVE-2022-22583</strong></a></a></h4>
+<p>在 <a href="https://perception-point.io/blog/technical-analysis-cve-2022-22583/"><strong>CVE-2022-22583</strong></a> 中发现同样的 <strong><code>system_installd</code></strong> 进程仍然可以被滥用，因为它将 <strong>后安装脚本放在 SIP 保护的 <code>/tmp</code> 中的随机命名文件夹内</strong>。问题是 <strong><code>/tmp</code> 本身并不受 SIP 保护</strong>，因此可以 <strong>挂载</strong> 一个 <strong>虚拟映像</strong>，然后 <strong>安装程序</strong> 会将 <strong>后安装脚本</strong> 放入其中，<strong>卸载</strong> 虚拟映像，<strong>重新创建</strong> 所有 <strong>文件夹</strong> 并 <strong>添加</strong> 带有 <strong>有效负载</strong> 的 <strong>后安装</strong> 脚本以执行。</p>
+<h4 id="fsck_cs-工具"><a class="header" href="#fsck_cs-工具"><a href="https://www.theregister.com/2016/03/30/apple_os_x_rootless/">fsck_cs 工具</a></a></h4>
+<p>发现了一个漏洞，其中 <strong><code>fsck_cs</code></strong> 被误导以破坏一个关键文件，因为它能够跟随 <strong>符号链接</strong>。具体来说，攻击者从 <em><code>/dev/diskX</code></em> 创建了一个指向文件 <code>/System/Library/Extensions/AppleKextExcludeList.kext/Contents/Info.plist</code> 的链接。在 <em><code>/dev/diskX</code></em> 上执行 <strong><code>fsck_cs</code></strong> 导致 <code>Info.plist</code> 的损坏。该文件的完整性对操作系统的 SIP（系统完整性保护）至关重要，SIP 控制内核扩展的加载。一旦损坏，SIP 管理内核排除的能力就会受到影响。</p>
+<p>利用此漏洞的命令是：</p>
+<pre><code class="language-bash">ln -s /System/Library/Extensions/AppleKextExcludeList.kext/Contents/Info.plist /dev/diskX
+fsck_cs /dev/diskX 1&gt;&amp;-
+touch /Library/Extensions/
+reboot
+</code></pre>
+<p>该漏洞的利用具有严重的影响。<code>Info.plist</code> 文件，通常负责管理内核扩展的权限，变得无效。这包括无法将某些扩展列入黑名单，例如 <code>AppleHWAccess.kext</code>。因此，由于 SIP 的控制机制失效，该扩展可以被加载，从而授予对系统 RAM 的未经授权的读写访问。</p>
+<h4 id="在-sip-保护的文件夹上挂载"><a class="header" href="#在-sip-保护的文件夹上挂载"><a href="https://www.slideshare.net/i0n1c/syscan360-stefan-esser-os-x-el-capitan-sinking-the-ship">在 SIP 保护的文件夹上挂载</a></a></h4>
+<p>可以在 <strong>SIP 保护的文件夹上挂载新的文件系统以绕过保护</strong>。</p>
+<pre><code class="language-bash">mkdir evil
+# Add contento to the folder
+hdiutil create -srcfolder evil evil.dmg
+hdiutil attach -mountpoint /System/Library/Snadbox/ evil.dmg
+</code></pre>
+<h4 id="升级绕过-2016"><a class="header" href="#升级绕过-2016"><a href="https://objective-see.org/blog/blog_0x14.html">升级绕过 (2016)</a></a></h4>
+<p>系统设置为从 <code>Install macOS Sierra.app</code> 中的嵌入式安装程序磁盘映像启动以升级操作系统，利用 <code>bless</code> 工具。使用的命令如下：</p>
+<pre><code class="language-bash">/usr/sbin/bless -setBoot -folder /Volumes/Macintosh HD/macOS Install Data -bootefi /Volumes/Macintosh HD/macOS Install Data/boot.efi -options config="\macOS Install Data\com.apple.Boot" -label macOS Installer
+</code></pre>
+<p>该过程的安全性可能会受到威胁，如果攻击者在启动之前更改了升级映像（<code>InstallESD.dmg</code>）。该策略涉及用恶意版本（<code>libBaseIA.dylib</code>）替换动态加载器（dyld）。此替换导致在启动程序时执行攻击者的代码。</p>
+<p>攻击者的代码在升级过程中获得控制权，利用系统对安装程序的信任。攻击通过通过方法交换（method swizzling）更改<code>InstallESD.dmg</code>映像，特别针对<code>extractBootBits</code>方法。这允许在使用磁盘映像之前注入恶意代码。</p>
+<p>此外，在<code>InstallESD.dmg</code>中，有一个<code>BaseSystem.dmg</code>，它作为升级代码的根文件系统。将动态库注入其中允许恶意代码在能够更改操作系统级文件的进程中运行，显著增加了系统被攻陷的潜力。</p>
+<h4 id="systemmigrationd-2023"><a class="header" href="#systemmigrationd-2023"><a href="https://www.youtube.com/watch?v=zxZesAN-TEk">systemmigrationd (2023)</a></a></h4>
+<p>在<a href="https://www.youtube.com/watch?v=zxZesAN-TEk"><strong>DEF CON 31</strong></a>的演讲中，展示了**<code>systemmigrationd</code><strong>（可以绕过SIP）如何执行</strong>bash<strong>和</strong>perl<strong>脚本，这可以通过环境变量</strong><code>BASH_ENV</code><strong>和</strong><code>PERL5OPT</code>**进行滥用。</p>
+<h4 id="cve-2023-42860"><a class="header" href="#cve-2023-42860">CVE-2023-42860 <a href="#cve-a-detailed-look" id="cve-a-detailed-look"></a></a></h4>
+<p>正如<a href="https://blog.kandji.io/apple-mitigates-vulnerabilities-installer-scripts"><strong>在这篇博客文章中详细说明的</strong></a>，<code>InstallAssistant.pkg</code>包中的<code>postinstall</code>脚本允许执行：</p>
+<pre><code class="language-bash">/usr/bin/chflags -h norestricted "${SHARED_SUPPORT_PATH}/SharedSupport.dmg"
+</code></pre>
+<p>and it was possible to crate a symlink in <code>${SHARED_SUPPORT_PATH}/SharedSupport.dmg</code> that would allow a user to <strong>unrestrict any file, bypassing SIP protection</strong>.</p>
+<h3 id="comapplerootlessinstall"><a class="header" href="#comapplerootlessinstall"><strong>com.apple.rootless.install</strong></a></h3>
+<p>{% hint style="danger" %}
+该权限 <strong><code>com.apple.rootless.install</code></strong> 允许绕过 SIP
+{% endhint %}</p>
+<p>权限 <code>com.apple.rootless.install</code> 被认为可以绕过 macOS 的系统完整性保护 (SIP)。这在与 <a href="https://jhftss.github.io/CVE-2022-26712-The-POC-For-SIP-Bypass-Is-Even-Tweetable/"><strong>CVE-2022-26712</strong></a> 相关时特别提到。</p>
+<p>在这个特定案例中，位于 <code>/System/Library/PrivateFrameworks/ShoveService.framework/Versions/A/XPCServices/SystemShoveService.xpc</code> 的系统 XPC 服务拥有此权限。这使得相关进程能够绕过 SIP 限制。此外，该服务显著提供了一种方法，允许在不执行任何安全措施的情况下移动文件。</p>
+<h2 id="密封系统快照"><a class="header" href="#密封系统快照">密封系统快照</a></h2>
+<p>密封系统快照是 Apple 在 <strong>macOS Big Sur (macOS 11)</strong> 中引入的一项功能，作为其 <strong>系统完整性保护 (SIP)</strong> 机制的一部分，以提供额外的安全性和系统稳定性。它们本质上是系统卷的只读版本。</p>
+<p>以下是更详细的介绍：</p>
+<ol>
+<li><strong>不可变系统</strong>：密封系统快照使 macOS 系统卷“不可变”，意味着它无法被修改。这防止了任何未经授权或意外的更改，从而可能危及安全性或系统稳定性。</li>
+<li><strong>系统软件更新</strong>：当您安装 macOS 更新或升级时，macOS 会创建一个新的系统快照。macOS 启动卷随后使用 <strong>APFS (Apple 文件系统)</strong> 切换到这个新快照。应用更新的整个过程变得更安全、更可靠，因为系统可以在更新过程中出现问题时始终恢复到先前的快照。</li>
+<li><strong>数据分离</strong>：结合在 macOS Catalina 中引入的数据和系统卷分离的概念，密封系统快照功能确保您的所有数据和设置存储在一个单独的“<strong>数据</strong>”卷上。这种分离使您的数据独立于系统，从而简化了系统更新的过程并增强了系统安全性。</li>
+</ol>
+<p>请记住，这些快照由 macOS 自动管理，并且由于 APFS 的空间共享能力，不会占用您磁盘上的额外空间。还需要注意的是，这些快照与 <strong>时间机器快照</strong> 不同，后者是用户可访问的整个系统的备份。</p>
+<h3 id="检查快照"><a class="header" href="#检查快照">检查快照</a></h3>
+<p>命令 <strong><code>diskutil apfs list</code></strong> 列出 <strong>APFS 卷的详细信息</strong> 及其布局：</p>
+<pre><code>+-- Container disk3 966B902E-EDBA-4775-B743-CF97A0556A13
+|   ====================================================
+|   APFS Container Reference:     disk3
+|   Size (Capacity Ceiling):      494384795648 B (494.4 GB)
+|   Capacity In Use By Volumes:   219214536704 B (219.2 GB) (44.3% used)
+|   Capacity Not Allocated:       275170258944 B (275.2 GB) (55.7% free)
+|   |
+|   +-&#x3C; Physical Store disk0s2 86D4B7EC-6FA5-4042-93A7-D3766A222EBE
+|   |   -----------------------------------------------------------
+|   |   APFS Physical Store Disk:   disk0s2
+|   |   Size:                       494384795648 B (494.4 GB)
+|   |
+|   +-> Volume disk3s1 7A27E734-880F-4D91-A703-FB55861D49B7
+|   |   ---------------------------------------------------
+<strong>|   |   APFS Volume Disk (Role):   disk3s1 (System)
+</strong>|   |   Name:                      Macintosh HD (不区分大小写)
+<strong>|   |   Mount Point:               /System/Volumes/Update/mnt1
+</strong>|   |   Capacity Consumed:         12819210240 B (12.8 GB)
+|   |   Sealed:                    Broken
+|   |   FileVault:                 Yes (已解锁)
+|   |   Encrypted:                 No
+|   |   |
+|   |   Snapshot:                  FAA23E0C-791C-43FF-B0E7-0E1C0810AC61
+|   |   Snapshot Disk:             disk3s1s1
+<strong>|   |   Snapshot Mount Point:      /
+</strong><strong>|   |   Snapshot Sealed:           Yes
+</strong>[...]
++-> Volume disk3s5 281959B7-07A1-4940-BDDF-6419360F3327
+|   ---------------------------------------------------
+|   APFS Volume Disk (Role):   disk3s5 (Data)
+|   Name:                      Macintosh HD - Data (不区分大小写)
+<strong>    |   Mount Point:               /System/Volumes/Data
+</strong><strong>    |   Capacity Consumed:         412071784448 B (412.1 GB)
+</strong>    |   Sealed:                    No
+|   FileVault:                 Yes (已解锁)
+</code></pre>
+<p>在之前的输出中，可以看到 <strong>用户可访问的位置</strong> 被挂载在 <code>/System/Volumes/Data</code> 下。</p>
+<p>此外，<strong>macOS 系统卷快照</strong> 被挂载在 <code>/</code> 并且是 <strong>密封的</strong>（由操作系统进行加密签名）。因此，如果绕过 SIP 并进行修改，<strong>操作系统将无法启动</strong>。</p>
+<p>还可以通过运行来 <strong>验证密封是否启用</strong>：</p>
+<pre><code class="language-bash">csrutil authenticated-root status
+Authenticated Root status: enabled
+</code></pre>
+<p>此外，快照磁盘也被挂载为<strong>只读</strong>：</p>
+<pre><code class="language-bash">mount
+/dev/disk3s1s1 on / (apfs, sealed, local, read-only, journaled)
+</code></pre>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-authorizations-db-and-authd.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-authorizations-db-and-authd.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

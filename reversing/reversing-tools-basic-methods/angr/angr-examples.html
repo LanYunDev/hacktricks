@@ -1,0 +1,1017 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Angr - Examples</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="angr---示例"><a class="header" href="#angr---示例">Angr - 示例</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>{% hint style="info" %}
+如果程序使用 <code>scanf</code> 从 stdin <strong>一次获取多个值</strong>，您需要生成一个在 <strong><code>scanf</code></strong> 之后开始的状态。
+{% endhint %}</p>
+<p>代码来自 <a href="https://github.com/jakespringer/angr_ctf">https://github.com/jakespringer/angr_ctf</a></p>
+<h3 id="输入以到达地址指示地址"><a class="header" href="#输入以到达地址指示地址">输入以到达地址（指示地址）</a></h3>
+<pre><code class="language-python">import angr
+import sys
+
+def main(argv):
+path_to_binary = argv[1]  # :string
+project = angr.Project(path_to_binary)
+
+# Start in main()
+initial_state = project.factory.entry_state()
+# Start simulation
+simulation = project.factory.simgr(initial_state)
+
+# Find the way yo reach the good address
+good_address = 0x804867d
+
+# Avoiding this address
+avoid_address = 0x080485A8
+simulation.explore(find=good_address, avoid=avoid_address)
+
+# If found a way to reach the address
+if simulation.found:
+solution_state = simulation.found[0]
+
+# Print the string that Angr wrote to stdin to follow solution_state
+print(solution_state.posix.dumps(sys.stdin.fileno()))
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="输入以到达地址指示打印"><a class="header" href="#输入以到达地址指示打印">输入以到达地址（指示打印）</a></h3>
+<pre><code class="language-python"># If you don't know the address you want to recah, but you know it's printing something
+# You can also indicate that info
+
+import angr
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+initial_state = project.factory.entry_state()
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+#Successful print
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return b'Good Job.' in stdout_output
+
+def should_abort(state):
+#Avoid this print
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return b'Try again.' in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+print(solution_state.posix.dumps(sys.stdin.fileno()))
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="注册表值"><a class="header" href="#注册表值">注册表值</a></h3>
+<pre><code class="language-python"># Angr doesn't currently support reading multiple things with scanf (Ex:
+# scanf("%u %u).) You will have to tell the simulation engine to begin the
+# program after scanf is called and manually inject the symbols into registers.
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+# Address were you want to indicate the relation BitVector - registries
+start_address = 0x80488d1
+initial_state = project.factory.blank_state(addr=start_address)
+
+
+# Create Bit Vectors
+password0_size_in_bits = 32  # :integer
+password0 = claripy.BVS('password0', password0_size_in_bits)
+
+password1_size_in_bits = 32  # :integer
+password1 = claripy.BVS('password1', password1_size_in_bits)
+
+password2_size_in_bits = 32  # :integer
+password2 = claripy.BVS('password2', password2_size_in_bits)
+
+# Relate it Vectors with the registriy values you are interested in to reach an address
+initial_state.regs.eax = password0
+initial_state.regs.ebx = password1
+initial_state.regs.edx = password2
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+solution0 = solution_state.solver.eval(password0)
+solution1 = solution_state.solver.eval(password1)
+solution2 = solution_state.solver.eval(password2)
+
+# Aggregate and format the solutions you computed above, and then print
+# the full string. Pay attention to the order of the integers, and the
+# expected base (decimal, octal, hexadecimal, etc).
+solution = ' '.join(map('{:x}'.format, [ solution0, solution1, solution2 ]))  # :string
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="堆栈值"><a class="header" href="#堆栈值">堆栈值</a></h3>
+<pre><code class="language-python"># Put bit vectors in th stack to find out the vallue that stack position need to
+# have to reach a rogram flow
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+# Go to some address after the scanf where values have already being set in the stack
+start_address = 0x8048697
+initial_state = project.factory.blank_state(addr=start_address)
+
+# Since we are starting after scanf, we are skipping this stack construction
+# step. To make up for this, we need to construct the stack ourselves. Let us
+# start by initializing ebp in the exact same way the program does.
+initial_state.regs.ebp = initial_state.regs.esp
+
+# In this case scanf("%u %u") is used, so 2 BVS are going to be needed
+password0 = claripy.BVS('password0', 32)
+password1 = claripy.BVS('password1', 32)
+
+# Now, in the address were you have stopped, check were are the scanf values saved
+# Then, substrack form the esp registry the needing padding to get to the
+# part of the stack were the scanf values are being saved and push the BVS
+# (see the image below to understan this -8)
+padding_length_in_bytes = 8  # :integer
+initial_state.regs.esp -= padding_length_in_bytes
+
+initial_state.stack_push(password0)
+initial_state.stack_push(password1)
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+solution0 = solution_state.solver.eval(password0)
+solution1 = solution_state.solver.eval(password1)
+
+solution = ' '.join(map(str, [ solution0, solution1 ]))
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<p>在这个场景中，输入是通过 <code>scanf("%u %u")</code> 获取的，给定的值是 <code>"1 1"</code>，因此栈中的值 <strong><code>0x00000001</code></strong> 来自 <strong>用户输入</strong>。你可以看到这些值从 <code>$ebp - 8</code> 开始。因此，在代码中我们 <strong>从 <code>$esp</code> 中减去了 8 字节（因为那时 <code>$ebp</code> 和 <code>$esp</code> 的值是相同的）</strong>，然后我们推送了 BVS。</p>
+<p><img src="../../../.gitbook/assets/image%20(136).png" alt="" /></p>
+<h3 id="静态内存值全局变量"><a class="header" href="#静态内存值全局变量">静态内存值（全局变量）</a></h3>
+<pre><code class="language-python">import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+#Get an address after the scanf. Once the input has already being saved in the memory positions
+start_address = 0x8048606
+initial_state = project.factory.blank_state(addr=start_address)
+
+# The binary is calling scanf("%8s %8s %8s %8s").
+# So we need 4 BVS of size 8*8
+password0 = claripy.BVS('password0', 8*8)
+password1 = claripy.BVS('password1', 8*8)
+password2 = claripy.BVS('password2', 8*8)
+password3 = claripy.BVS('password3', 8*8)
+
+# Write the symbolic BVS in the memory positions
+password0_address = 0xa29faa0
+initial_state.memory.store(password0_address, password0)
+password1_address = 0xa29faa8
+initial_state.memory.store(password1_address, password1)
+password2_address = 0xa29fab0
+initial_state.memory.store(password2_address, password2)
+password3_address = 0xa29fab8
+initial_state.memory.store(password3_address, password3)
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+# Get the values the memory addresses should store
+solution0 = solution_state.solver.eval(password0,cast_to=bytes).decode()
+solution1 = solution_state.solver.eval(password1,cast_to=bytes).decode()
+solution2 = solution_state.solver.eval(password2,cast_to=bytes).decode()
+solution3 = solution_state.solver.eval(password3,cast_to=bytes).decode()
+
+solution = ' '.join([ solution0, solution1, solution2, solution3 ])
+
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="动态内存值-malloc"><a class="header" href="#动态内存值-malloc">动态内存值 (Malloc)</a></h3>
+<pre><code class="language-python">import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+# Get address after scanf
+start_address = 0x804869e
+initial_state = project.factory.blank_state(addr=start_address)
+
+# The binary is calling scanf("%8s %8s") so 2 BVS are needed.
+password0 = claripy.BVS('password0', 8*8)
+password1 = claripy.BVS('password0', 8*8)
+
+# Find a coupble of addresses that aren't used by the binary (like 0x4444444 &amp; 0x4444454)
+# The address generated by mallosc is going to be saved in some address
+# Then, make that address point to the fake heap addresses were the BVS are going to be saved
+fake_heap_address0 = 0x4444444
+pointer_to_malloc_memory_address0 = 0xa79a118
+initial_state.memory.store(pointer_to_malloc_memory_address0, fake_heap_address0, endness=project.arch.memory_endness)
+fake_heap_address1 = 0x4444454
+pointer_to_malloc_memory_address1 = 0xa79a120
+initial_state.memory.store(pointer_to_malloc_memory_address1, fake_heap_address1, endness=project.arch.memory_endness)
+
+# Save the VBS in the new fake heap addresses created
+initial_state.memory.store(fake_heap_address0, password0)
+initial_state.memory.store(fake_heap_address1, password1)
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+solution0 = solution_state.solver.eval(password0,cast_to=bytes).decode()
+solution1 = solution_state.solver.eval(password1,cast_to=bytes).decode()
+
+solution = ' '.join([ solution0, solution1 ])
+
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="文件模拟"><a class="header" href="#文件模拟">文件模拟</a></h3>
+<pre><code class="language-python">#In this challenge a password is read from a file and we want to simulate its content
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+# Get an address just before opening the file with th simbolic content
+# Or at least when the file is not going to suffer more changes before being read
+start_address = 0x80488db
+initial_state = project.factory.blank_state(addr=start_address)
+
+# Specify the filena that is going to open
+# Note that in theory, the filename could be symbolic.
+filename = 'WCEXPXBW.txt'
+symbolic_file_size_bytes = 64
+
+# Create a BV which is going to be the content of the simbolic file
+password = claripy.BVS('password', symbolic_file_size_bytes * 8)
+
+# Create the file simulation with the simbolic content
+password_file = angr.storage.SimFile(filename, content=password)
+
+# Add the symbolic file we created to the symbolic filesystem.
+initial_state.fs.insert(filename, password_file)
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+solution = solution_state.solver.eval(password,cast_to=bytes).decode()
+
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<p>{% hint style="info" %}
+请注意，符号文件也可能包含与符号数据合并的常量数据：</p>
+<pre><code class="language-python"># Hello world, my name is John.
+# ^                       ^
+# ^ address 0             ^ address 24 (count the number of characters)
+# In order to represent this in memory, we would want to write the string to
+# the beginning of the file:
+#
+# hello_txt_contents = claripy.BVV('Hello world, my name is John.', 30*8)
+#
+# Perhaps, then, we would want to replace John with a
+# symbolic variable. We would call:
+#
+# name_bitvector = claripy.BVS('symbolic_name', 4*8)
+#
+# Then, after the program calls fopen('hello.txt', 'r') and then
+# fread(buffer, sizeof(char), 30, hello_txt_file), the buffer would contain
+# the string from the file, except four symbolic bytes where the name would be
+# stored.
+# (!)
+</code></pre>
+<p>{% endhint %}</p>
+<h3 id="应用约束"><a class="header" href="#应用约束">应用约束</a></h3>
+<p>{% hint style="info" %}
+有时简单的人类操作，比如逐个字符比较两个长度为16的单词（循环），对<strong>angr</strong>的<strong>成本</strong>非常高，因为它需要<strong>指数</strong>生成分支，因为每个if生成1个分支：<code>2^16</code><br />
+因此，<strong>让angr回到之前的点</strong>（在那个地方真正困难的部分已经完成）并<strong>手动设置这些约束</strong>会更容易。
+{% endhint %}</p>
+<pre><code class="language-python"># After perform some complex poperations to the input the program checks
+# char by char the password against another password saved, like in the snippet:
+#
+# #define REFERENCE_PASSWORD = "AABBCCDDEEFFGGHH";
+# int check_equals_AABBCCDDEEFFGGHH(char* to_check, size_t length) {
+#   uint32_t num_correct = 0;
+#   for (int i=0; i&lt;length; ++i) {
+#     if (to_check[i] == REFERENCE_PASSWORD[i]) {
+#       num_correct += 1;
+#     }
+#   }
+#   return num_correct == length;
+# }
+#
+# ...
+#
+# char* input = user_input();
+# char* encrypted_input = complex_function(input);
+# if (check_equals_AABBCCDDEEFFGGHH(encrypted_input, 16)) {
+#   puts("Good Job.");
+# } else {
+#   puts("Try again.");
+# }
+#
+# The function checks if *to_check == "AABBCCDDEEFFGGHH". This is very RAM consumming
+# as the computer needs to branch every time the if statement in the loop was called (16
+# times), resulting in 2^16 = 65,536 branches, which will take too long of a
+# time to evaluate for our needs.
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+simulation = project.factory.simgr(initial_state)
+
+# Get an address to check after the complex function and before the "easy compare" operation
+address_to_check_constraint = 0x8048671
+simulation.explore(find=address_to_check_constraint)
+
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+# Find were the input that is going to be compared is saved in memory
+constrained_parameter_address = 0x804a050
+constrained_parameter_size_bytes = 16
+# Set the bitvector
+constrained_parameter_bitvector = solution_state.memory.load(
+constrained_parameter_address,
+constrained_parameter_size_bytes
+)
+
+# Indicate angr that this BV at this point needs to be equal to the password
+constrained_parameter_desired_value = 'BWYRUBQCMVSBRGFU'.encode()
+solution_state.add_constraints(constrained_parameter_bitvector == constrained_parameter_desired_value)
+
+print(solution_state.posix.dumps(sys.stdin.fileno()))
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<p>{% hint style="danger" %}
+在某些情况下，您可以激活 <strong>veritesting</strong>，这将合并相似的状态，以节省无用的分支并找到解决方案： <code>simulation = project.factory.simgr(initial_state, veritesting=True)</code>
+{% endhint %}</p>
+<p>{% hint style="info" %}
+在这些情况下，您还可以做的另一件事是 <strong>hook 函数，给 angr 一些它可以更容易理解的东西</strong>。
+{% endhint %}</p>
+<h3 id="模拟管理器"><a class="header" href="#模拟管理器">模拟管理器</a></h3>
+<p>一些模拟管理器可能比其他的更有用。在前面的例子中，存在一个问题，因为创建了很多有用的分支。在这里，<strong>veritesting</strong> 技术将合并这些分支并找到解决方案。<br />
+此模拟管理器也可以通过以下方式激活： <code>simulation = project.factory.simgr(initial_state, veritesting=True)</code></p>
+<pre><code class="language-python">import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+simulation = project.factory.simgr(initial_state)
+# Set simulation technique
+simulation.use_technique(angr.exploration_techniques.Veritesting())
+
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+
+return 'Good Job.'.encode() in stdout_output  # :boolean
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output  # :boolean
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+print(solution_state.posix.dumps(sys.stdin.fileno()))
+else:
+raise Exception('Could not find the solution')
+
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="hookingbypassing-一次对函数的调用"><a class="header" href="#hookingbypassing-一次对函数的调用">Hooking/Bypassing 一次对函数的调用</a></h3>
+<pre><code class="language-python"># This level performs the following computations:
+#
+# 1. Get 16 bytes of user input and encrypt it.
+# 2. Save the result of check_equals_AABBCCDDEEFFGGHH (or similar)
+# 3. Get another 16 bytes from the user and encrypt it.
+# 4. Check that it's equal to a predefined password.
+#
+# The ONLY part of this program that we have to worry about is #2. We will be
+# replacing the call to check_equals_ with our own version, using a hook, since
+# check_equals_ will run too slowly otherwise.
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+# Hook the address of the call to hook indicating th length of the instruction (of the call)
+check_equals_called_address = 0x80486b8
+instruction_to_skip_length = 5
+@project.hook(check_equals_called_address, length=instruction_to_skip_length)
+def skip_check_equals_(state):
+#Load the input of the function reading direcly the memory
+user_input_buffer_address = 0x804a054
+user_input_buffer_length = 16
+user_input_string = state.memory.load(
+user_input_buffer_address,
+user_input_buffer_length
+)
+
+# Create a simbolic IF that if the loaded string frommemory is the expected
+# return True (1) if not returns False (0) in eax
+check_against_string = 'XKSPZSJKJYQCQXZV'.encode() # :string
+
+state.regs.eax = claripy.If(
+user_input_string == check_against_string,
+claripy.BVV(1, 32),
+claripy.BVV(0, 32)
+)
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+solution = solution_state.posix.dumps(sys.stdin.fileno()).decode()
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="hooking-a-function--simprocedure"><a class="header" href="#hooking-a-function--simprocedure">Hooking a function / Simprocedure</a></h3>
+<pre><code class="language-python"># Hook to the function called check_equals_WQNDNKKWAWOLXBAC
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+# Define a class and a tun method to hook completelly a function
+class ReplacementCheckEquals(angr.SimProcedure):
+# This C code:
+#
+# int add_if_positive(int a, int b) {
+#   if (a &gt;= 0 &amp;&amp; b &gt;= 0) return a + b;
+#   else return 0;
+# }
+#
+# could be simulated with python:
+#
+# class ReplacementAddIfPositive(angr.SimProcedure):
+#   def run(self, a, b):
+#     if a &gt;= 0 and b &gt;=0:
+#       return a + b
+#     else:
+#       return 0
+#
+# run(...) receives the params of the hooked function
+def run(self, to_check, length):
+user_input_buffer_address = to_check
+user_input_buffer_length = length
+
+# Read the data from the memory address given to the function
+user_input_string = self.state.memory.load(
+user_input_buffer_address,
+user_input_buffer_length
+)
+
+check_against_string = 'WQNDNKKWAWOLXBAC'.encode()
+
+# Return 1 if equals to the string, 0 otherways
+return claripy.If(
+user_input_string == check_against_string,
+claripy.BVV(1, 32),
+claripy.BVV(0, 32)
+)
+
+
+# Hook the check_equals symbol. Angr automatically looks up the address
+# associated with the symbol. Alternatively, you can use 'hook' instead
+# of 'hook_symbol' and specify the address of the function. To find the
+# correct symbol, disassemble the binary.
+# (!)
+check_equals_symbol = 'check_equals_WQNDNKKWAWOLXBAC' # :string
+project.hook_symbol(check_equals_symbol, ReplacementCheckEquals())
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+solution = solution_state.posix.dumps(sys.stdin.fileno()).decode()
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="使用多个参数模拟-scanf"><a class="header" href="#使用多个参数模拟-scanf">使用多个参数模拟 scanf</a></h3>
+<pre><code class="language-python"># This time, the solution involves simply replacing scanf with our own version,
+# since Angr does not support requesting multiple parameters with scanf.
+
+import angr
+import claripy
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+class ReplacementScanf(angr.SimProcedure):
+# The code uses: 'scanf("%u %u", ...)'
+def run(self, format_string, param0, param1):
+scanf0 = claripy.BVS('scanf0', 32)
+scanf1 = claripy.BVS('scanf1', 32)
+
+# Get the addresses from the params and store the BVS in memory
+scanf0_address = param0
+self.state.memory.store(scanf0_address, scanf0, endness=project.arch.memory_endness)
+scanf1_address = param1
+self.state.memory.store(scanf1_address, scanf1, endness=project.arch.memory_endness)
+
+# Now, we want to 'set aside' references to our symbolic values in the
+# globals plugin included by default with a state. You will need to
+# store multiple bitvectors. You can either use a list, tuple, or multiple
+# keys to reference the different bitvectors.
+self.state.globals['solutions'] = (scanf0, scanf1)
+
+scanf_symbol = '__isoc99_scanf'
+project.hook_symbol(scanf_symbol, ReplacementScanf())
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+
+# Grab whatever you set aside in the globals dict.
+stored_solutions = solution_state.globals['solutions']
+solution = ' '.join(map(str, map(solution_state.solver.eval, stored_solutions)))
+
+print(solution)
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<h3 id="静态二进制文件"><a class="header" href="#静态二进制文件">静态二进制文件</a></h3>
+<pre><code class="language-python"># This challenge is the exact same as the first challenge, except that it was
+# compiled as a static binary. Normally, Angr automatically replaces standard
+# library functions with SimProcedures that work much more quickly.
+#
+# To solve the challenge, manually hook any standard library c functions that
+# are used. Then, ensure that you begin the execution at the beginning of the
+# main function. Do not use entry_state.
+#
+# Here are a few SimProcedures Angr has already written for you. They implement
+# standard library functions. You will not need all of them:
+# angr.SIM_PROCEDURES['libc']['malloc']
+# angr.SIM_PROCEDURES['libc']['fopen']
+# angr.SIM_PROCEDURES['libc']['fclose']
+# angr.SIM_PROCEDURES['libc']['fwrite']
+# angr.SIM_PROCEDURES['libc']['getchar']
+# angr.SIM_PROCEDURES['libc']['strncmp']
+# angr.SIM_PROCEDURES['libc']['strcmp']
+# angr.SIM_PROCEDURES['libc']['scanf']
+# angr.SIM_PROCEDURES['libc']['printf']
+# angr.SIM_PROCEDURES['libc']['puts']
+# angr.SIM_PROCEDURES['libc']['exit']
+#
+# As a reminder, you can hook functions with something similar to:
+# project.hook(malloc_address, angr.SIM_PROCEDURES['libc']['malloc']())
+#
+# There are many more, see:
+# https://github.com/angr/angr/tree/master/angr/procedures/libc
+
+import angr
+import sys
+
+def main(argv):
+path_to_binary = argv[1]
+project = angr.Project(path_to_binary)
+
+initial_state = project.factory.entry_state()
+
+#Find the addresses were the lib functions are loaded in the binary
+#For example you could find: call   0x804ed80 &lt;__isoc99_scanf&gt;
+project.hook(0x804ed40, angr.SIM_PROCEDURES['libc']['printf']())
+project.hook(0x804ed80, angr.SIM_PROCEDURES['libc']['scanf']())
+project.hook(0x804f350, angr.SIM_PROCEDURES['libc']['puts']())
+project.hook(0x8048d10, angr.SIM_PROCEDURES['glibc']['__libc_start_main']())
+
+simulation = project.factory.simgr(initial_state)
+
+def is_successful(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Good Job.'.encode() in stdout_output  # :boolean
+
+def should_abort(state):
+stdout_output = state.posix.dumps(sys.stdout.fileno())
+return 'Try again.'.encode() in stdout_output  # :boolean
+
+simulation.explore(find=is_successful, avoid=should_abort)
+
+if simulation.found:
+solution_state = simulation.found[0]
+print(solution_state.posix.dumps(sys.stdin.fileno()).decode())
+else:
+raise Exception('Could not find the solution')
+
+if __name__ == '__main__':
+main(sys.argv)
+</code></pre>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../reversing/reversing-tools-basic-methods/angr/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../reversing/reversing-tools-basic-methods/satisfiability-modulo-theories-smt-z3.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../reversing/reversing-tools-basic-methods/angr/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../reversing/reversing-tools-basic-methods/satisfiability-modulo-theories-smt-z3.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

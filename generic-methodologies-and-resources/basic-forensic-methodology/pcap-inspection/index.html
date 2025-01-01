@@ -1,0 +1,411 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Pcap Inspection</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="pcap-inspection"><a class="header" href="#pcap-inspection">Pcap Inspection</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p><a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的活动之一。该大会的 <strong>使命是促进技术知识</strong>，是各个学科技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<p>{% hint style="info" %}
+关于 <strong>PCAP</strong> 与 <strong>PCAPNG</strong> 的说明：PCAP 文件格式有两个版本；<strong>PCAPNG 是较新的，并不是所有工具都支持</strong>。您可能需要使用 Wireshark 或其他兼容工具将文件从 PCAPNG 转换为 PCAP，以便在某些其他工具中使用。
+{% endhint %}</p>
+<h2 id="在线工具用于-pcap"><a class="header" href="#在线工具用于-pcap">在线工具用于 pcap</a></h2>
+<ul>
+<li>如果您的 pcap 头部 <strong>损坏</strong>，您应该尝试使用：<a href="http://f00l.de/hacking/pcapfix.php">http://f00l.de/hacking/<strong>pcapfix.php</strong></a> <strong>修复</strong> 它</li>
+<li>在 <a href="https://packettotal.com"><strong>PacketTotal</strong></a> 中提取 <strong>信息</strong> 并搜索 <strong>恶意软件</strong></li>
+<li>使用 <a href="https://www.virustotal.com"><strong>www.virustotal.com</strong></a> 和 <a href="https://www.hybrid-analysis.com"><strong>www.hybrid-analysis.com</strong></a> 搜索 <strong>恶意活动</strong></li>
+<li>在 <a href="https://apackets.com/"><strong>https://apackets.com/</strong></a> 中进行 <strong>完整的 pcap 分析</strong></li>
+</ul>
+<h2 id="提取信息"><a class="header" href="#提取信息">提取信息</a></h2>
+<p>以下工具用于提取统计信息、文件等。</p>
+<h3 id="wireshark"><a class="header" href="#wireshark">Wireshark</a></h3>
+<p>{% hint style="info" %}
+<strong>如果您要分析 PCAP，您基本上必须知道如何使用 Wireshark</strong>
+{% endhint %}</p>
+<p>您可以在以下位置找到一些 Wireshark 技巧：</p>
+<p>{% content-ref url="wireshark-tricks.md" %}
+<a href="wireshark-tricks.html">wireshark-tricks.md</a>
+{% endcontent-ref %}</p>
+<h3 id="httpsapacketscom"><a class="header" href="#httpsapacketscom"><a href="https://apackets.com/"><strong>https://apackets.com/</strong></a></a></h3>
+<p>浏览器中的 pcap 分析。</p>
+<h3 id="xplico-framework"><a class="header" href="#xplico-framework">Xplico Framework</a></h3>
+<p><a href="https://github.com/xplico/xplico"><strong>Xplico</strong> </a><em>(仅限 Linux)</em> 可以 <strong>分析</strong> 一个 <strong>pcap</strong> 并从中提取信息。例如，从一个 pcap 文件中，Xplico 提取每封电子邮件（POP、IMAP 和 SMTP 协议）、所有 HTTP 内容、每个 VoIP 通话（SIP）、FTP、TFTP 等。</p>
+<p><strong>安装</strong></p>
+<pre><code class="language-bash">sudo bash -c 'echo "deb http://repo.xplico.org/ $(lsb_release -s -c) main" /etc/apt/sources.list'
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 791C25CE
+sudo apt-get update
+sudo apt-get install xplico
+</code></pre>
+<p><strong>运行</strong></p>
+<pre><code>/etc/init.d/apache2 restart
+/etc/init.d/xplico start
+</code></pre>
+<p>访问 <em><strong>127.0.0.1:9876</strong></em>，凭证为 <em><strong>xplico:xplico</strong></em></p>
+<p>然后创建一个 <strong>新案例</strong>，在案例中创建一个 <strong>新会话</strong> 并 <strong>上传 pcap</strong> 文件。</p>
+<h3 id="networkminer"><a class="header" href="#networkminer">NetworkMiner</a></h3>
+<p>像 Xplico 一样，它是一个 <strong>分析和提取 pcaps 中对象</strong> 的工具。它有一个免费版，你可以 <strong>在这里下载</strong> <a href="https://www.netresec.com/?page=NetworkMiner"><strong>这里</strong></a>。它适用于 <strong>Windows</strong>。<br />
+这个工具也有助于从数据包中获取 <strong>其他信息分析</strong>，以便能够更 <strong>快速</strong> 地了解发生了什么。</p>
+<h3 id="netwitness-investigator"><a class="header" href="#netwitness-investigator">NetWitness Investigator</a></h3>
+<p>你可以 <a href="https://www.rsa.com/en-us/contact-us/netwitness-investigator-freeware"><strong>从这里下载 NetWitness Investigator</strong></a> <strong>（它适用于 Windows）</strong>。<br />
+这是另一个有用的工具，<strong>分析数据包</strong> 并以有用的方式整理信息，以 <strong>了解内部发生的事情</strong>。</p>
+<h3 id="bruteshark"><a class="header" href="#bruteshark"><a href="https://github.com/odedshimon/BruteShark">BruteShark</a></a></h3>
+<ul>
+<li>提取和编码用户名和密码 (HTTP, FTP, Telnet, IMAP, SMTP...)</li>
+<li>提取认证哈希并使用 Hashcat 破解它们 (Kerberos, NTLM, CRAM-MD5, HTTP-Digest...)</li>
+<li>构建可视化网络图 (网络节点和用户)</li>
+<li>提取 DNS 查询</li>
+<li>重建所有 TCP 和 UDP 会话</li>
+<li>文件雕刻</li>
+</ul>
+<h3 id="capinfos"><a class="header" href="#capinfos">Capinfos</a></h3>
+<pre><code>capinfos capture.pcap
+</code></pre>
+<h3 id="ngrep"><a class="header" href="#ngrep">Ngrep</a></h3>
+<p>如果您在 pcap 中<strong>寻找****某些东西</strong>，可以使用 <strong>ngrep</strong>。以下是使用主要过滤器的示例：</p>
+<pre><code class="language-bash">ngrep -I packets.pcap "^GET" "port 80 and tcp and host 192.168 and dst host 192.168 and src host 192.168"
+</code></pre>
+<h3 id="carving"><a class="header" href="#carving">Carving</a></h3>
+<p>使用常见的雕刻技术可以从 pcap 中提取文件和信息：</p>
+<p>{% content-ref url="../partitions-file-systems-carving/file-data-carving-recovery-tools.md" %}
+<a href="../partitions-file-systems-carving/file-data-carving-recovery-tools.html">file-data-carving-recovery-tools.md</a>
+{% endcontent-ref %}</p>
+<h3 id="capturing-credentials"><a class="header" href="#capturing-credentials">Capturing credentials</a></h3>
+<p>您可以使用像 <a href="https://github.com/lgandx/PCredz">https://github.com/lgandx/PCredz</a> 这样的工具从 pcap 或实时接口中解析凭据。</p>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p><a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的事件之一。该大会 <strong>旨在促进技术知识</strong>，是各个学科的技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<h2 id="check-exploitsmalware"><a class="header" href="#check-exploitsmalware">Check Exploits/Malware</a></h2>
+<h3 id="suricata"><a class="header" href="#suricata">Suricata</a></h3>
+<p><strong>安装和设置</strong></p>
+<pre><code>apt-get install suricata
+apt-get install oinkmaster
+echo "url = http://rules.emergingthreats.net/open/suricata/emerging.rules.tar.gz" &gt;&gt; /etc/oinkmaster.conf
+oinkmaster -C /etc/oinkmaster.conf -o /etc/suricata/rules
+</code></pre>
+<p><strong>检查 pcap</strong></p>
+<pre><code>suricata -r packets.pcap -c /etc/suricata/suricata.yaml -k none -v -l log
+</code></pre>
+<h3 id="yarapcap"><a class="header" href="#yarapcap">YaraPcap</a></h3>
+<p><a href="https://github.com/kevthehermit/YaraPcap"><strong>YaraPCAP</strong></a> 是一个工具</p>
+<ul>
+<li>读取 PCAP 文件并提取 Http 流。</li>
+<li>gzip 解压任何压缩流</li>
+<li>使用 yara 扫描每个文件</li>
+<li>写入 report.txt</li>
+<li>可选地将匹配的文件保存到目录</li>
+</ul>
+<h3 id="恶意软件分析"><a class="header" href="#恶意软件分析">恶意软件分析</a></h3>
+<p>检查您是否能找到已知恶意软件的任何指纹：</p>
+<p>{% content-ref url="../malware-analysis.md" %}
+<a href="../malware-analysis.html">malware-analysis.md</a>
+{% endcontent-ref %}</p>
+<h2 id="zeek"><a class="header" href="#zeek">Zeek</a></h2>
+<blockquote>
+<p><a href="https://docs.zeek.org/en/master/about.html">Zeek</a> 是一个被动的开源网络流量分析器。许多操作员使用 Zeek 作为网络安全监控器 (NSM) 来支持对可疑或恶意活动的调查。Zeek 还支持广泛的流量分析任务，超出安全领域，包括性能测量和故障排除。</p>
+</blockquote>
+<p>基本上，<code>zeek</code> 创建的日志不是 <strong>pcaps</strong>。因此，您需要使用 <strong>其他工具</strong> 来分析包含 <strong>pcaps 信息</strong> 的日志。</p>
+<h3 id="连接信息"><a class="header" href="#连接信息">连接信息</a></h3>
+<pre><code class="language-bash">#Get info about longest connections (add "grep udp" to see only udp traffic)
+#The longest connection might be of malware (constant reverse shell?)
+cat conn.log | zeek-cut id.orig_h id.orig_p id.resp_h id.resp_p proto service duration | sort -nrk 7 | head -n 10
+
+10.55.100.100   49778   65.52.108.225   443     tcp     -       86222.365445
+10.55.100.107   56099   111.221.29.113  443     tcp     -       86220.126151
+10.55.100.110   60168   40.77.229.82    443     tcp     -       86160.119664
+
+
+#Improve the metrics by summing up the total duration time for connections that have the same destination IP and Port.
+cat conn.log | zeek-cut id.orig_h id.resp_h id.resp_p proto duration | awk 'BEGIN{ FS="\t" } { arr[$1 FS $2 FS $3 FS $4] += $5 } END{ for (key in arr) printf "%s%s%s\n", key, FS, arr[key] }' | sort -nrk 5 | head -n 10
+
+10.55.100.100   65.52.108.225   443     tcp     86222.4
+10.55.100.107   111.221.29.113  443     tcp     86220.1
+10.55.100.110   40.77.229.82    443     tcp     86160.1
+
+#Get the number of connections summed up per each line
+cat conn.log | zeek-cut id.orig_h id.resp_h duration | awk 'BEGIN{ FS="\t" } { arr[$1 FS $2] += $3; count[$1 FS $2] += 1 } END{ for (key in arr) printf "%s%s%s%s%s\n", key, FS, count[key], FS, arr[key] }' | sort -nrk 4 | head -n 10
+
+10.55.100.100   65.52.108.225   1       86222.4
+10.55.100.107   111.221.29.113  1       86220.1
+10.55.100.110   40.77.229.82    134       86160.1
+
+#Check if any IP is connecting to 1.1.1.1
+cat conn.log | zeek-cut id.orig_h id.resp_h id.resp_p proto service | grep '1.1.1.1' | sort | uniq -c
+
+#Get number of connections per source IP, dest IP and dest Port
+cat conn.log | zeek-cut id.orig_h id.resp_h id.resp_p proto | awk 'BEGIN{ FS="\t" } { arr[$1 FS $2 FS $3 FS $4] += 1 } END{ for (key in arr) printf "%s%s%s\n", key, FS, arr[key] }' | sort -nrk 5 | head -n 10
+
+
+# RITA
+#Something similar can be done with the tool rita
+rita show-long-connections -H --limit 10 zeek_logs
+
++---------------+----------------+--------------------------+----------------+
+|   SOURCE IP   | DESTINATION IP | DSTPORT:PROTOCOL:SERVICE |    DURATION    |
++---------------+----------------+--------------------------+----------------+
+| 10.55.100.100 | 65.52.108.225  | 443:tcp:-                | 23h57m2.3655s  |
+| 10.55.100.107 | 111.221.29.113 | 443:tcp:-                | 23h57m0.1262s  |
+| 10.55.100.110 | 40.77.229.82   | 443:tcp:-                | 23h56m0.1197s  |
+
+#Get connections info from rita
+rita show-beacons zeek_logs | head -n 10
+Score,Source IP,Destination IP,Connections,Avg Bytes,Intvl Range,Size Range,Top Intvl,Top Size,Top Intvl Count,Top Size Count,Intvl Skew,Size Skew,Intvl Dispersion,Size Dispersion
+1,192.168.88.2,165.227.88.15,108858,197,860,182,1,89,53341,108319,0,0,0,0
+1,10.55.100.111,165.227.216.194,20054,92,29,52,1,52,7774,20053,0,0,0,0
+0.838,10.55.200.10,205.251.194.64,210,69,29398,4,300,70,109,205,0,0,0,0
+</code></pre>
+<h3 id="dns-信息"><a class="header" href="#dns-信息">DNS 信息</a></h3>
+<pre><code class="language-bash">#Get info about each DNS request performed
+cat dns.log | zeek-cut -c id.orig_h query qtype_name answers
+
+#Get the number of times each domain was requested and get the top 10
+cat dns.log | zeek-cut query | sort | uniq | rev | cut -d '.' -f 1-2 | rev | sort | uniq -c | sort -nr | head -n 10
+
+#Get all the IPs
+cat dns.log | zeek-cut id.orig_h query | grep 'example\.com' | cut -f 1 | sort | uniq -c
+
+#Sort the most common DNS record request (should be A)
+cat dns.log | zeek-cut qtype_name | sort | uniq -c | sort -nr
+
+#See top DNS domain requested with rita
+rita show-exploded-dns -H --limit 10 zeek_logs
+</code></pre>
+<h2 id="其他-pcap-分析技巧"><a class="header" href="#其他-pcap-分析技巧">其他 pcap 分析技巧</a></h2>
+<p>{% content-ref url="dnscat-exfiltration.md" %}
+<a href="dnscat-exfiltration.html">dnscat-exfiltration.md</a>
+{% endcontent-ref %}</p>
+<p>{% content-ref url="wifi-pcap-analysis.md" %}
+<a href="wifi-pcap-analysis.html">wifi-pcap-analysis.md</a>
+{% endcontent-ref %}</p>
+<p>{% content-ref url="usb-keystrokes.md" %}
+<a href="usb-keystrokes.html">usb-keystrokes.md</a>
+{% endcontent-ref %}</p>
+<p>​</p>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p><a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的事件之一。该大会 <strong>旨在促进技术知识</strong>，是各个学科技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/file-data-carving-recovery-tools.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/pcap-inspection/dnscat-exfiltration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/file-data-carving-recovery-tools.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/pcap-inspection/dnscat-exfiltration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

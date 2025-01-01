@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>File/Data Carving &amp; Recovery Tools</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="文件数据雕刻与恢复工具"><a class="header" href="#文件数据雕刻与恢复工具">文件/数据雕刻与恢复工具</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="雕刻与恢复工具"><a class="header" href="#雕刻与恢复工具">雕刻与恢复工具</a></h2>
+<p>更多工具请访问 <a href="https://github.com/Claudio-C/awesome-datarecovery">https://github.com/Claudio-C/awesome-datarecovery</a></p>
+<h3 id="autopsy"><a class="header" href="#autopsy">Autopsy</a></h3>
+<p>在取证中提取图像文件的最常用工具是 <a href="https://www.autopsy.com/download/"><strong>Autopsy</strong></a>。下载并安装它，然后让它处理文件以查找“隐藏”文件。请注意，Autopsy 是为支持磁盘映像和其他类型的映像而构建的，但不支持简单文件。</p>
+<h3 id="binwalk"><a class="header" href="#binwalk">Binwalk <a href="#binwalk" id="binwalk"></a></a></h3>
+<p><strong>Binwalk</strong> 是一个分析二进制文件以查找嵌入内容的工具。可以通过 <code>apt</code> 安装，其源代码在 <a href="https://github.com/ReFirmLabs/binwalk">GitHub</a> 上。</p>
+<p><strong>有用的命令</strong>：</p>
+<pre><code class="language-bash">sudo apt install binwalk #Insllation
+binwalk file #Displays the embedded data in the given file
+binwalk -e file #Displays and extracts some files from the given file
+binwalk --dd ".*" file #Displays and extracts all files from the given file
+</code></pre>
+<h3 id="foremost"><a class="header" href="#foremost">Foremost</a></h3>
+<p>另一个常用的工具来查找隐藏文件是 <strong>foremost</strong>。您可以在 <code>/etc/foremost.conf</code> 中找到 foremost 的配置文件。如果您只想搜索某些特定文件，请取消注释它们。如果您不取消注释任何内容，foremost 将搜索其默认配置的文件类型。</p>
+<pre><code class="language-bash">sudo apt-get install foremost
+foremost -v -i file.img -o output
+#Discovered files will appear inside the folder "output"
+</code></pre>
+<h3 id="scalpel"><a class="header" href="#scalpel"><strong>Scalpel</strong></a></h3>
+<p><strong>Scalpel</strong> 是另一个可以用来查找和提取 <strong>嵌入在文件中的文件</strong> 的工具。在这种情况下，您需要从配置文件 (<em>/etc/scalpel/scalpel.conf</em>) 中取消注释您希望提取的文件类型。</p>
+<pre><code class="language-bash">sudo apt-get install scalpel
+scalpel file.img -o output
+</code></pre>
+<h3 id="bulk-extractor"><a class="header" href="#bulk-extractor">Bulk Extractor</a></h3>
+<p>这个工具包含在kali中，但你可以在这里找到它: <a href="https://github.com/simsong/bulk_extractor">https://github.com/simsong/bulk_extractor</a></p>
+<p>这个工具可以扫描一个镜像并将<strong>pcaps</strong>提取出来，<strong>网络信息（URLs、域名、IP、MAC、邮件）<strong>以及更多</strong>文件</strong>。你只需执行：</p>
+<pre><code>bulk_extractor memory.img -o out_folder
+</code></pre>
+<p>导航通过<strong>工具收集的所有信息</strong>（密码？），<strong>分析</strong> <strong>数据包</strong>（阅读<a href="../pcap-inspection/"><strong>Pcaps分析</strong></a>），搜索<strong>奇怪的域名</strong>（与<strong>恶意软件</strong>或<strong>不存在</strong>的域名相关）。</p>
+<h3 id="photorec"><a class="header" href="#photorec">PhotoRec</a></h3>
+<p>您可以在<a href="https://www.cgsecurity.org/wiki/TestDisk_Download">https://www.cgsecurity.org/wiki/TestDisk_Download</a>找到它。</p>
+<p>它提供GUI和CLI版本。您可以选择PhotoRec要搜索的<strong>文件类型</strong>。</p>
+<p><img src="../../../.gitbook/assets/image%20(242).png" alt="" /></p>
+<h3 id="binvis"><a class="header" href="#binvis">binvis</a></h3>
+<p>查看<a href="https://code.google.com/archive/p/binvis/">代码</a>和<a href="https://binvis.io/#/">网页工具</a>。</p>
+<h4 id="binvis的特点"><a class="header" href="#binvis的特点">BinVis的特点</a></h4>
+<ul>
+<li>视觉和主动的<strong>结构查看器</strong></li>
+<li>针对不同焦点的多个图</li>
+<li>专注于样本的部分</li>
+<li><strong>查看PE或ELF可执行文件中的字符串和资源</strong></li>
+<li>获取文件的<strong>模式</strong>以进行密码分析</li>
+<li><strong>识别</strong>打包器或编码器算法</li>
+<li>通过模式<strong>识别</strong>隐写术</li>
+<li><strong>视觉</strong>二进制差异比较</li>
+</ul>
+<p>BinVis是一个很好的<strong>起点，以熟悉未知目标</strong>在黑箱场景中。</p>
+<h2 id="特定数据雕刻工具"><a class="header" href="#特定数据雕刻工具">特定数据雕刻工具</a></h2>
+<h3 id="findaes"><a class="header" href="#findaes">FindAES</a></h3>
+<p>通过搜索其密钥调度来搜索AES密钥。能够找到128、192和256位密钥，例如TrueCrypt和BitLocker使用的密钥。</p>
+<p>在<a href="https://sourceforge.net/projects/findaes/">这里下载</a>。</p>
+<h2 id="补充工具"><a class="header" href="#补充工具">补充工具</a></h2>
+<p>您可以使用<a href="https://github.com/atanunq/viu"><strong>viu</strong></a>从终端查看图像。<br />
+您可以使用Linux命令行工具<strong>pdftotext</strong>将PDF转换为文本并阅读。</p>
+<p>{% hint style="success" %}
+学习和实践AWS黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/pcap-inspection/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/pcap-inspection/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

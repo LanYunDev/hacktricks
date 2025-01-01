@@ -1,0 +1,372 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Browser Artifacts</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="浏览器伪影"><a class="header" href="#浏览器伪影">浏览器伪影</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=browser-artifacts"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=browser-artifacts" %}</p>
+<h2 id="浏览器伪影-1"><a class="header" href="#浏览器伪影-1">浏览器伪影 <a href="#id-3def" id="id-3def"></a></a></h2>
+<p>浏览器伪影包括由网页浏览器存储的各种类型的数据，例如导航历史、书签和缓存数据。这些伪影保存在操作系统中的特定文件夹中，不同浏览器的位置和名称各异，但通常存储相似的数据类型。</p>
+<p>以下是最常见的浏览器伪影的总结：</p>
+<ul>
+<li><strong>导航历史</strong>：跟踪用户访问的网站，识别访问恶意网站的情况。</li>
+<li><strong>自动完成数据</strong>：基于频繁搜索的建议，与导航历史结合时提供洞察。</li>
+<li><strong>书签</strong>：用户保存以便快速访问的网站。</li>
+<li><strong>扩展和附加组件</strong>：用户安装的浏览器扩展或附加组件。</li>
+<li><strong>缓存</strong>：存储网页内容（例如，图像、JavaScript 文件），以提高网站加载速度，对法医分析有价值。</li>
+<li><strong>登录信息</strong>：存储的登录凭据。</li>
+<li><strong>网站图标</strong>：与网站相关的图标，出现在标签和书签中，有助于提供用户访问的额外信息。</li>
+<li><strong>浏览器会话</strong>：与打开的浏览器会话相关的数据。</li>
+<li><strong>下载</strong>：通过浏览器下载的文件记录。</li>
+<li><strong>表单数据</strong>：在网页表单中输入的信息，保存以供将来的自动填充建议。</li>
+<li><strong>缩略图</strong>：网站的预览图像。</li>
+<li><strong>自定义字典.txt</strong>：用户添加到浏览器字典中的单词。</li>
+</ul>
+<h2 id="firefox"><a class="header" href="#firefox">Firefox</a></h2>
+<p>Firefox 在用户数据中组织配置文件，存储在基于操作系统的特定位置：</p>
+<ul>
+<li><strong>Linux</strong>：<code>~/.mozilla/firefox/</code></li>
+<li><strong>MacOS</strong>：<code>/Users/$USER/Library/Application Support/Firefox/Profiles/</code></li>
+<li><strong>Windows</strong>：<code>%userprofile%\AppData\Roaming\Mozilla\Firefox\Profiles\</code></li>
+</ul>
+<p>这些目录中的 <code>profiles.ini</code> 文件列出了用户配置文件。每个配置文件的数据存储在 <code>profiles.ini</code> 中 <code>Path</code> 变量命名的文件夹中，位于与 <code>profiles.ini</code> 本身相同的目录中。如果配置文件的文件夹缺失，可能已被删除。</p>
+<p>在每个配置文件文件夹中，您可以找到几个重要文件：</p>
+<ul>
+<li><strong>places.sqlite</strong>：存储历史、书签和下载。Windows 上的工具如 <a href="https://www.nirsoft.net/utils/browsing_history_view.html">BrowsingHistoryView</a> 可以访问历史数据。</li>
+<li>使用特定的 SQL 查询提取历史和下载信息。</li>
+<li><strong>bookmarkbackups</strong>：包含书签的备份。</li>
+<li><strong>formhistory.sqlite</strong>：存储网页表单数据。</li>
+<li><strong>handlers.json</strong>：管理协议处理程序。</li>
+<li><strong>persdict.dat</strong>：自定义字典单词。</li>
+<li><strong>addons.json</strong> 和 <strong>extensions.sqlite</strong>：有关已安装的附加组件和扩展的信息。</li>
+<li><strong>cookies.sqlite</strong>：Cookie 存储，Windows 上可以使用 <a href="https://www.nirsoft.net/utils/mzcv.html">MZCookiesView</a> 进行检查。</li>
+<li><strong>cache2/entries</strong> 或 <strong>startupCache</strong>：缓存数据，可以通过工具如 <a href="https://www.nirsoft.net/utils/mozilla_cache_viewer.html">MozillaCacheView</a> 访问。</li>
+<li><strong>favicons.sqlite</strong>：存储网站图标。</li>
+<li><strong>prefs.js</strong>：用户设置和偏好。</li>
+<li><strong>downloads.sqlite</strong>：旧的下载数据库，现在已集成到 places.sqlite 中。</li>
+<li><strong>thumbnails</strong>：网站缩略图。</li>
+<li><strong>logins.json</strong>：加密的登录信息。</li>
+<li><strong>key4.db</strong> 或 <strong>key3.db</strong>：存储用于保护敏感信息的加密密钥。</li>
+</ul>
+<p>此外，可以通过在 <code>prefs.js</code> 中搜索 <code>browser.safebrowsing</code> 条目来检查浏览器的反钓鱼设置，以指示安全浏览功能是否启用或禁用。</p>
+<p>要尝试解密主密码，可以使用 <a href="https://github.com/unode/firefox_decrypt">https://github.com/unode/firefox_decrypt</a><br />
+使用以下脚本和调用，您可以指定一个密码文件进行暴力破解：</p>
+<p>{% code title="brute.sh" %}</p>
+<pre><code class="language-bash">#!/bin/bash
+
+#./brute.sh top-passwords.txt 2&gt;/dev/null | grep -A2 -B2 "chrome:"
+passfile=$1
+while read pass; do
+echo "Trying $pass"
+echo "$pass" | python firefox_decrypt.py
+done &lt; $passfile
+</code></pre>
+<p>{% endcode %}</p>
+<p><img src="../../../.gitbook/assets/image%20(692).png" alt="" /></p>
+<h2 id="google-chrome"><a class="header" href="#google-chrome">Google Chrome</a></h2>
+<p>Google Chrome 根据操作系统将用户配置文件存储在特定位置：</p>
+<ul>
+<li><strong>Linux</strong>: <code>~/.config/google-chrome/</code></li>
+<li><strong>Windows</strong>: <code>C:\Users\XXX\AppData\Local\Google\Chrome\User Data\</code></li>
+<li><strong>MacOS</strong>: <code>/Users/$USER/Library/Application Support/Google/Chrome/</code></li>
+</ul>
+<p>在这些目录中，大多数用户数据可以在 <strong>Default/</strong> 或 <strong>ChromeDefaultData/</strong> 文件夹中找到。以下文件包含重要数据：</p>
+<ul>
+<li><strong>History</strong>: 包含网址、下载和搜索关键词。在 Windows 上，可以使用 <a href="https://www.nirsoft.net/utils/chrome_history_view.html">ChromeHistoryView</a> 来读取历史记录。“Transition Type” 列有多种含义，包括用户点击链接、输入的网址、表单提交和页面重新加载。</li>
+<li><strong>Cookies</strong>: 存储 cookies。可以使用 <a href="https://www.nirsoft.net/utils/chrome_cookies_view.html">ChromeCookiesView</a> 进行检查。</li>
+<li><strong>Cache</strong>: 存储缓存数据。Windows 用户可以使用 <a href="https://www.nirsoft.net/utils/chrome_cache_view.html">ChromeCacheView</a> 进行检查。</li>
+<li><strong>Bookmarks</strong>: 用户书签。</li>
+<li><strong>Web Data</strong>: 包含表单历史。</li>
+<li><strong>Favicons</strong>: 存储网站图标。</li>
+<li><strong>Login Data</strong>: 包含登录凭据，如用户名和密码。</li>
+<li><strong>Current Session</strong>/<strong>Current Tabs</strong>: 当前浏览会话和打开标签的数据。</li>
+<li><strong>Last Session</strong>/<strong>Last Tabs</strong>: Chrome 关闭前最后会话期间活动网站的信息。</li>
+<li><strong>Extensions</strong>: 浏览器扩展和附加组件的目录。</li>
+<li><strong>Thumbnails</strong>: 存储网站缩略图。</li>
+<li><strong>Preferences</strong>: 一个信息丰富的文件，包括插件、扩展、弹出窗口、通知等的设置。</li>
+<li><strong>Browser’s built-in anti-phishing</strong>: 要检查反钓鱼和恶意软件保护是否启用，请运行 <code>grep 'safebrowsing' ~/Library/Application Support/Google/Chrome/Default/Preferences</code>。在输出中查找 <code>{"enabled: true,"}</code>。</li>
+</ul>
+<h2 id="sqlite-db-data-recovery"><a class="header" href="#sqlite-db-data-recovery"><strong>SQLite DB Data Recovery</strong></a></h2>
+<p>如前所述，Chrome 和 Firefox 使用 <strong>SQLite</strong> 数据库存储数据。可以使用工具 <a href="https://github.com/padfoot999/sqlparse"><strong>sqlparse</strong></a> <strong>或</strong> <a href="https://github.com/mdegrazia/SQLite-Deleted-Records-Parser/releases"><strong>sqlparse_gui</strong></a> <strong>恢复已删除的条目</strong>。</p>
+<h2 id="internet-explorer-11"><a class="header" href="#internet-explorer-11"><strong>Internet Explorer 11</strong></a></h2>
+<p>Internet Explorer 11 在多个位置管理其数据和元数据，帮助分离存储的信息及其对应的详细信息，以便于访问和管理。</p>
+<h3 id="metadata-storage"><a class="header" href="#metadata-storage">Metadata Storage</a></h3>
+<p>Internet Explorer 的元数据存储在 <code>%userprofile%\Appdata\Local\Microsoft\Windows\WebCache\WebcacheVX.data</code>（VX 为 V01、V16 或 V24）。伴随此文件，<code>V01.log</code> 文件可能显示与 <code>WebcacheVX.data</code> 的修改时间差异，表明需要使用 <code>esentutl /r V01 /d</code> 进行修复。此元数据存储在 ESE 数据库中，可以使用工具如 photorec 和 <a href="https://www.nirsoft.net/utils/ese_database_view.html">ESEDatabaseView</a> 进行恢复和检查。在 <strong>Containers</strong> 表中，可以辨别每个数据段存储的特定表或容器，包括其他 Microsoft 工具（如 Skype）的缓存详细信息。</p>
+<h3 id="cache-inspection"><a class="header" href="#cache-inspection">Cache Inspection</a></h3>
+<p><a href="https://www.nirsoft.net/utils/ie_cache_viewer.html">IECacheView</a> 工具允许进行缓存检查，需要缓存数据提取文件夹位置。缓存的元数据包括文件名、目录、访问计数、URL 来源和指示缓存创建、访问、修改和过期时间的时间戳。</p>
+<h3 id="cookies-management"><a class="header" href="#cookies-management">Cookies Management</a></h3>
+<p>可以使用 <a href="https://www.nirsoft.net/utils/iecookies.html">IECookiesView</a> 探索 cookies，元数据包括名称、URL、访问计数和各种时间相关的详细信息。持久性 cookies 存储在 <code>%userprofile%\Appdata\Roaming\Microsoft\Windows\Cookies</code> 中，会话 cookies 存储在内存中。</p>
+<h3 id="download-details"><a class="header" href="#download-details">Download Details</a></h3>
+<p>下载的元数据可以通过 <a href="https://www.nirsoft.net/utils/ese_database_view.html">ESEDatabaseView</a> 访问，特定容器中保存着 URL、文件类型和下载位置等数据。物理文件可以在 <code>%userprofile%\Appdata\Roaming\Microsoft\Windows\IEDownloadHistory</code> 下找到。</p>
+<h3 id="browsing-history"><a class="header" href="#browsing-history">Browsing History</a></h3>
+<p>要查看浏览历史，可以使用 <a href="https://www.nirsoft.net/utils/browsing_history_view.html">BrowsingHistoryView</a>，需要提取的历史文件位置和 Internet Explorer 的配置。这里的元数据包括修改和访问时间，以及访问计数。历史文件位于 <code>%userprofile%\Appdata\Local\Microsoft\Windows\History</code>。</p>
+<h3 id="typed-urls"><a class="header" href="#typed-urls">Typed URLs</a></h3>
+<p>输入的 URL 及其使用时间存储在注册表的 <code>NTUSER.DAT</code> 中，路径为 <code>Software\Microsoft\InternetExplorer\TypedURLs</code> 和 <code>Software\Microsoft\InternetExplorer\TypedURLsTime</code>，跟踪用户输入的最后 50 个 URL 及其最后输入时间。</p>
+<h2 id="microsoft-edge"><a class="header" href="#microsoft-edge">Microsoft Edge</a></h2>
+<p>Microsoft Edge 将用户数据存储在 <code>%userprofile%\Appdata\Local\Packages</code> 中。各种数据类型的路径如下：</p>
+<ul>
+<li><strong>Profile Path</strong>: <code>C:\Users\XX\AppData\Local\Packages\Microsoft.MicrosoftEdge_XXX\AC</code></li>
+<li><strong>History, Cookies, and Downloads</strong>: <code>C:\Users\XX\AppData\Local\Microsoft\Windows\WebCache\WebCacheV01.dat</code></li>
+<li><strong>Settings, Bookmarks, and Reading List</strong>: <code>C:\Users\XX\AppData\Local\Packages\Microsoft.MicrosoftEdge_XXX\AC\MicrosoftEdge\User\Default\DataStore\Data\nouser1\XXX\DBStore\spartan.edb</code></li>
+<li><strong>Cache</strong>: <code>C:\Users\XXX\AppData\Local\Packages\Microsoft.MicrosoftEdge_XXX\AC#!XXX\MicrosoftEdge\Cache</code></li>
+<li><strong>Last Active Sessions</strong>: <code>C:\Users\XX\AppData\Local\Packages\Microsoft.MicrosoftEdge_XXX\AC\MicrosoftEdge\User\Default\Recovery\Active</code></li>
+</ul>
+<h2 id="safari"><a class="header" href="#safari">Safari</a></h2>
+<p>Safari 数据存储在 <code>/Users/$User/Library/Safari</code>。关键文件包括：</p>
+<ul>
+<li><strong>History.db</strong>: 包含 <code>history_visits</code> 和 <code>history_items</code> 表，存储网址和访问时间戳。使用 <code>sqlite3</code> 查询。</li>
+<li><strong>Downloads.plist</strong>: 有关下载文件的信息。</li>
+<li><strong>Bookmarks.plist</strong>: 存储书签网址。</li>
+<li><strong>TopSites.plist</strong>: 最常访问的网站。</li>
+<li><strong>Extensions.plist</strong>: Safari 浏览器扩展的列表。使用 <code>plutil</code> 或 <code>pluginkit</code> 获取。</li>
+<li><strong>UserNotificationPermissions.plist</strong>: 允许推送通知的域。使用 <code>plutil</code> 解析。</li>
+<li><strong>LastSession.plist</strong>: 上一会话的标签。使用 <code>plutil</code> 解析。</li>
+<li><strong>Browser’s built-in anti-phishing</strong>: 使用 <code>defaults read com.apple.Safari WarnAboutFraudulentWebsites</code> 检查。响应为 1 表示该功能处于活动状态。</li>
+</ul>
+<h2 id="opera"><a class="header" href="#opera">Opera</a></h2>
+<p>Opera 的数据位于 <code>/Users/$USER/Library/Application Support/com.operasoftware.Opera</code>，并与 Chrome 的历史和下载格式相同。</p>
+<ul>
+<li><strong>Browser’s built-in anti-phishing</strong>: 通过检查 Preferences 文件中的 <code>fraud_protection_enabled</code> 是否设置为 <code>true</code> 来验证，使用 <code>grep</code>。</li>
+</ul>
+<p>这些路径和命令对于访问和理解不同网络浏览器存储的浏览数据至关重要。</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://nasbench.medium.com/web-browsers-forensics-7e99940c579a">https://nasbench.medium.com/web-browsers-forensics-7e99940c579a</a></li>
+<li><a href="https://www.sentinelone.com/labs/macos-incident-response-part-3-system-manipulation/">https://www.sentinelone.com/labs/macos-incident-response-part-3-system-manipulation/</a></li>
+<li><a href="https://books.google.com/books?id=jfMqCgAAQBAJ&amp;pg=PA128&amp;lpg=PA128&amp;dq=%22This+file">https://books.google.com/books?id=jfMqCgAAQBAJ&amp;pg=PA128&amp;lpg=PA128&amp;dq=%22This+file</a></li>
+<li><strong>Book: OS X Incident Response: Scripting and Analysis By Jaron Bradley pag 123</strong></li>
+</ul>
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=browser-artifacts"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=browser-artifacts" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/.pyc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/desofuscation-vbs-cscript.exe.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/.pyc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/desofuscation-vbs-cscript.exe.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

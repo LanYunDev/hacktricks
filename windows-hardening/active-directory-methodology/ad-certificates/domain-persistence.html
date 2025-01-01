@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>AD CS Domain Persistence</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ad-cs-domain-persistence"><a class="header" href="#ad-cs-domain-persistence">AD CS Domain Persistence</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p><strong>这是在 <a href="https://www.specterops.io/assets/resources/Certified_Pre-Owned.pdf">https://www.specterops.io/assets/resources/Certified_Pre-Owned.pdf</a> 中分享的域持久性技术的总结</strong>。请查看以获取更多详细信息。</p>
+<h2 id="使用被盗-ca-证书伪造证书---dpersist1"><a class="header" href="#使用被盗-ca-证书伪造证书---dpersist1">使用被盗 CA 证书伪造证书 - DPERSIST1</a></h2>
+<p>如何判断一个证书是 CA 证书？</p>
+<p>如果满足以下几个条件，可以确定一个证书是 CA 证书：</p>
+<ul>
+<li>证书存储在 CA 服务器上，其私钥由机器的 DPAPI 保护，或者由操作系统支持的硬件（如 TPM/HSM）保护。</li>
+<li>证书的颁发者和主题字段与 CA 的区分名称匹配。</li>
+<li>CA 证书中独有一个“CA 版本”扩展。</li>
+<li>证书缺少扩展密钥使用 (EKU) 字段。</li>
+</ul>
+<p>要提取此证书的私钥，可以通过 CA 服务器上的 <code>certsrv.msc</code> 工具使用内置 GUI 进行支持。然而，这个证书与系统中存储的其他证书没有区别，因此可以应用 <a href="certificate-theft.html#user-certificate-theft-via-dpapi-theft2">THEFT2 技术</a> 进行提取。</p>
+<p>证书和私钥也可以使用 Certipy 通过以下命令获取：</p>
+<pre><code class="language-bash">certipy ca 'corp.local/administrator@ca.corp.local' -hashes :123123.. -backup
+</code></pre>
+<p>在获取CA证书及其以<code>.pfx</code>格式的私钥后，可以使用像<a href="https://github.com/GhostPack/ForgeCert">ForgeCert</a>这样的工具生成有效的证书：</p>
+<pre><code class="language-bash"># Generating a new certificate with ForgeCert
+ForgeCert.exe --CaCertPath ca.pfx --CaCertPassword Password123! --Subject "CN=User" --SubjectAltName localadmin@theshire.local --NewCertPath localadmin.pfx --NewCertPassword Password123!
+
+# Generating a new certificate with certipy
+certipy forge -ca-pfx CORP-DC-CA.pfx -upn administrator@corp.local -subject 'CN=Administrator,CN=Users,DC=CORP,DC=LOCAL'
+
+# Authenticating using the new certificate with Rubeus
+Rubeus.exe asktgt /user:localdomain /certificate:C:\ForgeCert\localadmin.pfx /password:Password123!
+
+# Authenticating using the new certificate with certipy
+certipy auth -pfx administrator_forged.pfx -dc-ip 172.16.126.128
+</code></pre>
+<p>{% hint style="warning" %}
+被针对的证书伪造用户必须处于活动状态，并能够在Active Directory中进行身份验证，才能使该过程成功。伪造像krbtgt这样的特殊账户的证书是无效的。
+{% endhint %}</p>
+<p>这个伪造的证书将会在指定的结束日期之前是<strong>有效的</strong>，并且<strong>只要根CA证书有效</strong>（通常为5到<strong>10年以上</strong>）。它对<strong>机器</strong>也是有效的，因此结合<strong>S4U2Self</strong>，攻击者可以<strong>在任何域机器上保持持久性</strong>，只要CA证书有效。<br />
+此外，使用此方法<strong>生成的证书</strong>是<strong>无法被撤销的</strong>，因为CA并不知道它们的存在。</p>
+<h2 id="信任恶意ca证书---dpersist2"><a class="header" href="#信任恶意ca证书---dpersist2">信任恶意CA证书 - DPERSIST2</a></h2>
+<p><code>NTAuthCertificates</code>对象被定义为包含一个或多个<strong>CA证书</strong>，其<code>cacertificate</code>属性由Active Directory (AD) 使用。<strong>域控制器</strong>的验证过程涉及检查<code>NTAuthCertificates</code>对象中是否有与身份验证<strong>证书</strong>的发行者字段中指定的<strong>CA</strong>匹配的条目。如果找到匹配项，则继续进行身份验证。</p>
+<p>攻击者可以将自签名CA证书添加到<code>NTAuthCertificates</code>对象中，前提是他们控制此AD对象。通常，只有<strong>企业管理员</strong>组的成员，以及<strong>域管理员</strong>或<strong>森林根域</strong>中的<strong>管理员</strong>，才被授予修改此对象的权限。他们可以使用<code>certutil.exe</code>通过命令<code>certutil.exe -dspublish -f C:\Temp\CERT.crt NTAuthCA126</code>编辑<code>NTAuthCertificates</code>对象，或者使用<a href="https://docs.microsoft.com/en-us/troubleshoot/windows-server/windows-security/import-third-party-ca-to-enterprise-ntauth-store#method-1---import-a-certificate-by-using-the-pki-health-tool"><strong>PKI健康工具</strong></a>。</p>
+<p>此能力在与之前概述的涉及ForgeCert动态生成证书的方法结合使用时尤其相关。</p>
+<h2 id="恶意错误配置---dpersist3"><a class="header" href="#恶意错误配置---dpersist3">恶意错误配置 - DPERSIST3</a></h2>
+<p>通过<strong>AD CS</strong>组件的<strong>安全描述符修改</strong>实现<strong>持久性</strong>的机会很多。"<a href="domain-escalation.html">域提升</a>"部分中描述的修改可以被具有提升访问权限的攻击者恶意实施。这包括向敏感组件添加“控制权限”（例如，WriteOwner/WriteDACL等），例如：</p>
+<ul>
+<li><strong>CA服务器的AD计算机</strong>对象</li>
+<li><strong>CA服务器的RPC/DCOM服务器</strong></li>
+<li><strong><code>CN=Public Key Services,CN=Services,CN=Configuration,DC=&lt;DOMAIN&gt;,DC=&lt;COM&gt;</code><strong>中的任何</strong>后代AD对象或容器</strong>（例如，证书模板容器、认证机构容器、NTAuthCertificates对象等）</li>
+<li><strong>AD组默认或由组织委派控制AD CS的权限</strong>（例如，内置的证书发布者组及其任何成员）</li>
+</ul>
+<p>恶意实施的一个例子是，具有<strong>提升权限</strong>的攻击者将**<code>WriteOwner</code><strong>权限添加到默认的</strong><code>User</code><strong>证书模板，攻击者成为该权限的主体。为了利用这一点，攻击者首先将</strong><code>User</code><strong>模板的所有权更改为自己。随后，</strong><code>mspki-certificate-name-flag</code><strong>将在模板上设置为</strong>1<strong>以启用</strong><code>ENROLLEE_SUPPLIES_SUBJECT</code><strong>，允许用户在请求中提供主题备用名称。随后，攻击者可以使用</strong>模板<strong>进行</strong>注册**，选择<strong>域管理员</strong>名称作为备用名称，并利用获得的证书进行身份验证作为DA。</p>
+<p>{% hint style="success" %}
+学习与实践AWS黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践GCP黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>关注</strong>我们在<strong>Twitter</strong>上的动态 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../windows-hardening/active-directory-methodology/ad-certificates/domain-escalation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/ad-certificates/certificate-theft.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../windows-hardening/active-directory-methodology/ad-certificates/domain-escalation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/ad-certificates/certificate-theft.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

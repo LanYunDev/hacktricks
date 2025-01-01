@@ -1,0 +1,409 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS MDM</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-mdm"><a class="header" href="#macos-mdm">macOS MDM</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p><strong>要了解 macOS MDM，请查看：</strong></p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=ku8jZe-MHUU">https://www.youtube.com/watch?v=ku8jZe-MHUU</a></li>
+<li><a href="https://duo.com/labs/research/mdm-me-maybe">https://duo.com/labs/research/mdm-me-maybe</a></li>
+</ul>
+<h2 id="基础知识"><a class="header" href="#基础知识">基础知识</a></h2>
+<h3 id="mdm移动设备管理概述"><a class="header" href="#mdm移动设备管理概述"><strong>MDM（移动设备管理）概述</strong></a></h3>
+<p><a href="https://en.wikipedia.org/wiki/Mobile_device_management">移动设备管理</a>（MDM）用于管理各种终端用户设备，如智能手机、笔记本电脑和平板电脑。特别是对于苹果的平台（iOS、macOS、tvOS），它涉及一套专门的功能、API 和实践。MDM 的操作依赖于一个兼容的 MDM 服务器，该服务器可以是商业可用的或开源的，并且必须支持 <a href="https://developer.apple.com/enterprise/documentation/MDM-Protocol-Reference.pdf">MDM 协议</a>。关键点包括：</p>
+<ul>
+<li>对设备的集中控制。</li>
+<li>依赖于遵循 MDM 协议的 MDM 服务器。</li>
+<li>MDM 服务器能够向设备发送各种命令，例如远程数据擦除或配置安装。</li>
+</ul>
+<h3 id="dep设备注册计划基础知识"><a class="header" href="#dep设备注册计划基础知识"><strong>DEP（设备注册计划）基础知识</strong></a></h3>
+<p>苹果提供的 <a href="https://www.apple.com/business/site/docs/DEP_Guide.pdf">设备注册计划</a>（DEP）通过为 iOS、macOS 和 tvOS 设备提供零接触配置，简化了移动设备管理（MDM）的集成。DEP 自动化注册过程，使设备在开箱即用时即可投入使用，几乎不需要用户或管理员干预。基本方面包括：</p>
+<ul>
+<li>使设备在首次激活时能够自动注册到预定义的 MDM 服务器。</li>
+<li>主要对全新设备有利，但也适用于正在重新配置的设备。</li>
+<li>促进简单的设置，使设备迅速准备好供组织使用。</li>
+</ul>
+<h3 id="安全考虑"><a class="header" href="#安全考虑"><strong>安全考虑</strong></a></h3>
+<p>需要注意的是，DEP 提供的注册便利性虽然有利，但也可能带来安全风险。如果没有充分执行保护措施，攻击者可能利用这一简化过程在组织的 MDM 服务器上注册他们的设备，伪装成企业设备。</p>
+<p>{% hint style="danger" %}
+<strong>安全警报</strong>：简化的 DEP 注册如果没有适当的保护措施，可能会允许未经授权的设备在组织的 MDM 服务器上注册。
+{% endhint %}</p>
+<h3 id="基础知识-什么是-scep简单证书注册协议"><a class="header" href="#基础知识-什么是-scep简单证书注册协议">基础知识 什么是 SCEP（简单证书注册协议）？</a></h3>
+<ul>
+<li>一种相对较旧的协议，创建于 TLS 和 HTTPS 广泛使用之前。</li>
+<li>为客户端提供了一种标准化的方式来发送 <strong>证书签名请求</strong>（CSR），以便获得证书。客户端将请求服务器为其提供签名证书。</li>
+</ul>
+<h3 id="什么是配置文件即-mobileconfigs"><a class="header" href="#什么是配置文件即-mobileconfigs">什么是配置文件（即 mobileconfigs）？</a></h3>
+<ul>
+<li>苹果官方的 <strong>设置/强制系统配置</strong> 的方式。</li>
+<li>可以包含多个有效负载的文件格式。</li>
+<li>基于属性列表（XML 类型）。</li>
+<li>“可以被签名和加密，以验证其来源，确保其完整性，并保护其内容。” 基础知识 — 第 70 页，iOS 安全指南，2018 年 1 月。</li>
+</ul>
+<h2 id="协议"><a class="header" href="#协议">协议</a></h2>
+<h3 id="mdm"><a class="header" href="#mdm">MDM</a></h3>
+<ul>
+<li>APNs（<strong>苹果服务器</strong>）+ RESTful API（<strong>MDM</strong> <strong>供应商</strong>服务器）的组合</li>
+<li><strong>通信</strong>发生在 <strong>设备</strong> 和与 <strong>设备管理</strong> <strong>产品</strong> 相关的服务器之间</li>
+<li><strong>命令</strong>以 <strong>plist 编码字典</strong> 的形式从 MDM 发送到设备</li>
+<li>所有通信通过 <strong>HTTPS</strong>。MDM 服务器可以（并且通常会）被固定。</li>
+<li>苹果向 MDM 供应商授予 <strong>APNs 证书</strong> 以进行身份验证</li>
+</ul>
+<h3 id="dep"><a class="header" href="#dep">DEP</a></h3>
+<ul>
+<li><strong>3 个 API</strong>：1 个用于经销商，1 个用于 MDM 供应商，1 个用于设备身份（未记录）：</li>
+<li>所谓的 <a href="https://developer.apple.com/enterprise/documentation/MDM-Protocol-Reference.pdf">DEP "云服务" API</a>。MDM 服务器使用此 API 将 DEP 配置文件与特定设备关联。</li>
+<li><a href="https://applecareconnect.apple.com/api-docs/depuat/html/WSImpManual.html">苹果授权经销商使用的 DEP API</a>，用于注册设备、检查注册状态和检查交易状态。</li>
+<li>未记录的私有 DEP API。苹果设备使用此 API 请求其 DEP 配置文件。在 macOS 上，<code>cloudconfigurationd</code> 二进制文件负责通过此 API 进行通信。</li>
+<li>更现代且基于 <strong>JSON</strong>（与 plist 相比）</li>
+<li>苹果向 MDM 供应商授予 <strong>OAuth 令牌</strong></li>
+</ul>
+<p><strong>DEP "云服务" API</strong></p>
+<ul>
+<li>RESTful</li>
+<li>从苹果同步设备记录到 MDM 服务器</li>
+<li>从 MDM 服务器同步“DEP 配置文件”到苹果（稍后由苹果交付给设备）</li>
+<li>一个 DEP “配置文件”包含：</li>
+<li>MDM 供应商服务器 URL</li>
+<li>服务器 URL 的附加受信任证书（可选固定）</li>
+<li>额外设置（例如，跳过设置助手中的哪些屏幕）</li>
+</ul>
+<h2 id="序列号"><a class="header" href="#序列号">序列号</a></h2>
+<p>2010 年后制造的苹果设备通常具有 <strong>12 个字符的字母数字</strong> 序列号，<strong>前三个数字表示制造地点</strong>，接下来的 <strong>两个</strong> 表示 <strong>年份</strong> 和 <strong>周数</strong>，接下来的 <strong>三个</strong> 数字提供 <strong>唯一</strong> <strong>标识符</strong>，最后 <strong>四个</strong> 数字表示 <strong>型号</strong>。</p>
+<p>{% content-ref url="macos-serial-number.md" %}
+<a href="macos-serial-number.html">macos-serial-number.md</a>
+{% endcontent-ref %}</p>
+<h2 id="注册和管理步骤"><a class="header" href="#注册和管理步骤">注册和管理步骤</a></h2>
+<ol>
+<li>设备记录创建（经销商，苹果）：为新设备创建记录</li>
+<li>设备记录分配（客户）：将设备分配给 MDM 服务器</li>
+<li>设备记录同步（MDM 供应商）：MDM 同步设备记录并将 DEP 配置文件推送到苹果</li>
+<li>DEP 签到（设备）：设备获取其 DEP 配置文件</li>
+<li>配置文件检索（设备）</li>
+<li>配置文件安装（设备） a. 包括 MDM、SCEP 和根 CA 有效负载</li>
+<li>MDM 命令发布（设备）</li>
+</ol>
+<p><img src="../../../.gitbook/assets/image%20(694).png" alt="" /></p>
+<p>文件 <code>/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/PrivateFrameworks/ConfigurationProfiles.framework/ConfigurationProfiles.tbd</code> 导出可以被视为 <strong>高层“步骤”</strong> 的注册过程的函数。</p>
+<h3 id="第-4-步dep-签到---获取激活记录"><a class="header" href="#第-4-步dep-签到---获取激活记录">第 4 步：DEP 签到 - 获取激活记录</a></h3>
+<p>该过程发生在 <strong>用户首次启动 Mac 时</strong>（或在完全擦除后）</p>
+<p><img src="../../../.gitbook/assets/image%20(1044).png" alt="" /></p>
+<p>或在执行 <code>sudo profiles show -type enrollment</code> 时</p>
+<ul>
+<li>确定 <strong>设备是否启用 DEP</strong></li>
+<li>激活记录是 <strong>DEP “配置文件”</strong> 的内部名称</li>
+<li>一旦设备连接到互联网就开始</li>
+<li>由 <strong><code>CPFetchActivationRecord</code></strong> 驱动</li>
+<li>通过 XPC 由 <strong><code>cloudconfigurationd</code></strong> 实现。<strong>“设置助手”</strong>（当设备首次启动时）或 <strong><code>profiles</code></strong> 命令将 <strong>联系此守护进程</strong> 以检索激活记录。</li>
+<li>LaunchDaemon（始终以 root 身份运行）</li>
+</ul>
+<p>它遵循几个步骤来获取激活记录，由 <strong><code>MCTeslaConfigurationFetcher</code></strong> 执行。此过程使用一种称为 <strong>Absinthe</strong> 的加密</p>
+<ol>
+<li>检索 <strong>证书</strong></li>
+<li>GET <a href="https://iprofiles.apple.com/resource/certificate.cer">https://iprofiles.apple.com/resource/certificate.cer</a></li>
+<li><strong>初始化</strong> 状态来自证书（<strong><code>NACInit</code></strong>）</li>
+<li>使用各种设备特定数据（即 <strong>通过 <code>IOKit</code> 的序列号</strong>）</li>
+<li>检索 <strong>会话密钥</strong></li>
+<li>POST <a href="https://iprofiles.apple.com/session">https://iprofiles.apple.com/session</a></li>
+<li>建立会话（<strong><code>NACKeyEstablishment</code></strong>）</li>
+<li>发出请求</li>
+<li>POST 到 <a href="https://iprofiles.apple.com/macProfile">https://iprofiles.apple.com/macProfile</a>，发送数据 <code>{ "action": "RequestProfileConfiguration", "sn": "" }</code></li>
+<li>JSON 有效负载使用 Absinthe 加密（<strong><code>NACSign</code></strong>）</li>
+<li>所有请求通过 HTTPs，使用内置根证书</li>
+</ol>
+<p><img src="../../../.gitbook/assets/image%20(566).png" alt="" /></p>
+<p>响应是一个 JSON 字典，包含一些重要数据，如：</p>
+<ul>
+<li><strong>url</strong>：激活配置文件的 MDM 供应商主机的 URL</li>
+<li><strong>anchor-certs</strong>：用作受信任锚的 DER 证书数组</li>
+</ul>
+<h3 id="第-5-步配置文件检索"><a class="header" href="#第-5-步配置文件检索"><strong>第 5 步：配置文件检索</strong></a></h3>
+<p><img src="../../../.gitbook/assets/image%20(444).png" alt="" /></p>
+<ul>
+<li>请求发送到 <strong>DEP 配置文件中提供的 URL</strong>。</li>
+<li><strong>锚证书</strong> 用于 <strong>评估信任</strong>（如果提供）。</li>
+<li>提醒：DEP 配置文件的 <strong>anchor_certs</strong> 属性</li>
+<li><strong>请求是一个简单的 .plist</strong>，包含设备识别信息</li>
+<li>示例：<strong>UDID、操作系统版本</strong>。</li>
+<li>CMS 签名，DER 编码</li>
+<li>使用 <strong>设备身份证书（来自 APNS）</strong> 签名</li>
+<li><strong>证书链</strong> 包括过期的 <strong>Apple iPhone 设备 CA</strong></li>
+</ul>
+<p><img src="../../../.gitbook/assets/image%20(567).png" alt="" /></p>
+<h3 id="第-6-步配置文件安装"><a class="header" href="#第-6-步配置文件安装">第 6 步：配置文件安装</a></h3>
+<ul>
+<li>一旦检索到，<strong>配置文件将存储在系统上</strong></li>
+<li>此步骤自动开始（如果在 <strong>设置助手</strong> 中）</li>
+<li>由 <strong><code>CPInstallActivationProfile</code></strong> 驱动</li>
+<li>通过 mdmclient 通过 XPC 实现</li>
+<li>LaunchDaemon（以 root 身份）或 LaunchAgent（以用户身份），具体取决于上下文</li>
+<li>配置文件有多个有效负载需要安装</li>
+<li>框架具有基于插件的架构来安装配置文件</li>
+<li>每种有效负载类型与一个插件相关联</li>
+<li>可以是 XPC（在框架中）或经典 Cocoa（在 ManagedClient.app 中）</li>
+<li>示例：</li>
+<li>证书有效负载使用 CertificateService.xpc</li>
+</ul>
+<p>通常，MDM 供应商提供的 <strong>激活配置文件</strong> 将 <strong>包括以下有效负载</strong>：</p>
+<ul>
+<li><code>com.apple.mdm</code>：用于 <strong>注册</strong> 设备到 MDM</li>
+<li><code>com.apple.security.scep</code>：安全地向设备提供 <strong>客户端证书</strong>。</li>
+<li><code>com.apple.security.pem</code>：向设备的系统钥匙串 <strong>安装受信任的 CA 证书</strong>。</li>
+<li>安装 MDM 有效负载相当于文档中的 <strong>MDM 签到</strong></li>
+<li>有效负载 <strong>包含关键属性</strong>：</li>
+<li></li>
+<li>MDM 签到 URL（<strong><code>CheckInURL</code></strong>）</li>
+<li>MDM 命令轮询 URL（<strong><code>ServerURL</code></strong>） + 触发它的 APNs 主题</li>
+<li>要安装 MDM 有效负载，请向 <strong><code>CheckInURL</code></strong> 发送请求</li>
+<li>在 <strong><code>mdmclient</code></strong> 中实现</li>
+<li>MDM 有效负载可以依赖于其他有效负载</li>
+<li>允许 <strong>请求固定到特定证书</strong>：</li>
+<li>属性：<strong><code>CheckInURLPinningCertificateUUIDs</code></strong></li>
+<li>属性：<strong><code>ServerURLPinningCertificateUUIDs</code></strong></li>
+<li>通过 PEM 有效负载交付</li>
+<li>允许设备被赋予身份证书：</li>
+<li>属性：IdentityCertificateUUID</li>
+<li>通过 SCEP 有效负载交付</li>
+</ul>
+<h3 id="第-7-步监听-mdm-命令"><a class="header" href="#第-7-步监听-mdm-命令"><strong>第 7 步：监听 MDM 命令</strong></a></h3>
+<ul>
+<li>在 MDM 签到完成后，供应商可以 <strong>使用 APNs 发布通知</strong></li>
+<li>收到后，由 <strong><code>mdmclient</code></strong> 处理</li>
+<li>为了轮询 MDM 命令，请向 ServerURL 发送请求</li>
+<li>利用先前安装的 MDM 有效负载：</li>
+<li><strong><code>ServerURLPinningCertificateUUIDs</code></strong> 用于固定请求</li>
+<li><strong><code>IdentityCertificateUUID</code></strong> 用于 TLS 客户端证书</li>
+</ul>
+<h2 id="攻击"><a class="header" href="#攻击">攻击</a></h2>
+<h3 id="在其他组织中注册设备"><a class="header" href="#在其他组织中注册设备">在其他组织中注册设备</a></h3>
+<p>如前所述，为了尝试将设备注册到一个组织 <strong>只需要该组织的序列号</strong>。一旦设备注册，多个组织将会在新设备上安装敏感数据：证书、应用程序、WiFi 密码、VPN 配置 <a href="https://developer.apple.com/enterprise/documentation/Configuration-Profile-Reference.pdf">等等</a>。<br />
+因此，如果注册过程没有得到正确保护，这可能成为攻击者的一个危险入口：</p>
+<p>{% content-ref url="enrolling-devices-in-other-organisations.md" %}
+<a href="enrolling-devices-in-other-organisations.html">enrolling-devices-in-other-organisations.md</a>
+{% endcontent-ref %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-red-teaming/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-red-teaming/macos-mdm/enrolling-devices-in-other-organisations.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-red-teaming/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-red-teaming/macos-mdm/enrolling-devices-in-other-organisations.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

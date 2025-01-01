@@ -1,0 +1,386 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Z3 - Satisfiability Modulo Theories (SMT)</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>非常基本地，这个工具将帮助我们找到需要满足某些条件的变量的值，手动计算这些值将非常麻烦。因此，您可以向 Z3 指示变量需要满足的条件，它将找到一些值（如果可能的话）。</p>
+<p><strong>一些文本和示例摘自 <a href="https://ericpony.github.io/z3py-tutorial/guide-examples.htm">https://ericpony.github.io/z3py-tutorial/guide-examples.htm</a></strong></p>
+<h1 id="基本操作"><a class="header" href="#基本操作">基本操作</a></h1>
+<h2 id="布尔值与或非"><a class="header" href="#布尔值与或非">布尔值/与/或/非</a></h2>
+<pre><code class="language-python">#pip3 install z3-solver
+from z3 import *
+s = Solver() #The solver will be given the conditions
+
+x = Bool("x") #Declare the symbos x, y and z
+y = Bool("y")
+z = Bool("z")
+
+# (x or y or !z) and y
+s.add(And(Or(x,y,Not(z)),y))
+s.check() #If response is "sat" then the model is satifable, if "unsat" something is wrong
+print(s.model()) #Print valid values to satisfy the model
+</code></pre>
+<h2 id="整数简化实数"><a class="header" href="#整数简化实数">整数/简化/实数</a></h2>
+<pre><code class="language-python">from z3 import *
+
+x = Int('x')
+y = Int('y')
+#Simplify a "complex" ecuation
+print(simplify(And(x + 1 &gt;= 3, x**2 + x**2 + y**2 + 2 &gt;= 5)))
+#And(x &gt;= 2, 2*x**2 + y**2 &gt;= 3)
+
+#Note that Z3 is capable to treat irrational numbers (An irrational algebraic number is a root of a polynomial with integer coefficients. Internally, Z3 represents all these numbers precisely.)
+#so you can get the decimals you need from the solution
+r1 = Real('r1')
+r2 = Real('r2')
+#Solve the ecuation
+print(solve(r1**2 + r2**2 == 3, r1**3 == 2))
+#Solve the ecuation with 30 decimals
+set_option(precision=30)
+print(solve(r1**2 + r2**2 == 3, r1**3 == 2))
+</code></pre>
+<h2 id="打印模型"><a class="header" href="#打印模型">打印模型</a></h2>
+<pre><code class="language-python">from z3 import *
+
+x, y, z = Reals('x y z')
+s = Solver()
+s.add(x &gt; 1, y &gt; 1, x + y &gt; 3, z - x &lt; 10)
+s.check()
+
+m = s.model()
+print ("x = %s" % m[x])
+for d in m.decls():
+print("%s = %s" % (d.name(), m[d]))
+</code></pre>
+<h1 id="机器算术"><a class="header" href="#机器算术">机器算术</a></h1>
+<p>现代CPU和主流编程语言使用<strong>固定大小位向量</strong>进行算术运算。机器算术在Z3Py中作为<strong>位向量</strong>可用。</p>
+<pre><code class="language-python">from z3 import *
+
+x = BitVec('x', 16) #Bit vector variable "x" of length 16 bit
+y = BitVec('y', 16)
+
+e = BitVecVal(10, 16) #Bit vector with value 10 of length 16bits
+a = BitVecVal(-1, 16)
+b = BitVecVal(65535, 16)
+print(simplify(a == b)) #This is True!
+a = BitVecVal(-1, 32)
+b = BitVecVal(65535, 32)
+print(simplify(a == b)) #This is False
+</code></pre>
+<h2 id="有符号无符号数字"><a class="header" href="#有符号无符号数字">有符号/无符号数字</a></h2>
+<p>Z3 提供了特殊的有符号算术运算版本，在这里 <strong>位向量是被视为有符号还是无符号</strong> 是有区别的。在 Z3Py 中，运算符 <strong>&lt;, &lt;=, &gt;, &gt;=, /, % 和 &gt;&gt;</strong> 对应于 <strong>有符号</strong> 版本。相应的 <strong>无符号</strong> 运算符是 <strong>ULT, ULE, UGT, UGE, UDiv, URem 和 LShR.</strong></p>
+<pre><code class="language-python">from z3 import *
+
+# Create to bit-vectors of size 32
+x, y = BitVecs('x y', 32)
+solve(x + y == 2, x &gt; 0, y &gt; 0)
+
+# Bit-wise operators
+# &amp; bit-wise and
+# | bit-wise or
+# ~ bit-wise not
+solve(x &amp; y == ~y)
+solve(x &lt; 0)
+
+# using unsigned version of &lt;
+solve(ULT(x, 0))
+</code></pre>
+<h2 id="functions"><a class="header" href="#functions">Functions</a></h2>
+<p><strong>解释函数</strong>，例如算术，其中 <strong>函数 +</strong> 具有 <strong>固定的标准解释</strong>（它将两个数字相加）。 <strong>未解释函数</strong> 和常量是 <strong>最大灵活的</strong>；它们允许与函数或常量的 <strong>约束</strong> 一致的 <strong>任何解释</strong>。</p>
+<p>示例：将 f 应用两次于 x 结果再次得到 x，但将 f 应用一次于 x 则与 x 不同。</p>
+<pre><code class="language-python">from z3 import *
+
+x = Int('x')
+y = Int('y')
+f = Function('f', IntSort(), IntSort())
+s = Solver()
+s.add(f(f(x)) == x, f(x) == y, x != y)
+s.check()
+m = s.model()
+print("f(f(x)) =", m.evaluate(f(f(x))))
+print("f(x)    =", m.evaluate(f(x)))
+
+print(m.evaluate(f(2)))
+s.add(f(x) == 4) #Find the value that generates 4 as response
+s.check()
+print(m.model())
+</code></pre>
+<h1 id="示例"><a class="header" href="#示例">示例</a></h1>
+<h2 id="数独求解器"><a class="header" href="#数独求解器">数独求解器</a></h2>
+<pre><code class="language-python"># 9x9 matrix of integer variables
+X = [ [ Int("x_%s_%s" % (i+1, j+1)) for j in range(9) ]
+for i in range(9) ]
+
+# each cell contains a value in {1, ..., 9}
+cells_c  = [ And(1 &lt;= X[i][j], X[i][j] &lt;= 9)
+for i in range(9) for j in range(9) ]
+
+# each row contains a digit at most once
+rows_c   = [ Distinct(X[i]) for i in range(9) ]
+
+# each column contains a digit at most once
+cols_c   = [ Distinct([ X[i][j] for i in range(9) ])
+for j in range(9) ]
+
+# each 3x3 square contains a digit at most once
+sq_c     = [ Distinct([ X[3*i0 + i][3*j0 + j]
+for i in range(3) for j in range(3) ])
+for i0 in range(3) for j0 in range(3) ]
+
+sudoku_c = cells_c + rows_c + cols_c + sq_c
+
+# sudoku instance, we use '0' for empty cells
+instance = ((0,0,0,0,9,4,0,3,0),
+(0,0,0,5,1,0,0,0,7),
+(0,8,9,0,0,0,0,4,0),
+(0,0,0,0,0,0,2,0,8),
+(0,6,0,2,0,1,0,5,0),
+(1,0,2,0,0,0,0,0,0),
+(0,7,0,0,0,0,5,2,0),
+(9,0,0,0,6,5,0,0,0),
+(0,4,0,9,7,0,0,0,0))
+
+instance_c = [ If(instance[i][j] == 0,
+True,
+X[i][j] == instance[i][j])
+for i in range(9) for j in range(9) ]
+
+s = Solver()
+s.add(sudoku_c + instance_c)
+if s.check() == sat:
+m = s.model()
+r = [ [ m.evaluate(X[i][j]) for j in range(9) ]
+for i in range(9) ]
+print_matrix(r)
+else:
+print "failed to solve"
+</code></pre>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://ericpony.github.io/z3py-tutorial/guide-examples.htm">https://ericpony.github.io/z3py-tutorial/guide-examples.htm</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../reversing/reversing-tools-basic-methods/angr/angr-examples.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../reversing/reversing-tools-basic-methods/cheat-engine.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../reversing/reversing-tools-basic-methods/angr/angr-examples.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../reversing/reversing-tools-basic-methods/cheat-engine.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

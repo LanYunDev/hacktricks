@@ -1,0 +1,397 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>euid, ruid, suid</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="euid-ruid-suid"><a class="header" href="#euid-ruid-suid">euid, ruid, suid</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="/.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<p>通过 8kSec 学院深化您在 <strong>移动安全</strong> 方面的专业知识。通过我们的自学课程掌握 iOS 和 Android 安全并获得认证：</p>
+<p>{% embed url="https://academy.8ksec.io/" %}</p>
+<h3 id="用户标识变量"><a class="header" href="#用户标识变量">用户标识变量</a></h3>
+<ul>
+<li><strong><code>ruid</code></strong>：<strong>真实用户 ID</strong> 表示发起该进程的用户。</li>
+<li><strong><code>euid</code></strong>：称为 <strong>有效用户 ID</strong>，表示系统用来确定进程权限的用户身份。通常情况下，<code>euid</code> 与 <code>ruid</code> 相同，除非在执行 SetUID 二进制文件的情况下，<code>euid</code> 会采用文件所有者的身份，从而授予特定的操作权限。</li>
+<li><strong><code>suid</code></strong>：此 <strong>保存用户 ID</strong> 在高权限进程（通常以 root 身份运行）需要暂时放弃其权限以执行某些任务时至关重要，之后再恢复其最初的提升状态。</li>
+</ul>
+<h4 id="重要说明"><a class="header" href="#重要说明">重要说明</a></h4>
+<p>非 root 进程只能将其 <code>euid</code> 修改为当前的 <code>ruid</code>、<code>euid</code> 或 <code>suid</code>。</p>
+<h3 id="理解-setuid-函数"><a class="header" href="#理解-setuid-函数">理解 set*uid 函数</a></h3>
+<ul>
+<li><strong><code>setuid</code></strong>：与最初的假设相反，<code>setuid</code> 主要修改 <code>euid</code> 而不是 <code>ruid</code>。具体而言，对于特权进程，它将 <code>ruid</code>、<code>euid</code> 和 <code>suid</code> 与指定用户（通常是 root）对齐，有效地巩固这些 ID，因为 <code>suid</code> 会覆盖。详细信息可以在 <a href="https://man7.org/linux/man-pages/man2/setuid.2.html">setuid 手册页</a> 中找到。</li>
+<li><strong><code>setreuid</code></strong> 和 <strong><code>setresuid</code></strong>：这些函数允许对 <code>ruid</code>、<code>euid</code> 和 <code>suid</code> 进行细致的调整。然而，它们的能力取决于进程的权限级别。对于非 root 进程，修改仅限于当前的 <code>ruid</code>、<code>euid</code> 和 <code>suid</code> 值。相比之下，root 进程或具有 <code>CAP_SETUID</code> 能力的进程可以将这些 ID 分配为任意值。更多信息可以从 <a href="https://man7.org/linux/man-pages/man2/setresuid.2.html">setresuid 手册页</a> 和 <a href="https://man7.org/linux/man-pages/man2/setreuid.2.html">setreuid 手册页</a> 中获取。</li>
+</ul>
+<p>这些功能的设计并不是作为安全机制，而是为了促进预期的操作流程，例如当程序通过更改其有效用户 ID 来采用另一个用户的身份时。</p>
+<p>值得注意的是，虽然 <code>setuid</code> 可能是提升到 root 权限的常用方法（因为它将所有 ID 对齐到 root），但区分这些函数对于理解和操控不同场景下的用户 ID 行为至关重要。</p>
+<h3 id="linux-中的程序执行机制"><a class="header" href="#linux-中的程序执行机制">Linux 中的程序执行机制</a></h3>
+<h4 id="execve-系统调用"><a class="header" href="#execve-系统调用"><strong><code>execve</code> 系统调用</strong></a></h4>
+<ul>
+<li><strong>功能</strong>：<code>execve</code> 启动一个程序，由第一个参数决定。它接受两个数组参数，<code>argv</code> 用于参数，<code>envp</code> 用于环境。</li>
+<li><strong>行为</strong>：它保留调用者的内存空间，但刷新堆栈、堆和数据段。程序的代码被新程序替换。</li>
+<li><strong>用户 ID 保持</strong>：</li>
+<li><code>ruid</code>、<code>euid</code> 和附加的组 ID 保持不变。</li>
+<li>如果新程序设置了 SetUID 位，<code>euid</code> 可能会有细微变化。</li>
+<li>执行后，<code>suid</code> 从 <code>euid</code> 更新。</li>
+<li><strong>文档</strong>：详细信息可以在 <a href="https://man7.org/linux/man-pages/man2/execve.2.html"><code>execve</code> 手册页</a> 中找到。</li>
+</ul>
+<h4 id="system-函数"><a class="header" href="#system-函数"><strong><code>system</code> 函数</strong></a></h4>
+<ul>
+<li><strong>功能</strong>：与 <code>execve</code> 不同，<code>system</code> 使用 <code>fork</code> 创建一个子进程，并在该子进程中使用 <code>execl</code> 执行命令。</li>
+<li><strong>命令执行</strong>：通过 <code>sh</code> 执行命令，使用 <code>execl("/bin/sh", "sh", "-c", command, (char *) NULL);</code>。</li>
+<li><strong>行为</strong>：由于 <code>execl</code> 是 <code>execve</code> 的一种形式，它在新子进程的上下文中以类似方式操作。</li>
+<li><strong>文档</strong>：进一步的见解可以从 <a href="https://man7.org/linux/man-pages/man3/system.3.html"><code>system</code> 手册页</a> 中获得。</li>
+</ul>
+<h4 id="带有-suid-的-bash-和-sh-的行为"><a class="header" href="#带有-suid-的-bash-和-sh-的行为"><strong>带有 SUID 的 <code>bash</code> 和 <code>sh</code> 的行为</strong></a></h4>
+<ul>
+<li><strong><code>bash</code></strong>：</li>
+<li>具有 <code>-p</code> 选项，影响 <code>euid</code> 和 <code>ruid</code> 的处理方式。</li>
+<li>如果没有 <code>-p</code>，<code>bash</code> 会将 <code>euid</code> 设置为 <code>ruid</code>，如果它们最初不同。</li>
+<li>如果有 <code>-p</code>，则保留初始的 <code>euid</code>。</li>
+<li>更多细节可以在 <a href="https://linux.die.net/man/1/bash"><code>bash</code> 手册页</a> 中找到。</li>
+<li><strong><code>sh</code></strong>：</li>
+<li>不具备类似于 <code>bash</code> 中的 <code>-p</code> 的机制。</li>
+<li>关于用户 ID 的行为没有明确提及，除了在 <code>-i</code> 选项下，强调 <code>euid</code> 和 <code>ruid</code> 的相等性。</li>
+<li>额外信息可在 <a href="https://man7.org/linux/man-pages/man1/sh.1p.html"><code>sh</code> 手册页</a> 中找到。</li>
+</ul>
+<p>这些机制在操作上各不相同，为执行和程序之间的转换提供了多种选择，具体细节在用户 ID 的管理和保持方面有所不同。</p>
+<h3 id="测试执行中的用户-id-行为"><a class="header" href="#测试执行中的用户-id-行为">测试执行中的用户 ID 行为</a></h3>
+<p>示例取自 https://0xdf.gitlab.io/2022/05/31/setuid-rabbithole.html#testing-on-jail，查看以获取更多信息</p>
+<h4 id="案例-1使用-setuid-和-system"><a class="header" href="#案例-1使用-setuid-和-system">案例 1：使用 <code>setuid</code> 和 <code>system</code></a></h4>
+<p><strong>目标</strong>：理解 <code>setuid</code> 与 <code>system</code> 和 <code>bash</code> 作为 <code>sh</code> 结合的效果。</p>
+<p><strong>C 代码</strong>：</p>
+<pre><code class="language-c">#define _GNU_SOURCE
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void) {
+setuid(1000);
+system("id");
+return 0;
+}
+</code></pre>
+<p><strong>编译和权限：</strong></p>
+<pre><code class="language-bash">oxdf@hacky$ gcc a.c -o /mnt/nfsshare/a;
+oxdf@hacky$ chmod 4755 /mnt/nfsshare/a
+</code></pre>
+<pre><code class="language-bash">bash-4.2$ $ ./a
+uid=99(nobody) gid=99(nobody) groups=99(nobody) context=system_u:system_r:unconfined_service_t:s0
+</code></pre>
+<p><strong>分析：</strong></p>
+<ul>
+<li><code>ruid</code> 和 <code>euid</code> 初始值分别为 99 (nobody) 和 1000 (frank)。</li>
+<li><code>setuid</code> 将两者都调整为 1000。</li>
+<li><code>system</code> 执行 <code>/bin/bash -c id</code>，这是由于 sh 到 bash 的符号链接。</li>
+<li><code>bash</code> 在没有 <code>-p</code> 的情况下，将 <code>euid</code> 调整为与 <code>ruid</code> 匹配，导致两者都为 99 (nobody)。</li>
+</ul>
+<h4 id="案例-2使用-setreuid-和-system"><a class="header" href="#案例-2使用-setreuid-和-system">案例 2：使用 setreuid 和 system</a></h4>
+<p><strong>C 代码</strong>：</p>
+<pre><code class="language-c">#define _GNU_SOURCE
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void) {
+setreuid(1000, 1000);
+system("id");
+return 0;
+}
+</code></pre>
+<p><strong>编译和权限：</strong></p>
+<pre><code class="language-bash">oxdf@hacky$ gcc b.c -o /mnt/nfsshare/b; chmod 4755 /mnt/nfsshare/b
+</code></pre>
+<p><strong>执行和结果：</strong></p>
+<pre><code class="language-bash">bash-4.2$ $ ./b
+uid=1000(frank) gid=99(nobody) groups=99(nobody) context=system_u:system_r:unconfined_service_t:s0
+</code></pre>
+<p><strong>分析：</strong></p>
+<ul>
+<li><code>setreuid</code> 将 ruid 和 euid 都设置为 1000。</li>
+<li><code>system</code> 调用 bash，由于用户 ID 相等，保持用户 ID，有效地作为 frank 操作。</li>
+</ul>
+<h4 id="案例-3使用-setuid-和-execve"><a class="header" href="#案例-3使用-setuid-和-execve">案例 3：使用 setuid 和 execve</a></h4>
+<p>目标：探索 setuid 和 execve 之间的交互。</p>
+<pre><code class="language-bash">#define _GNU_SOURCE
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void) {
+setuid(1000);
+execve("/usr/bin/id", NULL, NULL);
+return 0;
+}
+</code></pre>
+<p><strong>执行和结果：</strong></p>
+<pre><code class="language-bash">bash-4.2$ $ ./c
+uid=99(nobody) gid=99(nobody) euid=1000(frank) groups=99(nobody) context=system_u:system_r:unconfined_service_t:s0
+</code></pre>
+<p><strong>分析：</strong></p>
+<ul>
+<li><code>ruid</code> 保持为 99，但 euid 设置为 1000，符合 setuid 的效果。</li>
+</ul>
+<p><strong>C 代码示例 2（调用 Bash）：</strong></p>
+<pre><code class="language-bash">#define _GNU_SOURCE
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void) {
+setuid(1000);
+execve("/bin/bash", NULL, NULL);
+return 0;
+}
+</code></pre>
+<p><strong>执行和结果：</strong></p>
+<pre><code class="language-bash">bash-4.2$ $ ./d
+bash-4.2$ $ id
+uid=99(nobody) gid=99(nobody) groups=99(nobody) context=system_u:system_r:unconfined_service_t:s0
+</code></pre>
+<p><strong>分析：</strong></p>
+<ul>
+<li>尽管 <code>euid</code> 通过 <code>setuid</code> 设置为 1000，<code>bash</code> 由于缺少 <code>-p</code> 将 <code>euid</code> 重置为 <code>ruid</code> (99)。</li>
+</ul>
+<p><strong>C 代码示例 3 (使用 bash -p)：</strong></p>
+<pre><code class="language-bash">#define _GNU_SOURCE
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+int main(void) {
+char *const paramList[10] = {"/bin/bash", "-p", NULL};
+setuid(1000);
+execve(paramList[0], paramList, NULL);
+return 0;
+}
+</code></pre>
+<p><strong>执行和结果：</strong></p>
+<pre><code class="language-bash">bash-4.2$ $ ./e
+bash-4.2$ $ id
+uid=99(nobody) gid=99(nobody) euid=100
+</code></pre>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://0xdf.gitlab.io/2022/05/31/setuid-rabbithole.html#testing-on-jail">https://0xdf.gitlab.io/2022/05/31/setuid-rabbithole.html#testing-on-jail</a></li>
+</ul>
+<figure><img src="/.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<p>通过8kSec Academy深化您在<strong>移动安全</strong>方面的专业知识。通过我们的自学课程掌握iOS和Android安全并获得认证：</p>
+<p>{% embed url="https://academy.8ksec.io/" %}</p>
+<p>{% hint style="success" %}
+学习和实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>，或在<strong>Twitter</strong>上<strong>关注</strong>我们 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../linux-hardening/privilege-escalation/escaping-from-limited-bash.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../linux-hardening/privilege-escalation/interesting-groups-linux-pe/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../linux-hardening/privilege-escalation/escaping-from-limited-bash.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../linux-hardening/privilege-escalation/interesting-groups-linux-pe/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

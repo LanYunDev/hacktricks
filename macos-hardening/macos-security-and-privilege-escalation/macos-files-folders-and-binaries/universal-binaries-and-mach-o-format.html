@@ -1,0 +1,561 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Universal binaries &amp; Mach-O Format</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-universal-binaries--mach-o-format"><a class="header" href="#macos-universal-binaries--mach-o-format">macOS Universal binaries &amp; Mach-O Format</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>Mac OS 二进制文件通常被编译为 <strong>universal binaries</strong>。一个 <strong>universal binary</strong> 可以 <strong>在同一个文件中支持多种架构</strong>。</p>
+<p>这些二进制文件遵循 <strong>Mach-O 结构</strong>，基本上由以下部分组成：</p>
+<ul>
+<li>头部</li>
+<li>加载命令</li>
+<li>数据</li>
+</ul>
+<p><img src="../../../.gitbook/assets/image%20(470).png" alt="https://alexdremov.me/content/images/2022/10/6XLCD.gif" /></p>
+<h2 id="fat-header"><a class="header" href="#fat-header">Fat Header</a></h2>
+<p>使用以下命令搜索文件： <code>mdfind fat.h | grep -i mach-o | grep -E "fat.h$"</code></p>
+<pre class="language-c"><code class="lang-c"><strong>#define FAT_MAGIC	0xcafebabe
+</strong><strong>#define FAT_CIGAM	0xbebafeca	/* NXSwapLong(FAT_MAGIC) */
+</strong>
+struct fat_header {
+<strong>	uint32_t	magic;		/* FAT_MAGIC 或 FAT_MAGIC_64 */
+</strong><strong>	uint32_t	nfat_arch;	/* 后续结构的数量 */
+</strong>};
+
+struct fat_arch {
+cpu_type_t	cputype;	/* cpu 说明符 (int) */
+cpu_subtype_t	cpusubtype;	/* 机器说明符 (int) */
+uint32_t	offset;		/* 到此目标文件的文件偏移 */
+uint32_t	size;		/* 此目标文件的大小 */
+uint32_t	align;		/* 作为 2 的幂的对齐 */
+};
+</code></pre>
+<p>头部包含 <strong>magic</strong> 字节，后面是文件 <strong>包含的</strong> <strong>架构</strong> 的 <strong>数量</strong> (<code>nfat_arch</code>)，每个架构将有一个 <code>fat_arch</code> 结构。</p>
+<p>使用以下命令检查：</p>
+<pre class="language-shell-session"><code class="lang-shell-session">% file /bin/ls
+/bin/ls: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64e:Mach-O 64-bit executable arm64e]
+/bin/ls (for architecture x86_64):	Mach-O 64-bit executable x86_64
+/bin/ls (for architecture arm64e):	Mach-O 64-bit executable arm64e
+
+% otool -f -v /bin/ls
+Fat headers
+fat_magic FAT_MAGIC
+<strong>nfat_arch 2
+</strong><strong>architecture x86_64
+</strong>    cputype CPU_TYPE_X86_64
+cpusubtype CPU_SUBTYPE_X86_64_ALL
+capabilities 0x0
+<strong>    offset 16384
+</strong><strong>    size 72896
+</strong>    align 2^14 (16384)
+<strong>architecture arm64e
+</strong>    cputype CPU_TYPE_ARM64
+cpusubtype CPU_SUBTYPE_ARM64E
+capabilities PTR_AUTH_VERSION USERSPACE 0
+<strong>    offset 98304
+</strong><strong>    size 88816
+</strong>    align 2^14 (16384)
+</code></pre>
+<p>或者使用 <a href="https://sourceforge.net/projects/machoview/">Mach-O View</a> 工具：</p>
+<figure><img src="../../../.gitbook/assets/image (1094).png" alt=""><figcaption></figcaption></figure>
+<p>正如你所想，通常为 2 种架构编译的 universal binary <strong>大小是</strong> 为 1 种架构编译的 <strong>两倍</strong>。</p>
+<h2 id="mach-o-header"><a class="header" href="#mach-o-header"><strong>Mach-O Header</strong></a></h2>
+<p>头部包含有关文件的基本信息，例如用于识别它为 Mach-O 文件的 magic 字节和有关目标架构的信息。你可以在以下位置找到它： <code>mdfind loader.h | grep -i mach-o | grep -E "loader.h$"</code></p>
+<pre><code class="language-c">#define	MH_MAGIC	0xfeedface	/* the mach magic number */
+#define MH_CIGAM	0xcefaedfe	/* NXSwapInt(MH_MAGIC) */
+struct mach_header {
+uint32_t	magic;		/* mach magic number identifier */
+cpu_type_t	cputype;	/* cpu specifier (e.g. I386) */
+cpu_subtype_t	cpusubtype;	/* machine specifier */
+uint32_t	filetype;	/* type of file (usage and alignment for the file) */
+uint32_t	ncmds;		/* number of load commands */
+uint32_t	sizeofcmds;	/* the size of all the load commands */
+uint32_t	flags;		/* flags */
+};
+
+#define MH_MAGIC_64 0xfeedfacf /* the 64-bit mach magic number */
+#define MH_CIGAM_64 0xcffaedfe /* NXSwapInt(MH_MAGIC_64) */
+struct mach_header_64 {
+uint32_t	magic;		/* mach magic number identifier */
+int32_t		cputype;	/* cpu specifier */
+int32_t		cpusubtype;	/* machine specifier */
+uint32_t	filetype;	/* type of file */
+uint32_t	ncmds;		/* number of load commands */
+uint32_t	sizeofcmds;	/* the size of all the load commands */
+uint32_t	flags;		/* flags */
+uint32_t	reserved;	/* reserved */
+};
+</code></pre>
+<h3 id="mach-o-文件类型"><a class="header" href="#mach-o-文件类型">Mach-O 文件类型</a></h3>
+<p>有不同的文件类型，可以在<a href="https://opensource.apple.com/source/xnu/xnu-2050.18.24/EXTERNAL_HEADERS/mach-o/loader.h"><strong>源代码中找到定义，例如这里</strong></a>。最重要的类型有：</p>
+<ul>
+<li><code>MH_OBJECT</code>: 可重定位目标文件（编译的中间产品，尚未成为可执行文件）。</li>
+<li><code>MH_EXECUTE</code>: 可执行文件。</li>
+<li><code>MH_FVMLIB</code>: 固定虚拟机库文件。</li>
+<li><code>MH_CORE</code>: 代码转储</li>
+<li><code>MH_PRELOAD</code>: 预加载的可执行文件（在 XNU 中不再支持）</li>
+<li><code>MH_DYLIB</code>: 动态库</li>
+<li><code>MH_DYLINKER</code>: 动态链接器</li>
+<li><code>MH_BUNDLE</code>: “插件文件”。使用 gcc 中的 -bundle 生成，并由 <code>NSBundle</code> 或 <code>dlopen</code> 显式加载。</li>
+<li><code>MH_DYSM</code>: 伴随的 <code>.dSym</code> 文件（用于调试的符号文件）。</li>
+<li><code>MH_KEXT_BUNDLE</code>: 内核扩展。</li>
+</ul>
+<pre><code class="language-bash"># Checking the mac header of a binary
+otool -arch arm64e -hv /bin/ls
+Mach header
+magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags
+MH_MAGIC_64    ARM64          E USR00     EXECUTE    19       1728   NOUNDEFS DYLDLINK TWOLEVEL PIE
+</code></pre>
+<p>Or using <a href="https://sourceforge.net/projects/machoview/">Mach-O View</a>:</p>
+<figure><img src="../../../.gitbook/assets/image (1133).png" alt=""><figcaption></figcaption></figure>
+<h2 id="mach-o-标志"><a class="header" href="#mach-o-标志"><strong>Mach-O 标志</strong></a></h2>
+<p>源代码还定义了几个用于加载库的标志：</p>
+<ul>
+<li><code>MH_NOUNDEFS</code>: 没有未定义的引用（完全链接）</li>
+<li><code>MH_DYLDLINK</code>: Dyld 链接</li>
+<li><code>MH_PREBOUND</code>: 动态引用预绑定。</li>
+<li><code>MH_SPLIT_SEGS</code>: 文件分割只读和读写段。</li>
+<li><code>MH_WEAK_DEFINES</code>: 二进制文件具有弱定义符号</li>
+<li><code>MH_BINDS_TO_WEAK</code>: 二进制文件使用弱符号</li>
+<li><code>MH_ALLOW_STACK_EXECUTION</code>: 使堆栈可执行</li>
+<li><code>MH_NO_REEXPORTED_DYLIBS</code>: 库没有 LC_REEXPORT 命令</li>
+<li><code>MH_PIE</code>: 位置无关可执行文件</li>
+<li><code>MH_HAS_TLV_DESCRIPTORS</code>: 有一个包含线程局部变量的部分</li>
+<li><code>MH_NO_HEAP_EXECUTION</code>: 堆/数据页面不执行</li>
+<li><code>MH_HAS_OBJC</code>: 二进制文件具有 oBject-C 部分</li>
+<li><code>MH_SIM_SUPPORT</code>: 模拟器支持</li>
+<li><code>MH_DYLIB_IN_CACHE</code>: 用于共享库缓存中的 dylibs/frameworks。</li>
+</ul>
+<h2 id="mach-o-加载命令"><a class="header" href="#mach-o-加载命令"><strong>Mach-O 加载命令</strong></a></h2>
+<p><strong>文件在内存中的布局</strong>在这里指定，详细说明了 <strong>符号表的位置</strong>、执行开始时主线程的上下文以及所需的 <strong>共享库</strong>。向动态加载器 <strong>(dyld)</strong> 提供了有关二进制文件加载到内存中的过程的指令。</p>
+<p>它使用 <strong>load_command</strong> 结构，定义在提到的 <strong><code>loader.h</code></strong> 中：</p>
+<pre><code class="language-objectivec">struct load_command {
+uint32_t cmd;           /* type of load command */
+uint32_t cmdsize;       /* total size of command in bytes */
+};
+</code></pre>
+<p>There are about <strong>50 different types of load commands</strong> that the system handles differently. The most common ones are: <code>LC_SEGMENT_64</code>, <code>LC_LOAD_DYLINKER</code>, <code>LC_MAIN</code>, <code>LC_LOAD_DYLIB</code>, and <code>LC_CODE_SIGNATURE</code>.</p>
+<h3 id="lc_segmentlc_segment_64"><a class="header" href="#lc_segmentlc_segment_64"><strong>LC_SEGMENT/LC_SEGMENT_64</strong></a></h3>
+<p>{% hint style="success" %}
+基本上，这种类型的加载命令定义了<strong>如何加载 __TEXT</strong>（可执行代码）<strong>和 __DATA</strong>（进程数据）<strong>段</strong>，根据<strong>数据部分中指示的偏移量</strong>在二进制文件执行时。
+{% endhint %}</p>
+<p>这些命令<strong>定义了段</strong>，在进程执行时被<strong>映射</strong>到<strong>虚拟内存空间</strong>中。</p>
+<p>有<strong>不同类型</strong>的段，例如**__TEXT<strong>段，保存程序的可执行代码，以及</strong>__DATA<strong>段，包含进程使用的数据。这些</strong>段位于Mach-O文件的数据部分**中。</p>
+<p><strong>每个段</strong>可以进一步<strong>划分</strong>为多个<strong>节</strong>。<strong>加载命令结构</strong>包含关于<strong>这些节</strong>在各自段中的<strong>信息</strong>。</p>
+<p>在头部，首先找到<strong>段头</strong>：</p>
+<pre class="language-c"><code class="lang-c">struct segment_command_64 { /* for 64-bit architectures */
+uint32_t	cmd;		/* LC_SEGMENT_64 */
+uint32_t	cmdsize;	/* includes sizeof section_64 structs */
+char		segname[16];	/* segment name */
+uint64_t	vmaddr;		/* memory address of this segment */
+uint64_t	vmsize;		/* memory size of this segment */
+uint64_t	fileoff;	/* file offset of this segment */
+uint64_t	filesize;	/* amount to map from the file */
+int32_t		maxprot;	/* maximum VM protection */
+int32_t		initprot;	/* initial VM protection */
+<strong>	uint32_t	nsects;		/* number of sections in segment */
+</strong>	uint32_t	flags;		/* flags */
+};
+</code></pre>
+<p>Example of segment header:</p>
+<figure><img src="../../../.gitbook/assets/image (1126).png" alt=""><figcaption></figcaption></figure>
+<p>This header defines the <strong>number of sections whose headers appear after</strong> it:</p>
+<pre><code class="language-c">struct section_64 { /* for 64-bit architectures */
+char		sectname[16];	/* name of this section */
+char		segname[16];	/* segment this section goes in */
+uint64_t	addr;		/* memory address of this section */
+uint64_t	size;		/* size in bytes of this section */
+uint32_t	offset;		/* file offset of this section */
+uint32_t	align;		/* section alignment (power of 2) */
+uint32_t	reloff;		/* file offset of relocation entries */
+uint32_t	nreloc;		/* number of relocation entries */
+uint32_t	flags;		/* flags (section type and attributes)*/
+uint32_t	reserved1;	/* reserved (for offset or index) */
+uint32_t	reserved2;	/* reserved (for count or sizeof) */
+uint32_t	reserved3;	/* reserved */
+};
+</code></pre>
+<p>示例 <strong>节标题</strong>：</p>
+<figure><img src="../../../.gitbook/assets/image (1108).png" alt=""><figcaption></figcaption></figure>
+<p>如果你 <strong>添加</strong> <strong>节偏移</strong> (0x37DC) + <strong>架构开始的偏移</strong>，在这种情况下 <code>0x18000</code> --&gt; <code>0x37DC + 0x18000 = 0x1B7DC</code></p>
+<figure><img src="../../../.gitbook/assets/image (701).png" alt=""><figcaption></figcaption></figure>
+<p>也可以通过 <strong>命令行</strong> 获取 <strong>头信息</strong>：</p>
+<pre><code class="language-bash">otool -lv /bin/ls
+</code></pre>
+<p>常见的由此命令加载的段：</p>
+<ul>
+<li><strong><code>__PAGEZERO</code>:</strong> 它指示内核<strong>映射</strong> <strong>地址零</strong>，以便<strong>无法读取、写入或执行</strong>。结构中的maxprot和minprot变量设置为零，以指示此页面上<strong>没有读写执行权限</strong>。</li>
+<li>此分配对于<strong>缓解NULL指针解引用漏洞</strong>非常重要。这是因为XNU强制执行一个硬页面零，确保内存的第一页（仅第一页）不可访问（在i386中除外）。一个二进制文件可以通过制作一个小的__PAGEZERO（使用<code>-pagezero_size</code>）来满足这些要求，以覆盖前4k，并使其余的32位内存在用户模式和内核模式下均可访问。</li>
+<li><strong><code>__TEXT</code></strong>: 包含<strong>可执行</strong> <strong>代码</strong>，具有<strong>读取</strong>和<strong>执行</strong>权限（不可写）。此段的常见部分：</li>
+<li><code>__text</code>: 编译的二进制代码</li>
+<li><code>__const</code>: 常量数据（只读）</li>
+<li><code>__[c/u/os_log]string</code>: C、Unicode或os日志字符串常量</li>
+<li><code>__stubs</code>和<code>__stubs_helper</code>: 在动态库加载过程中涉及</li>
+<li><code>__unwind_info</code>: 堆栈展开数据。</li>
+<li>请注意，所有这些内容都是签名的，但也标记为可执行（为不一定需要此权限的部分（如专用字符串部分）创建更多的利用选项）。</li>
+<li><strong><code>__DATA</code></strong>: 包含<strong>可读</strong>和<strong>可写</strong>的数据（不可执行）。</li>
+<li><code>__got:</code> 全局偏移表</li>
+<li><code>__nl_symbol_ptr</code>: 非惰性（加载时绑定）符号指针</li>
+<li><code>__la_symbol_ptr</code>: 惰性（使用时绑定）符号指针</li>
+<li><code>__const</code>: 应该是只读数据（实际上不是）</li>
+<li><code>__cfstring</code>: CoreFoundation字符串</li>
+<li><code>__data</code>: 全局变量（已初始化）</li>
+<li><code>__bss</code>: 静态变量（未初始化）</li>
+<li><code>__objc_*</code> (__objc_classlist, __objc_protolist等): Objective-C运行时使用的信息</li>
+<li><strong><code>__DATA_CONST</code></strong>: __DATA.__const不保证是常量（写权限），其他指针和GOT也不是。此部分使用<code>mprotect</code>使<code>__const</code>、一些初始化器和GOT表（解析后）<strong>只读</strong>。</li>
+<li><strong><code>__LINKEDIT</code></strong>: 包含链接器（dyld）所需的信息，如符号、字符串和重定位表条目。它是一个通用容器，包含不在<code>__TEXT</code>或<code>__DATA</code>中的内容，其内容在其他加载命令中描述。</li>
+<li>dyld信息：重定位、非惰性/惰性/弱绑定操作码和导出信息</li>
+<li>函数开始：函数起始地址表</li>
+<li>代码中的数据：__text中的数据岛</li>
+<li>符号表：二进制中的符号</li>
+<li>间接符号表：指针/存根符号</li>
+<li>字符串表</li>
+<li>代码签名</li>
+<li><strong><code>__OBJC</code></strong>: 包含Objective-C运行时使用的信息。尽管这些信息也可能在__DATA段中找到，在各种__objc_*部分内。</li>
+<li><strong><code>__RESTRICT</code></strong>: 一个没有内容的段，只有一个名为**<code>__restrict</code>**（也为空）的单一部分，确保在运行二进制文件时，它将忽略DYLD环境变量。</li>
+</ul>
+<p>正如在代码中所看到的，<strong>段也支持标志</strong>（尽管它们并不常用）：</p>
+<ul>
+<li><code>SG_HIGHVM</code>: 仅核心（未使用）</li>
+<li><code>SG_FVMLIB</code>: 未使用</li>
+<li><code>SG_NORELOC</code>: 段没有重定位</li>
+<li><code>SG_PROTECTED_VERSION_1</code>: 加密。例如，Finder用于加密文本<code>__TEXT</code>段。</li>
+</ul>
+<h3 id="lc_unixthreadlc_main"><a class="header" href="#lc_unixthreadlc_main"><strong><code>LC_UNIXTHREAD/LC_MAIN</code></strong></a></h3>
+<p><strong><code>LC_MAIN</code><strong>包含</strong>entryoff属性</strong>中的入口点。在加载时，<strong>dyld</strong>简单地<strong>将</strong>此值<strong>添加</strong>到（内存中的）<strong>二进制文件基址</strong>，然后<strong>跳转</strong>到此指令以开始执行二进制代码。</p>
+<p>**<code>LC_UNIXTHREAD</code><strong>包含启动主线程时寄存器必须具有的值。这已经被弃用，但</strong><code>dyld</code>**仍然使用它。可以通过以下方式查看此设置的寄存器值：</p>
+<pre><code class="language-bash">otool -l /usr/lib/dyld
+[...]
+Load command 13
+cmd LC_UNIXTHREAD
+cmdsize 288
+flavor ARM_THREAD_STATE64
+count ARM_THREAD_STATE64_COUNT
+x0  0x0000000000000000 x1  0x0000000000000000 x2  0x0000000000000000
+x3  0x0000000000000000 x4  0x0000000000000000 x5  0x0000000000000000
+x6  0x0000000000000000 x7  0x0000000000000000 x8  0x0000000000000000
+x9  0x0000000000000000 x10 0x0000000000000000 x11 0x0000000000000000
+x12 0x0000000000000000 x13 0x0000000000000000 x14 0x0000000000000000
+x15 0x0000000000000000 x16 0x0000000000000000 x17 0x0000000000000000
+x18 0x0000000000000000 x19 0x0000000000000000 x20 0x0000000000000000
+x21 0x0000000000000000 x22 0x0000000000000000 x23 0x0000000000000000
+x24 0x0000000000000000 x25 0x0000000000000000 x26 0x0000000000000000
+x27 0x0000000000000000 x28 0x0000000000000000  fp 0x0000000000000000
+lr 0x0000000000000000 sp  0x0000000000000000  pc 0x0000000000004b70
+cpsr 0x00000000
+
+[...]
+</code></pre>
+<h3 id="lc_code_signature"><a class="header" href="#lc_code_signature"><strong><code>LC_CODE_SIGNATURE</code></strong></a></h3>
+<p>包含有关 <strong>Mach-O 文件的代码签名</strong> 的信息。它仅包含一个 <strong>偏移量</strong>，指向 <strong>签名 blob</strong>。这通常位于文件的最末尾。<br />
+然而，您可以在 <a href="https://davedelong.com/blog/2018/01/10/reading-your-own-entitlements/"><strong>这篇博客文章</strong></a> 和这个 <a href="https://gist.github.com/carlospolop/ef26f8eb9fafd4bc22e69e1a32b81da4"><strong>gists</strong></a> 中找到有关此部分的一些信息。</p>
+<h3 id="lc_encryption_info_64"><a class="header" href="#lc_encryption_info_64"><strong><code>LC_ENCRYPTION_INFO[_64]</code></strong></a></h3>
+<p>支持二进制加密。然而，当然，如果攻击者设法破坏了该进程，他将能够以未加密的方式转储内存。</p>
+<h3 id="lc_load_dylinker"><a class="header" href="#lc_load_dylinker"><strong><code>LC_LOAD_DYLINKER</code></strong></a></h3>
+<p>包含 <strong>动态链接器可执行文件的路径</strong>，该文件将共享库映射到进程地址空间。<strong>值始终设置为 <code>/usr/lib/dyld</code></strong>。重要的是要注意，在 macOS 中，dylib 映射发生在 <strong>用户模式</strong>，而不是内核模式。</p>
+<h3 id="lc_ident"><a class="header" href="#lc_ident"><strong><code>LC_IDENT</code></strong></a></h3>
+<p>过时，但当配置为在崩溃时生成转储时，会创建一个 Mach-O 核心转储，并在 <code>LC_IDENT</code> 命令中设置内核版本。</p>
+<h3 id="lc_uuid"><a class="header" href="#lc_uuid"><strong><code>LC_UUID</code></strong></a></h3>
+<p>随机 UUID。它对任何直接的事情都很有用，但 XNU 会将其与其他进程信息一起缓存。它可以在崩溃报告中使用。</p>
+<h3 id="lc_dyld_environment"><a class="header" href="#lc_dyld_environment"><strong><code>LC_DYLD_ENVIRONMENT</code></strong></a></h3>
+<p>允许在进程执行之前向 dyld 指示环境变量。这可能非常危险，因为它可能允许在进程内部执行任意代码，因此此加载命令仅在使用 <code>#define SUPPORT_LC_DYLD_ENVIRONMENT</code> 构建的 dyld 中使用，并进一步限制处理仅限于形式为 <code>DYLD_..._PATH</code> 的变量，指定加载路径。</p>
+<h3 id="lc_load_dylib"><a class="header" href="#lc_load_dylib"><strong><code>LC_LOAD_DYLIB</code></strong></a></h3>
+<p>此加载命令描述了一个 <strong>动态</strong> <strong>库</strong> 依赖关系，<strong>指示</strong> <strong>加载器</strong> (dyld) <strong>加载和链接该库</strong>。每个 Mach-O 二进制文件所需的库都有一个 <code>LC_LOAD_DYLIB</code> 加载命令。</p>
+<ul>
+<li>此加载命令是 <strong><code>dylib_command</code></strong> 类型的结构（其中包含一个描述实际依赖动态库的 struct dylib）：</li>
+</ul>
+<pre><code class="language-objectivec">struct dylib_command {
+uint32_t        cmd;            /* LC_LOAD_{,WEAK_}DYLIB */
+uint32_t        cmdsize;        /* includes pathname string */
+struct dylib    dylib;          /* the library identification */
+};
+
+struct dylib {
+union lc_str  name;                 /* library's path name */
+uint32_t timestamp;                 /* library's build time stamp */
+uint32_t current_version;           /* library's current version number */
+uint32_t compatibility_version;     /* library's compatibility vers number*/
+};
+</code></pre>
+<p><img src="../../../.gitbook/assets/image%20(486).png" alt="" /></p>
+<p>您也可以通过命令行获取此信息：</p>
+<pre><code class="language-bash">otool -L /bin/ls
+/bin/ls:
+/usr/lib/libutil.dylib (compatibility version 1.0.0, current version 1.0.0)
+/usr/lib/libncurses.5.4.dylib (compatibility version 5.4.0, current version 5.4.0)
+/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1319.0.0)
+</code></pre>
+<p>一些潜在的与恶意软件相关的库包括：</p>
+<ul>
+<li><strong>DiskArbitration</strong>: 监控 USB 驱动器</li>
+<li><strong>AVFoundation:</strong> 捕获音频和视频</li>
+<li><strong>CoreWLAN</strong>: Wifi 扫描。</li>
+</ul>
+<p>{% hint style="info" %}
+Mach-O 二进制文件可以包含一个或 <strong>多个</strong> <strong>构造函数</strong>，这些构造函数将在 <strong>LC_MAIN</strong> 指定的地址 <strong>之前</strong> 被 <strong>执行</strong>。<br />
+任何构造函数的偏移量保存在 <strong>__mod_init_func</strong> 部分的 <strong>__DATA_CONST</strong> 段中。
+{% endhint %}</p>
+<h2 id="mach-o-数据"><a class="header" href="#mach-o-数据"><strong>Mach-O 数据</strong></a></h2>
+<p>文件的核心是数据区域，由加载命令区域定义的几个段组成。<strong>每个段中可以容纳多种数据部分</strong>，每个部分 <strong>包含特定类型的代码或数据</strong>。</p>
+<p>{% hint style="success" %}
+数据基本上是包含所有由加载命令 <strong>LC_SEGMENTS_64</strong> 加载的 <strong>信息</strong> 的部分。
+{% endhint %}</p>
+<p><img src="../../../.gitbook/assets/image%20(507)%20(3).png" alt="https://www.oreilly.com/api/v2/epubs/9781785883378/files/graphics/B05055_02_38.jpg" /></p>
+<p>这包括：</p>
+<ul>
+<li><strong>函数表:</strong> 包含有关程序函数的信息。</li>
+<li><strong>符号表</strong>: 包含有关二进制文件使用的外部函数的信息</li>
+<li>它还可以包含内部函数、变量名称等。</li>
+</ul>
+<p>要检查它，您可以使用 <a href="https://sourceforge.net/projects/machoview/"><strong>Mach-O View</strong></a> 工具：</p>
+<figure><img src="../../../.gitbook/assets/image (1120).png" alt=""><figcaption></figcaption></figure>
+<p>或者从命令行：</p>
+<pre><code class="language-bash">size -m /bin/ls
+</code></pre>
+<h2 id="objetive-c-常见部分"><a class="header" href="#objetive-c-常见部分">Objetive-C 常见部分</a></h2>
+<p>在 <code>__TEXT</code> 段 (r-x):</p>
+<ul>
+<li><code>__objc_classname</code>: 类名 (字符串)</li>
+<li><code>__objc_methname</code>: 方法名 (字符串)</li>
+<li><code>__objc_methtype</code>: 方法类型 (字符串)</li>
+</ul>
+<p>在 <code>__DATA</code> 段 (rw-):</p>
+<ul>
+<li><code>__objc_classlist</code>: 所有 Objective-C 类的指针</li>
+<li><code>__objc_nlclslist</code>: 非懒加载 Objective-C 类的指针</li>
+<li><code>__objc_catlist</code>: 类别的指针</li>
+<li><code>__objc_nlcatlist</code>: 非懒加载类别的指针</li>
+<li><code>__objc_protolist</code>: 协议列表</li>
+<li><code>__objc_const</code>: 常量数据</li>
+<li><code>__objc_imageinfo</code>, <code>__objc_selrefs</code>, <code>objc__protorefs</code>...</li>
+</ul>
+<h2 id="swift"><a class="header" href="#swift">Swift</a></h2>
+<ul>
+<li><code>_swift_typeref</code>, <code>_swift3_capture</code>, <code>_swift3_assocty</code>, <code>_swift3_types, _swift3_proto</code>, <code>_swift3_fieldmd</code>, <code>_swift3_builtin</code>, <code>_swift3_reflstr</code></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-sensitive-locations.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-basic-objective-c.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-sensitive-locations.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-basic-objective-c.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

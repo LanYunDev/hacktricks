@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Threat Modeling</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="威胁建模"><a class="header" href="#威胁建模">威胁建模</a></h1>
+<h2 id="威胁建模-1"><a class="header" href="#威胁建模-1">威胁建模</a></h2>
+<p>欢迎来到 HackTricks 关于威胁建模的综合指南！开始探索网络安全这一关键方面，在这里我们识别、理解并制定针对系统潜在漏洞的策略。此线程作为逐步指南，包含真实案例、有用软件和易于理解的解释。非常适合希望加强网络安全防御的新手和经验丰富的从业者。</p>
+<h3 id="常用场景"><a class="header" href="#常用场景">常用场景</a></h3>
+<ol>
+<li><strong>软件开发</strong>：作为安全软件开发生命周期（SSDLC）的一部分，威胁建模有助于<strong>在开发早期识别潜在漏洞来源</strong>。</li>
+<li><strong>渗透测试</strong>：渗透测试执行标准（PTES）框架要求<strong>进行威胁建模以了解系统的漏洞</strong>，然后再进行测试。</li>
+</ol>
+<h3 id="威胁模型概述"><a class="header" href="#威胁模型概述">威胁模型概述</a></h3>
+<p>威胁模型通常以图表、图像或其他形式的可视化插图表示，描绘应用程序的计划架构或现有构建。它与<strong>数据流图</strong>相似，但关键区别在于其安全导向的设计。</p>
+<p>威胁模型通常包含用红色标记的元素，象征潜在的漏洞、风险或障碍。为了简化风险识别过程，采用 CIA（机密性、完整性、可用性）三元组，构成许多威胁建模方法的基础，其中 STRIDE 是最常见的。然而，所选方法可能会根据具体上下文和要求而有所不同。</p>
+<h3 id="cia-三元组"><a class="header" href="#cia-三元组">CIA 三元组</a></h3>
+<p>CIA 三元组是信息安全领域广泛认可的模型，代表机密性、完整性和可用性。这三大支柱构成了许多安全措施和政策的基础，包括威胁建模方法。</p>
+<ol>
+<li><strong>机密性</strong>：确保数据或系统不被未经授权的个人访问。这是安全的核心方面，需要适当的访问控制、加密和其他措施以防止数据泄露。</li>
+<li><strong>完整性</strong>：数据在其生命周期内的准确性、一致性和可信度。该原则确保数据不被未经授权的方更改或篡改。它通常涉及校验和、哈希和其他数据验证方法。</li>
+<li><strong>可用性</strong>：确保数据和服务在需要时可供授权用户访问。这通常涉及冗余、容错和高可用性配置，以保持系统在中断情况下的运行。</li>
+</ol>
+<h3 id="威胁建模方法"><a class="header" href="#威胁建模方法">威胁建模方法</a></h3>
+<ol>
+<li><strong>STRIDE</strong>：由微软开发，STRIDE 是<strong>欺骗、篡改、否认、信息泄露、服务拒绝和特权提升</strong>的首字母缩略词。每个类别代表一种威胁，这种方法通常用于程序或系统的设计阶段，以识别潜在威胁。</li>
+<li><strong>DREAD</strong>：这是微软用于识别威胁风险评估的另一种方法。DREAD 代表<strong>损害潜力、可重现性、可利用性、受影响用户和可发现性</strong>。每个因素都被评分，结果用于优先排序已识别的威胁。</li>
+<li><strong>PASTA</strong>（攻击模拟和威胁分析过程）：这是一种七步的<strong>风险中心</strong>方法。它包括定义和识别安全目标、创建技术范围、应用程序分解、威胁分析、漏洞分析和风险/分流评估。</li>
+<li><strong>Trike</strong>：这是一种基于风险的方法，专注于保护资产。它从<strong>风险管理</strong>的角度出发，考虑威胁和漏洞。</li>
+<li><strong>VAST</strong>（可视化、敏捷和简单的威胁建模）：这种方法旨在更易于访问，并集成到敏捷开发环境中。它结合了其他方法的元素，专注于<strong>威胁的可视化表示</strong>。</li>
+<li><strong>OCTAVE</strong>（操作关键威胁、资产和漏洞评估）：由 CERT 协调中心开发，该框架旨在<strong>进行组织风险评估，而不是特定系统或软件</strong>。</li>
+</ol>
+<h2 id="工具"><a class="header" href="#工具">工具</a></h2>
+<p>有几种工具和软件解决方案可用于<strong>协助</strong>创建和管理威胁模型。以下是您可能考虑的一些工具。</p>
+<h3 id="spidersuite"><a class="header" href="#spidersuite"><a href="https://github.com/3nock/SpiderSuite">SpiderSuite</a></a></h3>
+<p>一个先进的跨平台多功能 GUI 网络爬虫/蜘蛛，适用于网络安全专业人员。Spider Suite 可用于攻击面映射和分析。</p>
+<p><strong>使用方法</strong></p>
+<ol>
+<li>选择一个 URL 并爬取</li>
+</ol>
+<figure><img src="../.gitbook/assets/threatmodel_spidersuite_1.png" alt=""><figcaption></figcaption></figure>
+<ol start="2">
+<li>查看图表</li>
+</ol>
+<figure><img src="../.gitbook/assets/threatmodel_spidersuite_2.png" alt=""><figcaption></figcaption></figure>
+<h3 id="owasp-threat-dragon"><a class="header" href="#owasp-threat-dragon"><a href="https://github.com/OWASP/threat-dragon/releases">OWASP Threat Dragon</a></a></h3>
+<p>OWASP 的一个开源项目，Threat Dragon 是一个包含系统图示和规则引擎以自动生成威胁/缓解措施的网络和桌面应用程序。</p>
+<p><strong>使用方法</strong></p>
+<ol>
+<li>创建新项目</li>
+</ol>
+<figure><img src="../.gitbook/assets/create_new_project_1.jpg" alt=""><figcaption></figcaption></figure>
+<p>有时它可能看起来像这样：</p>
+<figure><img src="../.gitbook/assets/1_threatmodel_create_project.jpg" alt=""><figcaption></figcaption></figure>
+<ol start="2">
+<li>启动新项目</li>
+</ol>
+<figure><img src="../.gitbook/assets/launch_new_project_2.jpg" alt=""><figcaption></figcaption></figure>
+<ol start="3">
+<li>保存新项目</li>
+</ol>
+<figure><img src="../.gitbook/assets/save_new_project.jpg" alt=""><figcaption></figcaption></figure>
+<ol start="4">
+<li>创建您的模型</li>
+</ol>
+<p>您可以使用像 SpiderSuite Crawler 这样的工具来获得灵感，基本模型可能看起来像这样</p>
+<figure><img src="../.gitbook/assets/0_basic_threat_model.jpg" alt=""><figcaption></figcaption></figure>
+<p>关于实体的简单解释：</p>
+<ul>
+<li>过程（实体本身，如 Web 服务器或 Web 功能）</li>
+<li>参与者（如网站访客、用户或管理员的人）</li>
+<li>数据流线（交互的指示）</li>
+<li>信任边界（不同的网络段或范围）</li>
+<li>存储（数据存储的地方，如数据库）</li>
+</ul>
+<ol start="5">
+<li>创建威胁（步骤 1）</li>
+</ol>
+<p>首先，您必须选择要添加威胁的层</p>
+<figure><img src="../.gitbook/assets/3_threatmodel_chose-threat-layer.jpg" alt=""><figcaption></figcaption></figure>
+<p>现在您可以创建威胁</p>
+<figure><img src="../.gitbook/assets/4_threatmodel_create-threat.jpg" alt=""><figcaption></figcaption></figure>
+<p>请记住，参与者威胁和过程威胁之间是有区别的。如果您要向参与者添加威胁，则只能选择“欺骗”和“否认”。然而，在我们的示例中，我们将威胁添加到过程实体，因此我们将在威胁创建框中看到：</p>
+<figure><img src="../.gitbook/assets/2_threatmodel_type-option.jpg" alt=""><figcaption></figcaption></figure>
+<ol start="6">
+<li>完成</li>
+</ol>
+<p>现在您完成的模型应该看起来像这样。这就是如何使用 OWASP Threat Dragon 制作简单的威胁模型。</p>
+<figure><img src="../.gitbook/assets/threat_model_finished.jpg" alt=""><figcaption></figcaption></figure>
+<h3 id="microsoft-threat-modeling-tool"><a class="header" href="#microsoft-threat-modeling-tool"><a href="https://aka.ms/threatmodelingtool">Microsoft Threat Modeling Tool</a></a></h3>
+<p>这是微软提供的免费工具，帮助在软件项目的设计阶段发现威胁。它使用 STRIDE 方法，特别适合在微软技术栈上开发的人员。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../generic-methodologies-and-resources/python/basic-python.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../generic-hacking/brute-force.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../generic-methodologies-and-resources/python/basic-python.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../generic-hacking/brute-force.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

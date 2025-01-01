@@ -1,0 +1,348 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Keychain</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-keychain"><a class="header" href="#macos-keychain">macOS Keychain</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="主要钥匙串"><a class="header" href="#主要钥匙串">主要钥匙串</a></h2>
+<ul>
+<li><strong>用户钥匙串</strong> (<code>~/Library/Keychains/login.keychain-db</code>)，用于存储 <strong>用户特定的凭据</strong>，如应用程序密码、互联网密码、用户生成的证书、网络密码和用户生成的公钥/私钥。</li>
+<li><strong>系统钥匙串</strong> (<code>/Library/Keychains/System.keychain</code>)，存储 <strong>系统范围的凭据</strong>，如 WiFi 密码、系统根证书、系统私钥和系统应用程序密码。</li>
+<li>可以在 <code>/System/Library/Keychains/*</code> 中找到其他组件，如证书。</li>
+<li>在 <strong>iOS</strong> 中只有一个 <strong>钥匙串</strong> 位于 <code>/private/var/Keychains/</code>。此文件夹还包含 <code>TrustStore</code> 的数据库、证书颁发机构（<code>caissuercache</code>）和 OSCP 条目（<code>ocspache</code>）。</li>
+<li>应用程序在钥匙串中的访问将仅限于其基于应用程序标识符的私有区域。</li>
+</ul>
+<h3 id="密码钥匙串访问"><a class="header" href="#密码钥匙串访问">密码钥匙串访问</a></h3>
+<p>这些文件虽然没有固有的保护并且可以被 <strong>下载</strong>，但它们是加密的，需要 <strong>用户的明文密码进行解密</strong>。可以使用像 <a href="https://github.com/n0fate/chainbreaker"><strong>Chainbreaker</strong></a> 这样的工具进行解密。</p>
+<h2 id="钥匙串条目保护"><a class="header" href="#钥匙串条目保护">钥匙串条目保护</a></h2>
+<h3 id="acls"><a class="header" href="#acls">ACLs</a></h3>
+<p>钥匙串中的每个条目都受 <strong>访问控制列表 (ACLs)</strong> 的管理，规定谁可以对钥匙串条目执行各种操作，包括：</p>
+<ul>
+<li><strong>ACLAuhtorizationExportClear</strong>：允许持有者获取秘密的明文。</li>
+<li><strong>ACLAuhtorizationExportWrapped</strong>：允许持有者获取用另一个提供的密码加密的明文。</li>
+<li><strong>ACLAuhtorizationAny</strong>：允许持有者执行任何操作。</li>
+</ul>
+<p>ACLs 还伴随有一个 <strong>受信任应用程序列表</strong>，可以在不提示的情况下执行这些操作。可能是：</p>
+<ul>
+<li><strong>N<code>il</code></strong>（不需要授权，<strong>所有人都被信任</strong>）</li>
+<li>一个 <strong>空</strong> 列表（<strong>没有人</strong>被信任）</li>
+<li><strong>特定应用程序</strong> 的 <strong>列表</strong>。</li>
+</ul>
+<p>条目还可能包含键 <strong><code>ACLAuthorizationPartitionID</code></strong>，用于识别 <strong>teamid、apple</strong> 和 <strong>cdhash</strong>。</p>
+<ul>
+<li>如果指定了 <strong>teamid</strong>，则为了 <strong>在不提示的情况下访问条目</strong> 值，使用的应用程序必须具有 <strong>相同的 teamid</strong>。</li>
+<li>如果指定了 <strong>apple</strong>，则应用程序需要由 <strong>Apple</strong> <strong>签名</strong>。</li>
+<li>如果指明了 <strong>cdhash</strong>，则 <strong>应用程序</strong> 必须具有特定的 <strong>cdhash</strong>。</li>
+</ul>
+<h3 id="创建钥匙串条目"><a class="header" href="#创建钥匙串条目">创建钥匙串条目</a></h3>
+<p>当使用 <strong><code>Keychain Access.app</code></strong> 创建 <strong>新</strong> <strong>条目</strong> 时，适用以下规则：</p>
+<ul>
+<li>所有应用程序都可以加密。</li>
+<li><strong>没有应用程序</strong> 可以导出/解密（不提示用户）。</li>
+<li>所有应用程序都可以查看完整性检查。</li>
+<li>没有应用程序可以更改 ACLs。</li>
+<li><strong>partitionID</strong> 设置为 <strong><code>apple</code></strong>。</li>
+</ul>
+<p>当 <strong>应用程序在钥匙串中创建条目</strong> 时，规则略有不同：</p>
+<ul>
+<li>所有应用程序都可以加密。</li>
+<li>只有 <strong>创建应用程序</strong>（或任何其他明确添加的应用程序）可以导出/解密（不提示用户）。</li>
+<li>所有应用程序都可以查看完整性检查。</li>
+<li>没有应用程序可以更改 ACLs。</li>
+<li><strong>partitionID</strong> 设置为 <strong><code>teamid:[teamID here]</code></strong>。</li>
+</ul>
+<h2 id="访问钥匙串"><a class="header" href="#访问钥匙串">访问钥匙串</a></h2>
+<h3 id="security"><a class="header" href="#security"><code>security</code></a></h3>
+<pre><code class="language-bash"># List keychains
+security list-keychains
+
+# Dump all metadata and decrypted secrets (a lot of pop-ups)
+security dump-keychain -a -d
+
+# Find generic password for the "Slack" account and print the secrets
+security find-generic-password -a "Slack" -g
+
+# Change the specified entrys PartitionID entry
+security set-generic-password-parition-list -s "test service" -a "test acount" -S
+
+# Dump specifically the user keychain
+security dump-keychain ~/Library/Keychains/login.keychain-db
+</code></pre>
+<h3 id="apis"><a class="header" href="#apis">APIs</a></h3>
+<p>{% hint style="success" %}
+<strong>密钥链枚举和秘密转储</strong>的操作可以使用工具 <a href="https://github.com/its-a-feature/LockSmith"><strong>LockSmith</strong></a> 来完成，这些操作<strong>不会生成提示</strong>。</p>
+<p>其他 API 端点可以在 <a href="https://opensource.apple.com/source/libsecurity_keychain/libsecurity_keychain-55017/lib/SecKeychain.h.auto.html"><strong>SecKeyChain.h</strong></a> 源代码中找到。
+{% endhint %}</p>
+<p>使用 <strong>Security Framework</strong> 列出并获取每个密钥链条目的 <strong>信息</strong>，或者您也可以查看苹果的开源 CLI 工具 <a href="https://opensource.apple.com/source/Security/Security-59306.61.1/SecurityTool/macOS/security.c.auto.html"><strong>security</strong></a><strong>。</strong> 一些 API 示例：</p>
+<ul>
+<li>API <strong><code>SecItemCopyMatching</code></strong> 提供每个条目的信息，并且在使用时可以设置一些属性：</li>
+<li><strong><code>kSecReturnData</code></strong>：如果为真，它将尝试解密数据（设置为假以避免潜在的弹出窗口）</li>
+<li><strong><code>kSecReturnRef</code></strong>：还获取密钥链项目的引用（如果稍后您看到可以在没有弹出窗口的情况下解密，则设置为真）</li>
+<li><strong><code>kSecReturnAttributes</code></strong>：获取条目的元数据</li>
+<li><strong><code>kSecMatchLimit</code></strong>：返回多少结果</li>
+<li><strong><code>kSecClass</code></strong>：什么类型的密钥链条目</li>
+</ul>
+<p>获取每个条目的 <strong>ACL</strong>：</p>
+<ul>
+<li>使用 API <strong><code>SecAccessCopyACLList</code></strong> 可以获取 <strong>密钥链项目的 ACL</strong>，它将返回一个 ACL 列表（如 <code>ACLAuhtorizationExportClear</code> 和之前提到的其他项），每个列表包含：</li>
+<li>描述</li>
+<li><strong>受信任的应用程序列表</strong>。这可以是：</li>
+<li>一个应用程序：/Applications/Slack.app</li>
+<li>一个二进制文件：/usr/libexec/airportd</li>
+<li>一个组：group://AirPort</li>
+</ul>
+<p>导出数据：</p>
+<ul>
+<li>API <strong><code>SecKeychainItemCopyContent</code></strong> 获取明文</li>
+<li>API <strong><code>SecItemExport</code></strong> 导出密钥和证书，但可能需要设置密码以加密导出内容</li>
+</ul>
+<p>这些是能够 <strong>在没有提示的情况下导出秘密</strong> 的 <strong>要求</strong>：</p>
+<ul>
+<li>如果 <strong>1+ 个受信任</strong> 应用程序列出：</li>
+<li>需要适当的 <strong>授权</strong>（<strong><code>Nil</code></strong>，或是 <strong>允许</strong> 访问秘密信息的应用程序列表的一部分）</li>
+<li>需要代码签名与 <strong>PartitionID</strong> 匹配</li>
+<li>需要代码签名与一个 <strong>受信任的应用程序</strong> 的签名匹配（或是正确的 KeychainAccessGroup 的成员）</li>
+<li>如果 <strong>所有应用程序受信任</strong>：</li>
+<li>需要适当的 <strong>授权</strong></li>
+<li>需要代码签名与 <strong>PartitionID</strong> 匹配</li>
+<li>如果 <strong>没有 PartitionID</strong>，则不需要此项</li>
+</ul>
+<p>{% hint style="danger" %}
+因此，如果列出了 <strong>1 个应用程序</strong>，您需要 <strong>在该应用程序中注入代码</strong>。</p>
+<p>如果 <strong>apple</strong> 在 <strong>partitionID</strong> 中被指示，您可以使用 <strong><code>osascript</code></strong> 访问它，因此任何信任所有应用程序且在 partitionID 中包含 apple 的内容。<strong><code>Python</code></strong> 也可以用于此。
+{% endhint %}</p>
+<h3 id="两个额外属性"><a class="header" href="#两个额外属性">两个额外属性</a></h3>
+<ul>
+<li><strong>Invisible</strong>：这是一个布尔标志，用于 <strong>隐藏</strong> 密钥链条目在 <strong>UI</strong> 中的显示</li>
+<li><strong>General</strong>：用于存储 <strong>元数据</strong>（因此它不是加密的）</li>
+<li>微软以明文存储所有访问敏感端点的刷新令牌。</li>
+</ul>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=jKE1ZW33JpY"><strong>#OBTS v5.0: "Lock Picking the macOS Keychain" - Cody Thomas</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../macos-hardening/macos-red-teaming/macos-mdm/macos-serial-number.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../macos-hardening/macos-useful-commands.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../macos-hardening/macos-red-teaming/macos-mdm/macos-serial-number.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../macos-hardening/macos-useful-commands.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

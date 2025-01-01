@@ -1,0 +1,684 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Apps - Inspecting, debugging and Fuzzing</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-应用---检查调试和模糊测试"><a class="header" href="#macos-应用---检查调试和模糊测试">macOS 应用 - 检查、调试和模糊测试</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="静态分析"><a class="header" href="#静态分析">静态分析</a></h2>
+<h3 id="otool--objdump--nm"><a class="header" href="#otool--objdump--nm">otool &amp; objdump &amp; nm</a></h3>
+<pre><code class="language-bash">otool -L /bin/ls #List dynamically linked libraries
+otool -tv /bin/ps #Decompile application
+</code></pre>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">objdump -m --dylibs-used /bin/ls #List dynamically linked libraries
+objdump -m -h /bin/ls # Get headers information
+objdump -m --syms /bin/ls # Check if the symbol table exists to get function names
+objdump -m --full-contents /bin/ls # Dump every section
+objdump -d /bin/ls # Dissasemble the binary
+objdump --disassemble-symbols=_hello --x86-asm-syntax=intel toolsdemo #Disassemble a function using intel flavour
+</code></pre>
+<p>{% endcode %}</p>
+<pre><code class="language-bash">nm -m ./tccd # List of symbols
+</code></pre>
+<h3 id="jtool2--disarm"><a class="header" href="#jtool2--disarm">jtool2 &amp; Disarm</a></h3>
+<p>您可以<a href="https://newosxbook.com/tools/disarm.html"><strong>从这里下载 disarm</strong></a>。</p>
+<pre><code class="language-bash">ARCH=arm64e disarm -c -i -I --signature /path/bin # Get bin info and signature
+ARCH=arm64e disarm -c -l /path/bin # Get binary sections
+ARCH=arm64e disarm -c -L /path/bin # Get binary commands (dependencies included)
+ARCH=arm64e disarm -c -S /path/bin # Get symbols (func names, strings...)
+ARCH=arm64e disarm -c -d /path/bin # Get disasembled
+jtool2 -d __DATA.__const myipc_server | grep MIG # Get MIG info
+</code></pre>
+<p>您可以<a href="http://www.newosxbook.com/tools/jtool.html"><strong>在这里下载 jtool2</strong></a>或使用 <code>brew</code> 安装它。</p>
+<pre><code class="language-bash"># Install
+brew install --cask jtool2
+
+jtool2 -l /bin/ls # Get commands (headers)
+jtool2 -L /bin/ls # Get libraries
+jtool2 -S /bin/ls # Get symbol info
+jtool2 -d /bin/ls # Dump binary
+jtool2 -D /bin/ls # Decompile binary
+
+# Get signature information
+ARCH=x86_64 jtool2 --sig /System/Applications/Automator.app/Contents/MacOS/Automator
+
+# Get MIG information
+jtool2 -d __DATA.__const myipc_server | grep MIG
+</code></pre>
+<p>{% hint style="danger" %}
+<strong>jtool 已被 disarm 替代</strong>
+{% endhint %}</p>
+<h3 id="代码签名--ldid"><a class="header" href="#代码签名--ldid">代码签名 / ldid</a></h3>
+<p>{% hint style="success" %}
+<strong><code>Codesign</code></strong> 可以在 <strong>macOS</strong> 中找到，而 <strong><code>ldid</code></strong> 可以在 <strong>iOS</strong> 中找到
+{% endhint %}</p>
+<pre><code class="language-bash"># Get signer
+codesign -vv -d /bin/ls 2&gt;&amp;1 | grep -E "Authority|TeamIdentifier"
+
+# Check if the app’s contents have been modified
+codesign --verify --verbose /Applications/Safari.app
+
+# Get entitlements from the binary
+codesign -d --entitlements :- /System/Applications/Automator.app # Check the TCC perms
+
+# Check if the signature is valid
+spctl --assess --verbose /Applications/Safari.app
+
+# Sign a binary
+codesign -s &lt;cert-name-keychain&gt; toolsdemo
+
+# Get signature info
+ldid -h &lt;binary&gt;
+
+# Get entitlements
+ldid -e &lt;binary&gt;
+
+# Change entilements
+## /tmp/entl.xml is a XML file with the new entitlements to add
+ldid -S/tmp/entl.xml &lt;binary&gt;
+</code></pre>
+<h3 id="suspiciouspackage"><a class="header" href="#suspiciouspackage">SuspiciousPackage</a></h3>
+<p><a href="https://mothersruin.com/software/SuspiciousPackage/get.html"><strong>SuspiciousPackage</strong></a> 是一个有用的工具，可以检查 <strong>.pkg</strong> 文件（安装程序），并在安装之前查看其内容。<br />
+这些安装程序通常具有 <code>preinstall</code> 和 <code>postinstall</code> bash 脚本，恶意软件作者通常利用这些脚本来 <strong>持久化</strong> <strong>恶意软件</strong>。</p>
+<h3 id="hdiutil"><a class="header" href="#hdiutil">hdiutil</a></h3>
+<p>此工具允许 <strong>挂载</strong> Apple 磁盘映像（<strong>.dmg</strong>）文件，以便在运行任何内容之前进行检查：</p>
+<pre><code class="language-bash">hdiutil attach ~/Downloads/Firefox\ 58.0.2.dmg
+</code></pre>
+<p>It will be mounted in <code>/Volumes</code></p>
+<h3 id="packed-binaries"><a class="header" href="#packed-binaries">Packed binaries</a></h3>
+<ul>
+<li>检查高熵</li>
+<li>检查字符串（几乎没有可理解的字符串，已打包）</li>
+<li>MacOS 的 UPX 打包器生成一个名为 "__XHDR" 的部分</li>
+</ul>
+<h2 id="static-objective-c-analysis"><a class="header" href="#static-objective-c-analysis">Static Objective-C analysis</a></h2>
+<h3 id="metadata"><a class="header" href="#metadata">Metadata</a></h3>
+<p>{% hint style="danger" %}
+注意，用 Objective-C 编写的程序在编译成 <a href="../macos-files-folders-and-binaries/universal-binaries-and-mach-o-format.html">Mach-O binaries</a> 时 <strong>保留</strong> 其类声明。这样的类声明 <strong>包括</strong>：
+{% endhint %}</p>
+<ul>
+<li>定义的接口</li>
+<li>接口方法</li>
+<li>接口实例变量</li>
+<li>定义的协议</li>
+</ul>
+<p>注意，这些名称可能会被混淆，以使二进制文件的逆向工程更加困难。</p>
+<h3 id="function-calling"><a class="header" href="#function-calling">Function calling</a></h3>
+<p>当在使用 Objective-C 的二进制文件中调用一个函数时，编译后的代码不会直接调用该函数，而是会调用 <strong><code>objc_msgSend</code></strong>。这将调用最终的函数：</p>
+<p><img src="../../../.gitbook/assets/image%20(305).png" alt="" /></p>
+<p>此函数期望的参数为：</p>
+<ul>
+<li>第一个参数 (<strong>self</strong>) 是“指向 <strong>接收消息的类实例的指针</strong>”。简单来说，就是正在调用该方法的对象。如果该方法是类方法，则这是类对象的一个实例（整体），而对于实例方法，self 将指向类的一个实例化对象。</li>
+<li>第二个参数 (<strong>op</strong>) 是“处理消息的方法选择器”。同样，简单来说，这只是 <strong>方法的名称</strong>。</li>
+<li>剩余的参数是方法所需的任何 <strong>值</strong>（op）。</li>
+</ul>
+<p>请参见如何在此页面中 <strong>使用 <code>lldb</code> 在 ARM64 中轻松获取此信息</strong>：</p>
+<p>{% content-ref url="arm64-basic-assembly.md" %}
+<a href="arm64-basic-assembly.html">arm64-basic-assembly.md</a>
+{% endcontent-ref %}</p>
+<p>x64:</p>
+<div class="table-wrapper"><table><thead><tr><th><strong>Argument</strong></th><th><strong>Register</strong></th><th><strong>(for) objc_msgSend</strong></th></tr></thead><tbody>
+<tr><td><strong>1st argument</strong></td><td><strong>rdi</strong></td><td><strong>self: object that the method is being invoked upon</strong></td></tr>
+<tr><td><strong>2nd argument</strong></td><td><strong>rsi</strong></td><td><strong>op: name of the method</strong></td></tr>
+<tr><td><strong>3rd argument</strong></td><td><strong>rdx</strong></td><td><strong>1st argument to the method</strong></td></tr>
+<tr><td><strong>4th argument</strong></td><td><strong>rcx</strong></td><td><strong>2nd argument to the method</strong></td></tr>
+<tr><td><strong>5th argument</strong></td><td><strong>r8</strong></td><td><strong>3rd argument to the method</strong></td></tr>
+<tr><td><strong>6th argument</strong></td><td><strong>r9</strong></td><td><strong>4th argument to the method</strong></td></tr>
+<tr><td><strong>7th+ argument</strong></td><td><p><strong>rsp+</strong><br><strong>(on the stack)</strong></p></td><td><strong>5th+ argument to the method</strong></td></tr>
+</tbody></table>
+</div>
+<h3 id="dump-objectivec-metadata"><a class="header" href="#dump-objectivec-metadata">Dump ObjectiveC metadata</a></h3>
+<h3 id="dynadump"><a class="header" href="#dynadump">Dynadump</a></h3>
+<p><a href="https://github.com/DerekSelander/dynadump"><strong>Dynadump</strong></a> 是一个用于类转储 Objective-C 二进制文件的工具。GitHub 指定了 dylibs，但这也适用于可执行文件。</p>
+<pre><code class="language-bash">./dynadump dump /path/to/bin
+</code></pre>
+<p>在撰写时，这是<strong>目前效果最好的</strong>。</p>
+<h4 id="常规工具"><a class="header" href="#常规工具">常规工具</a></h4>
+<pre><code class="language-bash">nm --dyldinfo-only /path/to/bin
+otool -ov /path/to/bin
+objdump --macho --objc-meta-data /path/to/bin
+</code></pre>
+<h4 id="class-dump"><a class="header" href="#class-dump">class-dump</a></h4>
+<p><a href="https://github.com/nygard/class-dump/"><strong>class-dump</strong></a> 是一个原始工具，用于生成 ObjetiveC 格式代码中的类、类别和协议的声明。</p>
+<p>它很旧且未维护，因此可能无法正常工作。</p>
+<h4 id="icdump"><a class="header" href="#icdump">ICDump</a></h4>
+<p><a href="https://github.com/romainthomas/iCDump"><strong>iCDump</strong></a> 是一个现代的跨平台 Objective-C 类转储工具。与现有工具相比，iCDump 可以独立于 Apple 生态系统运行，并且它提供了 Python 绑定。</p>
+<pre><code class="language-python">import icdump
+metadata = icdump.objc.parse("/path/to/bin")
+
+print(metadata.to_decl())
+</code></pre>
+<h2 id="静态-swift-分析"><a class="header" href="#静态-swift-分析">静态 Swift 分析</a></h2>
+<p>对于 Swift 二进制文件，由于与 Objective-C 的兼容性，有时可以使用 <a href="https://github.com/nygard/class-dump/">class-dump</a> 提取声明，但并不总是如此。</p>
+<p>使用 <strong><code>jtool -l</code></strong> 或 <strong><code>otool -l</code></strong> 命令行，可以找到多个以 <strong><code>__swift5</code></strong> 前缀开头的部分：</p>
+<pre><code class="language-bash">jtool2 -l /Applications/Stocks.app/Contents/MacOS/Stocks
+LC 00: LC_SEGMENT_64              Mem: 0x000000000-0x100000000    __PAGEZERO
+LC 01: LC_SEGMENT_64              Mem: 0x100000000-0x100028000    __TEXT
+[...]
+Mem: 0x100026630-0x100026d54        __TEXT.__swift5_typeref
+Mem: 0x100026d60-0x100027061        __TEXT.__swift5_reflstr
+Mem: 0x100027064-0x1000274cc        __TEXT.__swift5_fieldmd
+Mem: 0x1000274cc-0x100027608        __TEXT.__swift5_capture
+[...]
+</code></pre>
+<p>您可以在<a href="https://knight.sc/reverse%20engineering/2019/07/17/swift-metadata.html"><strong>这篇博客文章中找到关于这些部分存储的信息</strong></a>的更多信息。</p>
+<p>此外，<strong>Swift 二进制文件可能包含符号</strong>（例如，库需要存储符号以便其函数可以被调用）。<strong>符号通常以丑陋的方式包含函数名称和属性的信息</strong>，因此它们非常有用，并且有“<strong>去混淆器</strong>”可以获取原始名称：</p>
+<pre><code class="language-bash"># Ghidra plugin
+https://github.com/ghidraninja/ghidra_scripts/blob/master/swift_demangler.py
+
+# Swift cli
+swift demangle
+</code></pre>
+<h2 id="动态分析"><a class="header" href="#动态分析">动态分析</a></h2>
+<p>{% hint style="warning" %}
+请注意，为了调试二进制文件，<strong>需要禁用 SIP</strong>（<code>csrutil disable</code> 或 <code>csrutil enable --without debug</code>），或者将二进制文件复制到临时文件夹并<strong>移除签名</strong>（使用 <code>codesign --remove-signature &lt;binary-path&gt;</code>），或者允许调试该二进制文件（您可以使用 <a href="https://gist.github.com/carlospolop/a66b8d72bb8f43913c4b5ae45672578b">这个脚本</a>）。
+{% endhint %}</p>
+<p>{% hint style="warning" %}
+请注意，为了在 macOS 上<strong>插桩系统二进制文件</strong>（例如 <code>cloudconfigurationd</code>），<strong>必须禁用 SIP</strong>（仅移除签名是无效的）。
+{% endhint %}</p>
+<h3 id="apis"><a class="header" href="#apis">APIs</a></h3>
+<p>macOS 暴露了一些有趣的 API，提供有关进程的信息：</p>
+<ul>
+<li><code>proc_info</code>：这是主要的 API，提供有关每个进程的大量信息。您需要以 root 身份获取其他进程的信息，但不需要特殊的权限或 mach 端口。</li>
+<li><code>libsysmon.dylib</code>：它允许通过 XPC 暴露的函数获取有关进程的信息，但需要具有 <code>com.apple.sysmond.client</code> 权限。</li>
+</ul>
+<h3 id="stackshot--microstackshots"><a class="header" href="#stackshot--microstackshots">Stackshot &amp; microstackshots</a></h3>
+<p><strong>Stackshotting</strong> 是一种用于捕获进程状态的技术，包括所有运行线程的调用栈。这对于调试、性能分析以及在特定时间点理解系统行为特别有用。在 iOS 和 macOS 上，可以使用多种工具和方法进行 stackshotting，例如工具 <strong><code>sample</code></strong> 和 <strong><code>spindump</code></strong>。</p>
+<h3 id="sysdiagnose"><a class="header" href="#sysdiagnose">Sysdiagnose</a></h3>
+<p>该工具（<code>/usr/bini/ysdiagnose</code>）基本上从您的计算机收集大量信息，执行数十个不同的命令，例如 <code>ps</code>、<code>zprint</code>...</p>
+<p>它必须以 <strong>root</strong> 身份运行，守护进程 <code>/usr/libexec/sysdiagnosed</code> 具有非常有趣的权限，例如 <code>com.apple.system-task-ports</code> 和 <code>get-task-allow</code>。</p>
+<p>其 plist 位于 <code>/System/Library/LaunchDaemons/com.apple.sysdiagnose.plist</code>，声明了 3 个 MachServices：</p>
+<ul>
+<li><code>com.apple.sysdiagnose.CacheDelete</code>：删除 /var/rmp 中的旧档案</li>
+<li><code>com.apple.sysdiagnose.kernel.ipc</code>：特殊端口 23（内核）</li>
+<li><code>com.apple.sysdiagnose.service.xpc</code>：通过 <code>Libsysdiagnose</code> Obj-C 类的用户模式接口。可以在字典中传递三个参数（<code>compress</code>、<code>display</code>、<code>run</code>）</li>
+</ul>
+<h3 id="统一日志"><a class="header" href="#统一日志">统一日志</a></h3>
+<p>MacOS 生成大量日志，这在运行应用程序时尝试理解<strong>它在做什么</strong>时非常有用。</p>
+<p>此外，有一些日志将包含标签 <code>&lt;private&gt;</code> 以<strong>隐藏</strong>某些<strong>用户</strong>或<strong>计算机</strong>的<strong>可识别</strong>信息。然而，可以<strong>安装证书以披露此信息</strong>。请按照 <a href="https://superuser.com/questions/1532031/how-to-show-private-data-in-macos-unified-log"><strong>这里</strong></a> 的说明进行操作。</p>
+<h3 id="hopper"><a class="header" href="#hopper">Hopper</a></h3>
+<h4 id="左侧面板"><a class="header" href="#左侧面板">左侧面板</a></h4>
+<p>在 Hopper 的左侧面板中，可以看到二进制文件的符号（<strong>标签</strong>）、过程和函数的列表（<strong>Proc</strong>）以及字符串（<strong>Str</strong>）。这些并不是所有字符串，而是定义在 Mac-O 文件的多个部分中的字符串（如 <em>cstring 或</em> <code>objc_methname</code>）。</p>
+<h4 id="中间面板"><a class="header" href="#中间面板">中间面板</a></h4>
+<p>在中间面板中，您可以看到<strong>反汇编代码</strong>。您可以通过单击相应的图标查看<strong>原始</strong>反汇编、<strong>图形</strong>、<strong>反编译</strong>和<strong>二进制</strong>：</p>
+<figure><img src="../../../.gitbook/assets/image (343).png" alt=""><figcaption></figcaption></figure>
+<p>右键单击代码对象，您可以查看<strong>对该对象的引用</strong>或甚至更改其名称（这在反编译的伪代码中无效）：</p>
+<figure><img src="../../../.gitbook/assets/image (1117).png" alt=""><figcaption></figcaption></figure>
+<p>此外，在<strong>中间下方，您可以编写 Python 命令</strong>。</p>
+<h4 id="右侧面板"><a class="header" href="#右侧面板">右侧面板</a></h4>
+<p>在右侧面板中，您可以看到有趣的信息，例如<strong>导航历史</strong>（以便您知道如何到达当前情况）、<strong>调用图</strong>，您可以看到所有<strong>调用此函数的函数</strong>以及所有<strong>此函数调用的函数</strong>，以及<strong>局部变量</strong>信息。</p>
+<h3 id="dtrace"><a class="header" href="#dtrace">dtrace</a></h3>
+<p>它允许用户以极低的<strong>级别</strong>访问应用程序，并提供了一种方法，让用户可以<strong>跟踪</strong> <strong>程序</strong>，甚至更改其执行流程。Dtrace 使用<strong>探针</strong>，这些探针<strong>分布在内核中</strong>，位于系统调用的开始和结束位置。</p>
+<p>DTrace 使用 <strong><code>dtrace_probe_create</code></strong> 函数为每个系统调用创建一个探针。这些探针可以在每个系统调用的<strong>入口和出口</strong>触发。与 DTrace 的交互通过 /dev/dtrace 进行，该接口仅对 root 用户可用。</p>
+<p>{% hint style="success" %}
+要在不完全禁用 SIP 保护的情况下启用 Dtrace，您可以在恢复模式下执行：<code>csrutil enable --without dtrace</code></p>
+<p>您还可以使用您<strong>编译的</strong> <strong><code>dtrace</code></strong> 或 <strong><code>dtruss</code></strong> 二进制文件。
+{% endhint %}</p>
+<p>可以通过以下方式获取 dtrace 的可用探针：</p>
+<pre><code class="language-bash">dtrace -l | head
+ID   PROVIDER            MODULE                          FUNCTION NAME
+1     dtrace                                                     BEGIN
+2     dtrace                                                     END
+3     dtrace                                                     ERROR
+43    profile                                                     profile-97
+44    profile                                                     profile-199
+</code></pre>
+<p>探针名称由四个部分组成：提供者、模块、函数和名称（<code>fbt:mach_kernel:ptrace:entry</code>）。如果您没有指定名称的某个部分，Dtrace 将将该部分应用为通配符。</p>
+<p>要配置 DTrace 以激活探针并指定触发时要执行的操作，我们需要使用 D 语言。</p>
+<p>更详细的解释和更多示例可以在 <a href="https://illumos.org/books/dtrace/chp-intro.html">https://illumos.org/books/dtrace/chp-intro.html</a> 中找到。</p>
+<h4 id="示例"><a class="header" href="#示例">示例</a></h4>
+<p>运行 <code>man -k dtrace</code> 列出 <strong>可用的 DTrace 脚本</strong>。示例：<code>sudo dtruss -n binary</code></p>
+<pre><code class="language-bash">#Count the number of syscalls of each running process
+sudo dtrace -n 'syscall:::entry {@[execname] = count()}'
+</code></pre>
+<ul>
+<li>脚本</li>
+</ul>
+<pre><code class="language-bash">syscall:::entry
+/pid == $1/
+{
+}
+
+#Log every syscall of a PID
+sudo dtrace -s script.d 1234
+</code></pre>
+<pre><code class="language-bash">syscall::open:entry
+{
+printf("%s(%s)", probefunc, copyinstr(arg0));
+}
+syscall::close:entry
+{
+printf("%s(%d)\n", probefunc, arg0);
+}
+
+#Log files opened and closed by a process
+sudo dtrace -s b.d -c "cat /etc/hosts"
+</code></pre>
+<pre><code class="language-bash">syscall:::entry
+{
+;
+}
+syscall:::return
+{
+printf("=%d\n", arg1);
+}
+
+#Log sys calls with values
+sudo dtrace -s syscalls_info.d -c "cat /etc/hosts"
+</code></pre>
+<h3 id="dtruss"><a class="header" href="#dtruss">dtruss</a></h3>
+<pre><code class="language-bash">dtruss -c ls #Get syscalls of ls
+dtruss -c -p 1000 #get syscalls of PID 1000
+</code></pre>
+<h3 id="kdebug"><a class="header" href="#kdebug">kdebug</a></h3>
+<p>这是一个内核跟踪工具。文档代码可以在 <strong><code>/usr/share/misc/trace.codes</code></strong> 中找到。</p>
+<p>像 <code>latency</code>、<code>sc_usage</code>、<code>fs_usage</code> 和 <code>trace</code> 这样的工具在内部使用它。</p>
+<p>要与 <code>kdebug</code> 进行接口，使用 <code>sysctl</code> 通过 <code>kern.kdebug</code> 命名空间，使用的 MIB 可以在 <code>sys/sysctl.h</code> 中找到，相关函数在 <code>bsd/kern/kdebug.c</code> 中实现。</p>
+<p>与 kdebug 进行交互的自定义客户端通常遵循以下步骤：</p>
+<ul>
+<li>使用 KERN_KDSETREMOVE 移除现有设置</li>
+<li>使用 KERN_KDSETBUF 和 KERN_KDSETUP 设置跟踪</li>
+<li>使用 KERN_KDGETBUF 获取缓冲区条目数量</li>
+<li>使用 KERN_KDPINDEX 从跟踪中获取自己的客户端</li>
+<li>使用 KERN_KDENABLE 启用跟踪</li>
+<li>调用 KERN_KDREADTR 读取缓冲区</li>
+<li>要将每个线程与其进程匹配，调用 KERN_KDTHRMAP。</li>
+</ul>
+<p>为了获取这些信息，可以使用 Apple 工具 <strong><code>trace</code></strong> 或自定义工具 <a href="https://newosxbook.com/tools/kdv.html">kDebugView (kdv)</a><strong>。</strong></p>
+<p><strong>请注意，Kdebug 一次只能为一个客户提供服务。</strong> 因此，只有一个 k-debug 驱动的工具可以同时执行。</p>
+<h3 id="ktrace"><a class="header" href="#ktrace">ktrace</a></h3>
+<p><code>ktrace_*</code> API 来自 <code>libktrace.dylib</code>，它封装了 <code>Kdebug</code> 的 API。然后，客户端可以直接调用 <code>ktrace_session_create</code> 和 <code>ktrace_events_[single/class]</code> 在特定代码上设置回调，然后使用 <code>ktrace_start</code> 启动它。</p>
+<p>即使在 <strong>SIP 激活</strong> 的情况下也可以使用这个。</p>
+<p>您可以使用实用程序 <code>ktrace</code> 作为客户端：</p>
+<pre><code class="language-bash">ktrace trace -s -S -t c -c ls | grep "ls("
+</code></pre>
+<p>Or <code>tailspin</code>.</p>
+<h3 id="kperf"><a class="header" href="#kperf">kperf</a></h3>
+<p>这用于进行内核级别的性能分析，并且是使用 <code>Kdebug</code> 调用构建的。</p>
+<p>基本上，检查全局变量 <code>kernel_debug_active</code>，如果设置了它，则调用 <code>kperf_kdebug_handler</code>，并传入 <code>Kdebug</code> 代码和调用的内核帧地址。如果 <code>Kdebug</code> 代码与所选的匹配，则获取配置为位图的“操作”（请查看 <code>osfmk/kperf/action.h</code> 以获取选项）。</p>
+<p>Kperf 还有一个 sysctl MIB 表： (作为 root) <code>sysctl kperf</code>。这些代码可以在 <code>osfmk/kperf/kperfbsd.c</code> 中找到。</p>
+<p>此外，Kperf 的一部分功能位于 <code>kpc</code> 中，它提供有关机器性能计数器的信息。</p>
+<h3 id="processmonitor"><a class="header" href="#processmonitor">ProcessMonitor</a></h3>
+<p><a href="https://objective-see.com/products/utilities.html#ProcessMonitor"><strong>ProcessMonitor</strong></a> 是一个非常有用的工具，用于检查进程相关的操作（例如，监视一个进程正在创建哪些新进程）。</p>
+<h3 id="spritetree"><a class="header" href="#spritetree">SpriteTree</a></h3>
+<p><a href="https://themittenmac.com/tools/"><strong>SpriteTree</strong></a> 是一个打印进程之间关系的工具。<br />
+您需要使用类似 <strong><code>sudo eslogger fork exec rename create &gt; cap.json</code></strong> 的命令监视您的 Mac（启动此终端需要 FDA）。然后，您可以在此工具中加载 json 以查看所有关系：</p>
+<figure><img src="../../../.gitbook/assets/image (1182).png" alt="" width="375"><figcaption></figcaption></figure>
+<h3 id="filemonitor"><a class="header" href="#filemonitor">FileMonitor</a></h3>
+<p><a href="https://objective-see.com/products/utilities.html#FileMonitor"><strong>FileMonitor</strong></a> 允许监视文件事件（例如创建、修改和删除），提供有关这些事件的详细信息。</p>
+<h3 id="crescendo"><a class="header" href="#crescendo">Crescendo</a></h3>
+<p><a href="https://github.com/SuprHackerSteve/Crescendo"><strong>Crescendo</strong></a> 是一个 GUI 工具，外观和感觉与 Windows 用户可能熟悉的 Microsoft Sysinternal 的 <em>Procmon</em> 相似。此工具允许开始和停止各种事件类型的记录，允许按文件、进程、网络等类别过滤这些事件，并提供以 json 格式保存记录事件的功能。</p>
+<h3 id="apple-instruments"><a class="header" href="#apple-instruments">Apple Instruments</a></h3>
+<p><a href="https://developer.apple.com/library/archive/documentation/Performance/Conceptual/CellularBestPractices/Appendix/Appendix.html"><strong>Apple Instruments</strong></a> 是 Xcode 开发工具的一部分 – 用于监视应用程序性能、识别内存泄漏和跟踪文件系统活动。</p>
+<p><img src="../../../.gitbook/assets/image%20(1138).png" alt="" /></p>
+<h3 id="fs_usage"><a class="header" href="#fs_usage">fs_usage</a></h3>
+<p>允许跟踪进程执行的操作：</p>
+<pre><code class="language-bash">fs_usage -w -f filesys ls #This tracks filesystem actions of proccess names containing ls
+fs_usage -w -f network curl #This tracks network actions
+</code></pre>
+<h3 id="taskexplorer"><a class="header" href="#taskexplorer">TaskExplorer</a></h3>
+<p><a href="https://objective-see.com/products/taskexplorer.html"><strong>Taskexplorer</strong></a> 是一个有用的工具，可以查看二进制文件使用的 <strong>libraries</strong>、它正在使用的 <strong>files</strong> 和 <strong>network</strong> 连接。<br />
+它还会检查二进制进程与 <strong>virustotal</strong> 的对比，并显示有关该二进制文件的信息。</p>
+<h2 id="pt_deny_attach"><a class="header" href="#pt_deny_attach">PT_DENY_ATTACH <a href="#page-title" id="page-title"></a></a></h2>
+<p>在 <a href="https://knight.sc/debugging/2019/06/03/debugging-apple-binaries-that-use-pt-deny-attach.html"><strong>这篇博客文章</strong></a> 中，你可以找到一个关于如何 <strong>调试一个正在运行的守护进程</strong> 的示例，该守护进程使用 <strong><code>PT_DENY_ATTACH</code></strong> 来防止调试，即使 SIP 被禁用。</p>
+<h3 id="lldb"><a class="header" href="#lldb">lldb</a></h3>
+<p><strong>lldb</strong> 是 <strong>macOS</strong> 二进制 <strong>debugging</strong> 的事实标准工具。</p>
+<pre><code class="language-bash">lldb ./malware.bin
+lldb -p 1122
+lldb -n malware.bin
+lldb -n malware.bin --waitfor
+</code></pre>
+<p>您可以在使用 lldb 时设置 intel 风味，通过在您的主文件夹中创建一个名为 <strong><code>.lldbinit</code></strong> 的文件，并添加以下行：</p>
+<pre><code class="language-bash">settings set target.x86-disassembly-flavor intel
+</code></pre>
+<p>{% hint style="warning" %}
+在 lldb 中，使用 <code>process save-core</code> 转储进程
+{% endhint %}</p>
+<table data-header-hidden><thead><tr><th width="225"></th><th></th></tr></thead><tbody><tr><td><strong>(lldb) 命令</strong></td><td><strong>描述</strong></td></tr><tr><td><strong>run (r)</strong></td><td>开始执行，直到命中断点或进程终止。</td></tr><tr><td><strong>process launch --stop-at-entry</strong></td><td>从入口点开始执行并停止</td></tr><tr><td><strong>continue (c)</strong></td><td>继续调试的进程的执行。</td></tr><tr><td><strong>nexti (n / ni)</strong></td><td>执行下一条指令。此命令将跳过函数调用。</td></tr><tr><td><strong>stepi (s / si)</strong></td><td>执行下一条指令。与 nexti 命令不同，此命令将进入函数调用。</td></tr><tr><td><strong>finish (f)</strong></td><td>执行当前函数（“帧”）中的其余指令，返回并停止。</td></tr><tr><td><strong>control + c</strong></td><td>暂停执行。如果进程已运行 (r) 或继续 (c)，这将导致进程在当前执行位置停止。</td></tr><tr><td><strong>breakpoint (b)</strong></td><td><p><code>b main</code> #任何名为 main 的函数</p><p><code>b &#x3C;binname>`main</code> #二进制文件的主函数</p><p><code>b set -n main --shlib &#x3C;lib_name></code> #指定二进制文件的主函数</p><p><code>breakpoint set -r '\[NSFileManager .*\]$'</code> #任何 NSFileManager 方法</p><p><code>breakpoint set -r '\[NSFileManager contentsOfDirectoryAtPath:.*\]$'</code></p><p><code>break set -r . -s libobjc.A.dylib</code> # 在该库的所有函数中设置断点</p><p><code>b -a 0x0000000100004bd9</code></p><p><code>br l</code> #断点列表</p><p><code>br e/dis &#x3C;num></code> #启用/禁用断点</p><p>breakpoint delete &#x3C;num></p></td></tr><tr><td><strong>help</strong></td><td><p>help breakpoint #获取断点命令的帮助</p><p>help memory write #获取写入内存的帮助</p></td></tr><tr><td><strong>reg</strong></td><td><p>reg read</p><p>reg read $rax</p><p>reg read $rax --format &#x3C;<a href="https://lldb.llvm.org/use/variable.html#type-format">format</a>></p><p>reg write $rip 0x100035cc0</p></td></tr><tr><td><strong>x/s &#x3C;reg/memory address></strong></td><td>将内存显示为以 null 结尾的字符串。</td></tr><tr><td><strong>x/i &#x3C;reg/memory address></strong></td><td>将内存显示为汇编指令。</td></tr><tr><td><strong>x/b &#x3C;reg/memory address></strong></td><td>将内存显示为字节。</td></tr><tr><td><strong>print object (po)</strong></td><td><p>这将打印由参数引用的对象</p><p>po $raw</p><p><code>{</code></p><p><code>dnsChanger = {</code></p><p><code>"affiliate" = "";</code></p><p><code>"blacklist_dns" = ();</code></p><p>请注意，Apple 的大多数 Objective-C API 或方法返回对象，因此应通过“打印对象”（po）命令显示。如果 po 没有产生有意义的输出，请使用 <code>x/b</code></p></td></tr><tr><td><strong>memory</strong></td><td>memory read 0x000....<br>memory read $x0+0xf2a<br>memory write 0x100600000 -s 4 0x41414141 #在该地址写入 AAAA<br>memory write -f s $rip+0x11f+7 "AAAA" #在地址中写入 AAAA</td></tr><tr><td><strong>disassembly</strong></td><td><p>dis #反汇编当前函数</p><p>dis -n &#x3C;funcname> #反汇编函数</p><p>dis -n &#x3C;funcname> -b &#x3C;basename> #反汇编函数<br>dis -c 6 #反汇编 6 行<br>dis -c 0x100003764 -e 0x100003768 # 从一个地址到另一个地址<br>dis -p -c 4 # 从当前地址开始反汇编</p></td></tr><tr><td><strong>parray</strong></td><td>parray 3 (char **)$x1 # 检查 x1 寄存器中 3 个组件的数组</td></tr><tr><td><strong>image dump sections</strong></td><td>打印当前进程内存的映射</td></tr><tr><td><strong>image dump symtab &#x3C;library></strong></td><td><code>image dump symtab CoreNLP</code> #获取 CoreNLP 的所有符号的地址</td></tr></tbody></table>
+<p>{% hint style="info" %}
+调用 <strong><code>objc_sendMsg</code></strong> 函数时，<strong>rsi</strong> 寄存器保存方法的 <strong>名称</strong>，以 null 结尾的（“C”）字符串。要通过 lldb 打印名称，请执行：</p>
+<p><code>(lldb) x/s $rsi: 0x1000f1576: "startMiningWithPort:password:coreCount:slowMemory:currency:"</code></p>
+<p><code>(lldb) print (char*)$rsi:</code><br />
+<code>(char *) $1 = 0x00000001000f1576 "startMiningWithPort:password:coreCount:slowMemory:currency:"</code></p>
+<p><code>(lldb) reg read $rsi: rsi = 0x00000001000f1576 "startMiningWithPort:password:coreCount:slowMemory:currency:"</code>
+{% endhint %}</p>
+<h3 id="反动态分析"><a class="header" href="#反动态分析">反动态分析</a></h3>
+<h4 id="虚拟机检测"><a class="header" href="#虚拟机检测">虚拟机检测</a></h4>
+<ul>
+<li>命令 <strong><code>sysctl hw.model</code></strong> 在 <strong>主机为 MacOS</strong> 时返回 "Mac"，但在虚拟机时返回不同的内容。</li>
+<li>一些恶意软件通过玩弄 <strong><code>hw.logicalcpu</code></strong> 和 <strong><code>hw.physicalcpu</code></strong> 的值来尝试检测是否为虚拟机。</li>
+<li>一些恶意软件还可以根据 MAC 地址（00:50:56）<strong>检测</strong>机器是否为 <strong>VMware</strong>。</li>
+<li>还可以通过简单的代码检查 <strong>进程是否正在被调试</strong>：</li>
+<li><code>if(P_TRACED == (info.kp_proc.p_flag &amp; P_TRACED)){ //进程正在被调试 }</code></li>
+<li>它还可以调用 <strong><code>ptrace</code></strong> 系统调用，使用 <strong><code>PT_DENY_ATTACH</code></strong> 标志。这 <strong>防止</strong> 调试器附加和跟踪。</li>
+<li>您可以检查 <strong><code>sysctl</code></strong> 或 <strong><code>ptrace</code></strong> 函数是否被 <strong>导入</strong>（但恶意软件可以动态导入它）</li>
+<li>正如在这篇文章中所述，“<a href="https://alexomara.com/blog/defeating-anti-debug-techniques-macos-ptrace-variants/">击败反调试技术：macOS ptrace 变体</a>”：<br />
+“<em>消息 Process # exited with <strong>status = 45 (0x0000002d)</strong> 通常是调试目标使用 <strong>PT_DENY_ATTACH</strong> 的明显迹象</em>”</li>
+</ul>
+<h2 id="核心转储"><a class="header" href="#核心转储">核心转储</a></h2>
+<p>如果满足以下条件，则会创建核心转储：</p>
+<ul>
+<li><code>kern.coredump</code> sysctl 设置为 1（默认值）</li>
+<li>如果进程不是 suid/sgid 或 <code>kern.sugid_coredump</code> 为 1（默认值为 0）</li>
+<li><code>AS_CORE</code> 限制允许该操作。可以通过调用 <code>ulimit -c 0</code> 来抑制核心转储的创建，并通过 <code>ulimit -c unlimited</code> 重新启用它们。</li>
+</ul>
+<p>在这些情况下，核心转储根据 <code>kern.corefile</code> sysctl 生成，并通常存储在 <code>/cores/core/.%P</code> 中。</p>
+<h2 id="模糊测试"><a class="header" href="#模糊测试">模糊测试</a></h2>
+<h3 id="reportcrash"><a class="header" href="#reportcrash"><a href="https://ss64.com/osx/reportcrash.html">ReportCrash</a></a></h3>
+<p>ReportCrash <strong>分析崩溃的进程并将崩溃报告保存到磁盘</strong>。崩溃报告包含可以 <strong>帮助开发人员诊断</strong> 崩溃原因的信息。<br />
+对于在每个用户 launchd 上下文中 <strong>运行的应用程序和其他进程</strong>，ReportCrash 作为 LaunchAgent 运行，并将崩溃报告保存在用户的 <code>~/Library/Logs/DiagnosticReports/</code> 中。<br />
+对于守护进程、在系统 launchd 上下文中 <strong>运行的其他进程</strong> 和其他特权进程，ReportCrash 作为 LaunchDaemon 运行，并将崩溃报告保存在系统的 <code>/Library/Logs/DiagnosticReports</code> 中。</p>
+<p>如果您担心崩溃报告 <strong>被发送到 Apple</strong>，可以禁用它们。如果不担心，崩溃报告可以帮助 <strong>找出服务器崩溃的原因</strong>。</p>
+<pre><code class="language-bash">#To disable crash reporting:
+launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+sudo launchctl unload -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+
+#To re-enable crash reporting:
+launchctl load -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.ReportCrash.Root.plist
+</code></pre>
+<h3 id="睡眠"><a class="header" href="#睡眠">睡眠</a></h3>
+<p>在 MacOS 中进行模糊测试时，重要的是不要让 Mac 进入睡眠状态：</p>
+<ul>
+<li>systemsetup -setsleep Never</li>
+<li>pmset, 系统偏好设置</li>
+<li><a href="https://github.com/newmarcel/KeepingYouAwake">KeepingYouAwake</a></li>
+</ul>
+<h4 id="ssh-断开连接"><a class="header" href="#ssh-断开连接">SSH 断开连接</a></h4>
+<p>如果您通过 SSH 连接进行模糊测试，确保会话不会断开是很重要的。因此，请使用以下内容更改 sshd_config 文件：</p>
+<ul>
+<li>TCPKeepAlive Yes</li>
+<li>ClientAliveInterval 0</li>
+<li>ClientAliveCountMax 0</li>
+</ul>
+<pre><code class="language-bash">sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist
+sudo launchctl load -w /System/Library/LaunchDaemons/ssh.plist
+</code></pre>
+<h3 id="internal-handlers"><a class="header" href="#internal-handlers">Internal Handlers</a></h3>
+<p><strong>查看以下页面</strong> 以了解如何找到哪个应用程序负责 <strong>处理指定的方案或协议：</strong></p>
+<p>{% content-ref url="../macos-file-extension-apps.md" %}
+<a href="../macos-file-extension-apps.html">macos-file-extension-apps.md</a>
+{% endcontent-ref %}</p>
+<h3 id="enumerating-network-processes"><a class="header" href="#enumerating-network-processes">Enumerating Network Processes</a></h3>
+<p>这很有趣，可以找到管理网络数据的进程：</p>
+<pre><code class="language-bash">dtrace -n 'syscall::recv*:entry { printf("-&gt; %s (pid=%d)", execname, pid); }' &gt;&gt; recv.log
+#wait some time
+sort -u recv.log &gt; procs.txt
+cat procs.txt
+</code></pre>
+<p>或者使用 <code>netstat</code> 或 <code>lsof</code></p>
+<h3 id="libgmalloc"><a class="header" href="#libgmalloc">Libgmalloc</a></h3>
+<figure><img src="../../../.gitbook/assets/Pasted Graphic 14.png" alt=""><figcaption></figcaption></figure>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">lldb -o "target create `which some-binary`" -o "settings set target.env-vars DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib" -o "run arg1 arg2" -o "bt" -o "reg read" -o "dis -s \$pc-32 -c 24 -m -F intel" -o "quit"
+</code></pre>
+<p>{% endcode %}</p>
+<h3 id="模糊测试工具"><a class="header" href="#模糊测试工具">模糊测试工具</a></h3>
+<h4 id="afl"><a class="header" href="#afl"><a href="https://github.com/AFLplusplus/AFLplusplus">AFL++</a></a></h4>
+<p>适用于CLI工具</p>
+<h4 id="litefuzz"><a class="header" href="#litefuzz"><a href="https://github.com/sec-tools/litefuzz">Litefuzz</a></a></h4>
+<p>它“<strong>可以正常工作</strong>”与macOS GUI工具。请注意，一些macOS应用程序有一些特定要求，如唯一的文件名、正确的扩展名，需要从沙盒中读取文件（<code>~/Library/Containers/com.apple.Safari/Data</code>）...</p>
+<p>一些示例：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash"># iBooks
+litefuzz -l -c "/System/Applications/Books.app/Contents/MacOS/Books FUZZ" -i files/epub -o crashes/ibooks -t /Users/test/Library/Containers/com.apple.iBooksX/Data/tmp -x 10 -n 100000 -ez
+
+# -l : Local
+# -c : cmdline with FUZZ word (if not stdin is used)
+# -i : input directory or file
+# -o : Dir to output crashes
+# -t : Dir to output runtime fuzzing artifacts
+# -x : Tmeout for the run (default is 1)
+# -n : Num of fuzzing iterations (default is 1)
+# -e : enable second round fuzzing where any crashes found are reused as inputs
+# -z : enable malloc debug helpers
+
+# Font Book
+litefuzz -l -c "/System/Applications/Font Book.app/Contents/MacOS/Font Book FUZZ" -i input/fonts -o crashes/font-book -x 2 -n 500000 -ez
+
+# smbutil (using pcap capture)
+litefuzz -lk -c "smbutil view smb://localhost:4455" -a tcp://localhost:4455 -i input/mac-smb-resp -p -n 100000 -z
+
+# screensharingd (using pcap capture)
+litefuzz -s -a tcp://localhost:5900 -i input/screenshared-session --reportcrash screensharingd -p -n 100000
+</code></pre>
+<p>{% endcode %}</p>
+<h3 id="更多模糊测试-macos-信息"><a class="header" href="#更多模糊测试-macos-信息">更多模糊测试 MacOS 信息</a></h3>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=T5xfL9tEg44">https://www.youtube.com/watch?v=T5xfL9tEg44</a></li>
+<li><a href="https://github.com/bnagy/slides/blob/master/OSXScale.pdf">https://github.com/bnagy/slides/blob/master/OSXScale.pdf</a></li>
+<li><a href="https://github.com/bnagy/francis/tree/master/exploitaben">https://github.com/bnagy/francis/tree/master/exploitaben</a></li>
+<li><a href="https://github.com/ant4g0nist/crashwrangler">https://github.com/ant4g0nist/crashwrangler</a></li>
+</ul>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.amazon.com/OS-Incident-Response-Scripting-Analysis-ebook/dp/B01FHOHHVS"><strong>OS X 事件响应：脚本和分析</strong></a></li>
+<li><a href="https://www.youtube.com/watch?v=T5xfL9tEg44"><strong>https://www.youtube.com/watch?v=T5xfL9tEg44</strong></a></li>
+<li><a href="https://taomm.org/vol1/analysis.html"><strong>https://taomm.org/vol1/analysis.html</strong></a></li>
+<li><a href="https://taomm.org/"><strong>Mac 恶意软件的艺术：分析恶意软件的指南</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-apps-inspecting-debugging-and-fuzzing/objects-in-memory.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-apps-inspecting-debugging-and-fuzzing/objects-in-memory.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

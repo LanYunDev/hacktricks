@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Dangerous Entitlements &amp; TCC perms</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-dangerous-entitlements--tcc-perms"><a class="header" href="#macos-dangerous-entitlements--tcc-perms">macOS Dangerous Entitlements &amp; TCC perms</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<p>{% hint style="warning" %}
+请注意，以 <strong><code>com.apple</code></strong> 开头的权限不对第三方开放，只有 Apple 可以授予它们。
+{% endhint %}</p>
+<h2 id="high"><a class="header" href="#high">High</a></h2>
+<h3 id="comapplerootlessinstallheritable"><a class="header" href="#comapplerootlessinstallheritable"><code>com.apple.rootless.install.heritable</code></a></h3>
+<p>权限 <strong><code>com.apple.rootless.install.heritable</code></strong> 允许 <strong>绕过 SIP</strong>。查看 <a href="macos-sip.html#com.apple.rootless.install.heritable">此处获取更多信息</a>。</p>
+<h3 id="comapplerootlessinstall"><a class="header" href="#comapplerootlessinstall"><strong><code>com.apple.rootless.install</code></strong></a></h3>
+<p>权限 <strong><code>com.apple.rootless.install</code></strong> 允许 <strong>绕过 SIP</strong>。查看 <a href="macos-sip.html#com.apple.rootless.install">此处获取更多信息</a>。</p>
+<h3 id="comapplesystem-task-ports-之前称为-task_for_pid-allow"><a class="header" href="#comapplesystem-task-ports-之前称为-task_for_pid-allow"><strong><code>com.apple.system-task-ports</code> (之前称为 <code>task_for_pid-allow</code>)</strong></a></h3>
+<p>此权限允许获取 <strong>任何</strong> 进程的 <strong>任务端口</strong>，除了内核。查看 <a href="../macos-proces-abuse/macos-ipc-inter-process-communication/"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comapplesecurityget-task-allow"><a class="header" href="#comapplesecurityget-task-allow"><code>com.apple.security.get-task-allow</code></a></h3>
+<p>此权限允许其他具有 <strong><code>com.apple.security.cs.debugger</code></strong> 权限的进程获取由具有此权限的二进制文件运行的进程的任务端口并 <strong>注入代码</strong>。查看 <a href="../macos-proces-abuse/macos-ipc-inter-process-communication/"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comapplesecuritycsdebugger"><a class="header" href="#comapplesecuritycsdebugger"><code>com.apple.security.cs.debugger</code></a></h3>
+<p>具有调试工具权限的应用可以调用 <code>task_for_pid()</code> 来检索未签名和第三方应用的有效任务端口，这些应用的 <code>Get Task Allow</code> 权限设置为 <code>true</code>。然而，即使具有调试工具权限，调试器 <strong>无法获取</strong> 没有 <code>Get Task Allow</code> 权限的进程的任务端口，因此这些进程受到系统完整性保护的保护。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_debugger"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comapplesecuritycsdisable-library-validation"><a class="header" href="#comapplesecuritycsdisable-library-validation"><code>com.apple.security.cs.disable-library-validation</code></a></h3>
+<p>此权限允许 <strong>加载框架、插件或库，而不需要由 Apple 签名或与主可执行文件具有相同的团队 ID 签名</strong>，因此攻击者可以利用某些任意库加载来注入代码。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_disable-library-validation"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comappleprivatesecurityclear-library-validation"><a class="header" href="#comappleprivatesecurityclear-library-validation"><code>com.apple.private.security.clear-library-validation</code></a></h3>
+<p>此权限与 <strong><code>com.apple.security.cs.disable-library-validation</code></strong> 非常相似，但 <strong>而不是</strong> <strong>直接禁用</strong> 库验证，它允许进程 <strong>调用 <code>csops</code> 系统调用来禁用它</strong>。<br />
+查看 <a href="https://theevilbit.github.io/posts/com.apple.private.security.clear-library-validation/"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comapplesecuritycsallow-dyld-environment-variables"><a class="header" href="#comapplesecuritycsallow-dyld-environment-variables"><code>com.apple.security.cs.allow-dyld-environment-variables</code></a></h3>
+<p>此权限允许 <strong>使用 DYLD 环境变量</strong>，这些变量可用于注入库和代码。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables"><strong>此处获取更多信息</strong></a>。</p>
+<h3 id="comappleprivatetccmanager-或-comapplerootlessstoragetcc"><a class="header" href="#comappleprivatetccmanager-或-comapplerootlessstoragetcc"><code>com.apple.private.tcc.manager</code> 或 <code>com.apple.rootless.storage</code>.<code>TCC</code></a></h3>
+<p><a href="https://objective-see.org/blog/blog_0x4C.html"><strong>根据这篇博客</strong></a> <strong>和</strong> <a href="https://wojciechregula.blog/post/play-the-music-and-bypass-tcc-aka-cve-2020-29621/"><strong>这篇博客</strong></a>，这些权限允许 <strong>修改</strong> <strong>TCC</strong> 数据库。</p>
+<h3 id="systeminstallapple-software-和-systeminstallapple-softwarestandar-user"><a class="header" href="#systeminstallapple-software-和-systeminstallapple-softwarestandar-user"><strong><code>system.install.apple-software</code></strong> 和 <strong><code>system.install.apple-software.standar-user</code></strong></a></h3>
+<p>这些权限允许 <strong>在不询问用户权限的情况下安装软件</strong>，这对于 <strong>权限提升</strong> 很有帮助。</p>
+<h3 id="comappleprivatesecuritykext-management"><a class="header" href="#comappleprivatesecuritykext-management"><code>com.apple.private.security.kext-management</code></a></h3>
+<p>请求 <strong>内核加载内核扩展</strong> 所需的权限。</p>
+<h3 id="comappleprivateicloud-account-access"><a class="header" href="#comappleprivateicloud-account-access"><strong><code>com.apple.private.icloud-account-access</code></strong></a></h3>
+<p>权限 <strong><code>com.apple.private.icloud-account-access</code></strong> 使得与 <strong><code>com.apple.iCloudHelper</code></strong> XPC 服务进行通信成为可能，该服务将 <strong>提供 iCloud 令牌</strong>。</p>
+<p><strong>iMovie</strong> 和 <strong>Garageband</strong> 拥有此权限。</p>
+<p>有关 <strong>从该权限获取 iCloud 令牌</strong> 的漏洞的更多 <strong>信息</strong>，请查看演讲：<a href="https://www.youtube.com/watch?v=_6e2LhmxVc0"><strong>#OBTS v5.0: "What Happens on your Mac, Stays on Apple's iCloud?!" - Wojciech Regula</strong></a></p>
+<h3 id="comappleprivatetccmanagercheck-by-audit-token"><a class="header" href="#comappleprivatetccmanagercheck-by-audit-token"><code>com.apple.private.tcc.manager.check-by-audit-token</code></a></h3>
+<p>TODO: 我不知道这允许做什么</p>
+<h3 id="comappleprivateapfsrevert-to-snapshot"><a class="header" href="#comappleprivateapfsrevert-to-snapshot"><code>com.apple.private.apfs.revert-to-snapshot</code></a></h3>
+<p>TODO: 在 <a href="https://jhftss.github.io/The-Nightmare-of-Apple-OTA-Update/"><strong>这份报告</strong></a> <strong>中提到这可能用于</strong> 在重启后更新 SSV 保护的内容。如果你知道如何，请发送 PR！</p>
+<h3 id="comappleprivateapfscreate-sealed-snapshot"><a class="header" href="#comappleprivateapfscreate-sealed-snapshot"><code>com.apple.private.apfs.create-sealed-snapshot</code></a></h3>
+<p>TODO: 在 <a href="https://jhftss.github.io/The-Nightmare-of-Apple-OTA-Update/"><strong>这份报告</strong></a> <strong>中提到这可能用于</strong> 在重启后更新 SSV 保护的内容。如果你知道如何，请发送 PR！</p>
+<h3 id="keychain-access-groups"><a class="header" href="#keychain-access-groups"><code>keychain-access-groups</code></a></h3>
+<p>此权限列出了应用可以访问的 <strong>钥匙串</strong> 组：</p>
+<pre><code class="language-xml">&lt;key&gt;keychain-access-groups&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;ichat&lt;/string&gt;
+&lt;string&gt;apple&lt;/string&gt;
+&lt;string&gt;appleaccount&lt;/string&gt;
+&lt;string&gt;InternetAccounts&lt;/string&gt;
+&lt;string&gt;IMCore&lt;/string&gt;
+&lt;/array&gt;
+</code></pre>
+<h3 id="ktccservicesystempolicyallfiles"><a class="header" href="#ktccservicesystempolicyallfiles"><strong><code>kTCCServiceSystemPolicyAllFiles</code></strong></a></h3>
+<p>授予<strong>完全磁盘访问</strong>权限，这是TCC可以拥有的最高权限之一。</p>
+<h3 id="ktccserviceappleevents"><a class="header" href="#ktccserviceappleevents"><strong><code>kTCCServiceAppleEvents</code></strong></a></h3>
+<p>允许应用程序向其他常用于<strong>自动化任务</strong>的应用程序发送事件。通过控制其他应用程序，它可以滥用授予这些其他应用程序的权限。</p>
+<p>例如，让它们要求用户输入密码：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">osascript -e 'tell app "App Store" to activate' -e 'tell app "App Store" to activate' -e 'tell app "App Store" to display dialog "App Store requires your password to continue." &amp; return &amp; return default answer "" with icon 1 with hidden answer with title "App Store Alert"'
+</code></pre>
+<p>{% endcode %}</p>
+<p>或者让它们执行<strong>任意操作</strong>。</p>
+<h3 id="ktccserviceendpointsecurityclient"><a class="header" href="#ktccserviceendpointsecurityclient"><strong><code>kTCCServiceEndpointSecurityClient</code></strong></a></h3>
+<p>允许在其他权限中<strong>写入用户的 TCC 数据库</strong>。</p>
+<h3 id="ktccservicesystempolicysysadminfiles"><a class="header" href="#ktccservicesystempolicysysadminfiles"><strong><code>kTCCServiceSystemPolicySysAdminFiles</code></strong></a></h3>
+<p>允许<strong>更改</strong>用户的**<code>NFSHomeDirectory</code><strong>属性，从而更改其主文件夹路径，因此允许</strong>绕过 TCC**。</p>
+<h3 id="ktccservicesystempolicyappbundles"><a class="header" href="#ktccservicesystempolicyappbundles"><strong><code>kTCCServiceSystemPolicyAppBundles</code></strong></a></h3>
+<p>允许修改应用程序包内的文件（在 app.app 内），这在默认情况下是<strong>不允许的</strong>。</p>
+<figure><img src="../../../.gitbook/assets/image (31).png" alt=""><figcaption></figcaption></figure>
+<p>可以在 <em>系统设置</em> &gt; <em>隐私与安全</em> &gt; <em>应用管理</em> 中检查谁拥有此访问权限。</p>
+<h3 id="ktccserviceaccessibility"><a class="header" href="#ktccserviceaccessibility"><code>kTCCServiceAccessibility</code></a></h3>
+<p>该进程将能够<strong>滥用 macOS 辅助功能</strong>，这意味着例如它将能够按下按键。因此，它可以请求访问控制像 Finder 这样的应用程序，并批准具有此权限的对话框。</p>
+<h2 id="中等"><a class="header" href="#中等">中等</a></h2>
+<h3 id="comapplesecuritycsallow-jit"><a class="header" href="#comapplesecuritycsallow-jit"><code>com.apple.security.cs.allow-jit</code></a></h3>
+<p>此权限允许通过将 <code>MAP_JIT</code> 标志传递给 <code>mmap()</code> 系统函数来<strong>创建可写和可执行的内存</strong>。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-jit"><strong>更多信息</strong></a>。</p>
+<h3 id="comapplesecuritycsallow-unsigned-executable-memory"><a class="header" href="#comapplesecuritycsallow-unsigned-executable-memory"><code>com.apple.security.cs.allow-unsigned-executable-memory</code></a></h3>
+<p>此权限允许<strong>覆盖或修补 C 代码</strong>，使用长期弃用的 <strong><code>NSCreateObjectFileImageFromMemory</code></strong>（这在根本上是不安全的），或使用 <strong>DVDPlayback</strong> 框架。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-unsigned-executable-memory"><strong>更多信息</strong></a>。</p>
+<p>{% hint style="danger" %}
+包括此权限会使您的应用程序暴露于内存不安全代码语言中的常见漏洞。仔细考虑您的应用程序是否需要此例外。
+{% endhint %}</p>
+<h3 id="comapplesecuritycsdisable-executable-page-protection"><a class="header" href="#comapplesecuritycsdisable-executable-page-protection"><code>com.apple.security.cs.disable-executable-page-protection</code></a></h3>
+<p>此权限允许<strong>修改其自身可执行文件</strong>的部分内容以强制退出。查看 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_disable-executable-page-protection"><strong>更多信息</strong></a>。</p>
+<p>{% hint style="danger" %}
+禁用可执行内存保护权限是一种极端权限，它从您的应用程序中移除了基本的安全保护，使攻击者能够在不被检测的情况下重写您应用程序的可执行代码。如果可能，优先选择更窄的权限。
+{% endhint %}</p>
+<h3 id="comapplesecuritycsallow-relative-library-loads"><a class="header" href="#comapplesecuritycsallow-relative-library-loads"><code>com.apple.security.cs.allow-relative-library-loads</code></a></h3>
+<p>待办事项</p>
+<h3 id="comappleprivatenullfs_allow"><a class="header" href="#comappleprivatenullfs_allow"><code>com.apple.private.nullfs_allow</code></a></h3>
+<p>此权限允许挂载 nullfs 文件系统（默认情况下被禁止）。工具：<a href="https://github.com/JamaicanMoose/mount_nullfs/tree/master"><strong>mount_nullfs</strong></a>。</p>
+<h3 id="ktccserviceall"><a class="header" href="#ktccserviceall"><code>kTCCServiceAll</code></a></h3>
+<p>根据这篇博客文章，这个 TCC 权限通常以以下形式出现：</p>
+<pre><code>[Key] com.apple.private.tcc.allow-prompting
+[Value]
+[Array]
+[String] kTCCServiceAll
+</code></pre>
+<p>允许进程<strong>请求所有TCC权限</strong>。</p>
+<h3 id="ktccservicepostevent"><a class="header" href="#ktccservicepostevent"><strong><code>kTCCServicePostEvent</code></strong></a></h3>
+<p>{% hint style="success" %}
+学习与实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家(ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家(GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>关注</strong>我们在<strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+</details>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-tcc-payloads.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-amfi-applemobilefileintegrity.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-tcc-payloads.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-amfi-applemobilefileintegrity.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

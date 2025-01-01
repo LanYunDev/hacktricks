@@ -1,0 +1,563 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS MIG - Mach Interface Generator</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-mig---mach-interface-generator"><a class="header" href="#macos-mig---mach-interface-generator">macOS MIG - Mach Interface Generator</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>MIG的创建是为了<strong>简化Mach IPC</strong>代码的生成过程。它基本上<strong>生成所需的代码</strong>，使服务器和客户端能够根据给定的定义进行通信。即使生成的代码不够优雅，开发者只需导入它，他的代码将比之前简单得多。</p>
+<p>定义使用接口定义语言（IDL）以<code>.defs</code>扩展名指定。</p>
+<p>这些定义有5个部分：</p>
+<ul>
+<li><strong>子系统声明</strong>：关键字subsystem用于指示<strong>名称</strong>和<strong>id</strong>。如果服务器应该在内核中运行，也可以将其标记为**<code>KernelServer</code>**。</li>
+<li><strong>包含和导入</strong>：MIG使用C预处理器，因此能够使用导入。此外，可以使用<code>uimport</code>和<code>simport</code>来处理用户或服务器生成的代码。</li>
+<li><strong>类型声明</strong>：可以定义数据类型，尽管通常会导入<code>mach_types.defs</code>和<code>std_types.defs</code>。对于自定义类型，可以使用一些语法：</li>
+<li>[i<code>n/out]tran</code>：需要从传入消息或到传出消息进行转换的函数</li>
+<li><code>c[user/server]type</code>：映射到另一个C类型。</li>
+<li><code>destructor</code>：当类型被释放时调用此函数。</li>
+<li><strong>操作</strong>：这些是RPC方法的定义。有5种不同类型：</li>
+<li><code>routine</code>：期望回复</li>
+<li><code>simpleroutine</code>：不期望回复</li>
+<li><code>procedure</code>：期望回复</li>
+<li><code>simpleprocedure</code>：不期望回复</li>
+<li><code>function</code>：期望回复</li>
+</ul>
+<h3 id="示例"><a class="header" href="#示例">示例</a></h3>
+<p>创建一个定义文件，在这种情况下是一个非常简单的函数：</p>
+<p>{% code title="myipc.defs" %}</p>
+<pre><code class="language-cpp">subsystem myipc 500; // Arbitrary name and id
+
+userprefix USERPREF;        // Prefix for created functions in the client
+serverprefix SERVERPREF;    // Prefix for created functions in the server
+
+#include &lt;mach/mach_types.defs&gt;
+#include &lt;mach/std_types.defs&gt;
+
+simpleroutine Subtract(
+server_port :  mach_port_t;
+n1          :  uint32_t;
+n2          :  uint32_t);
+</code></pre>
+<p>{% endcode %}</p>
+<p>请注意，第一个 <strong>参数是要绑定的端口</strong>，MIG 将 <strong>自动处理回复端口</strong>（除非在客户端代码中调用 <code>mig_get_reply_port()</code>）。此外，<strong>操作的 ID</strong> 将是 <strong>顺序的</strong>，从指定的子系统 ID 开始（因此，如果某个操作被弃用，它将被删除，并且使用 <code>skip</code> 仍然使用其 ID）。</p>
+<p>现在使用 MIG 生成能够相互通信以调用 Subtract 函数的服务器和客户端代码：</p>
+<pre><code class="language-bash">mig -header myipcUser.h -sheader myipcServer.h myipc.defs
+</code></pre>
+<p>在当前目录中将创建几个新文件。</p>
+<p>{% hint style="success" %}
+您可以在系统中找到一个更复杂的示例，使用：<code>mdfind mach_port.defs</code><br />
+并且您可以从与文件相同的文件夹中编译它，使用：<code>mig -DLIBSYSCALL_INTERFACE mach_ports.defs</code>
+{% endhint %}</p>
+<p>在文件 <strong><code>myipcServer.c</code></strong> 和 <strong><code>myipcServer.h</code></strong> 中，您可以找到结构 <strong><code>SERVERPREFmyipc_subsystem</code></strong> 的声明和定义，该结构基本上根据接收到的消息 ID 定义要调用的函数（我们指定了起始编号为 500）：</p>
+<p>{% tabs %}
+{% tab title="myipcServer.c" %}</p>
+<pre><code class="language-c">/* Description of this subsystem, for use in direct RPC */
+const struct SERVERPREFmyipc_subsystem SERVERPREFmyipc_subsystem = {
+myipc_server_routine,
+500, // start ID
+501, // end ID
+(mach_msg_size_t)sizeof(union __ReplyUnion__SERVERPREFmyipc_subsystem),
+(vm_address_t)0,
+{
+{ (mig_impl_routine_t) 0,
+// Function to call
+(mig_stub_routine_t) _XSubtract, 3, 0, (routine_arg_descriptor_t)0, (mach_msg_size_t)sizeof(__Reply__Subtract_t)},
+}
+};
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="myipcServer.h" %}</p>
+<pre><code class="language-c">/* Description of this subsystem, for use in direct RPC */
+extern const struct SERVERPREFmyipc_subsystem {
+mig_server_routine_t	server;	/* Server routine */
+mach_msg_id_t	start;	/* Min routine number */
+mach_msg_id_t	end;	/* Max routine number + 1 */
+unsigned int	maxsize;	/* Max msg size */
+vm_address_t	reserved;	/* Reserved */
+struct routine_descriptor	/* Array of routine descriptors */
+routine[1];
+} SERVERPREFmyipc_subsystem;
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>基于之前的结构，函数 <strong><code>myipc_server_routine</code></strong> 将获取 <strong>消息 ID</strong> 并返回适当的调用函数：</p>
+<pre><code class="language-c">mig_external mig_routine_t myipc_server_routine
+(mach_msg_header_t *InHeadP)
+{
+int msgh_id;
+
+msgh_id = InHeadP-&gt;msgh_id - 500;
+
+if ((msgh_id &gt; 0) || (msgh_id &lt; 0))
+return 0;
+
+return SERVERPREFmyipc_subsystem.routine[msgh_id].stub_routine;
+}
+</code></pre>
+<p>在这个例子中，我们只在定义中定义了 1 个函数，但如果我们定义了更多函数，它们将位于 <strong><code>SERVERPREFmyipc_subsystem</code></strong> 数组中，第一个将被分配给 ID <strong>500</strong>，第二个将被分配给 ID <strong>501</strong>...</p>
+<p>如果该函数预期发送一个 <strong>reply</strong>，则函数 <code>mig_internal kern_return_t __MIG_check__Reply__&lt;name&gt;</code> 也会存在。</p>
+<p>实际上，可以在 <strong><code>myipcServer.h</code></strong> 中的结构 <strong><code>subsystem_to_name_map_myipc</code></strong> 中识别这种关系（在其他文件中为 **<code>subsystem_to_name_map_***</code>）：</p>
+<pre><code class="language-c">#ifndef subsystem_to_name_map_myipc
+#define subsystem_to_name_map_myipc \
+{ "Subtract", 500 }
+#endif
+</code></pre>
+<p>最后，另一个使服务器正常工作的关键功能是 <strong><code>myipc_server</code></strong>，它实际上会 <strong>调用与接收到的 id 相关的函数</strong>：</p>
+<pre class="language-c"><code class="lang-c">mig_external boolean_t myipc_server
+(mach_msg_header_t *InHeadP, mach_msg_header_t *OutHeadP)
+{
+/*
+* typedef struct {
+* 	mach_msg_header_t Head;
+* 	NDR_record_t NDR;
+* 	kern_return_t RetCode;
+* } mig_reply_error_t;
+*/
+
+mig_routine_t routine;
+
+OutHeadP->msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REPLY(InHeadP->msgh_bits), 0);
+OutHeadP->msgh_remote_port = InHeadP->msgh_reply_port;
+/* 最小大小：routine() 如果不同会更新它 */
+OutHeadP->msgh_size = (mach_msg_size_t)sizeof(mig_reply_error_t);
+OutHeadP->msgh_local_port = MACH_PORT_NULL;
+OutHeadP->msgh_id = InHeadP->msgh_id + 100;
+OutHeadP->msgh_reserved = 0;
+
+if ((InHeadP->msgh_id > 500) || (InHeadP->msgh_id &#x3C; 500) ||
+<strong>	    ((routine = SERVERPREFmyipc_subsystem.routine[InHeadP->msgh_id - 500].stub_routine) == 0)) {
+</strong>		((mig_reply_error_t *)OutHeadP)->NDR = NDR_record;
+((mig_reply_error_t *)OutHeadP)->RetCode = MIG_BAD_ID;
+return FALSE;
+}
+<strong>	(*routine) (InHeadP, OutHeadP);
+</strong>	return TRUE;
+}
+</code></pre>
+<p>检查之前突出显示的行以通过 ID 访问要调用的函数。</p>
+<p>以下是创建一个简单的 <strong>服务器</strong> 和 <strong>客户端</strong> 的代码，其中客户端可以调用服务器的 Subtract 函数：</p>
+<p>{% tabs %}
+{% tab title="myipc_server.c" %}</p>
+<pre><code class="language-c">// gcc myipc_server.c myipcServer.c -o myipc_server
+
+#include &lt;stdio.h&gt;
+#include &lt;mach/mach.h&gt;
+#include &lt;servers/bootstrap.h&gt;
+#include "myipcServer.h"
+
+kern_return_t SERVERPREFSubtract(mach_port_t server_port, uint32_t n1, uint32_t n2)
+{
+printf("Received: %d - %d = %d\n", n1, n2, n1 - n2);
+return KERN_SUCCESS;
+}
+
+int main() {
+
+mach_port_t port;
+kern_return_t kr;
+
+// Register the mach service
+kr = bootstrap_check_in(bootstrap_port, "xyz.hacktricks.mig", &amp;port);
+if (kr != KERN_SUCCESS) {
+printf("bootstrap_check_in() failed with code 0x%x\n", kr);
+return 1;
+}
+
+// myipc_server is the function that handles incoming messages (check previous exlpanation)
+mach_msg_server(myipc_server, sizeof(union __RequestUnion__SERVERPREFmyipc_subsystem), port, MACH_MSG_TIMEOUT_NONE);
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="myipc_client.c" %}</p>
+<pre><code class="language-c">// gcc myipc_client.c myipcUser.c -o myipc_client
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+
+#include &lt;mach/mach.h&gt;
+#include &lt;servers/bootstrap.h&gt;
+#include "myipcUser.h"
+
+int main() {
+
+// Lookup the receiver port using the bootstrap server.
+mach_port_t port;
+kern_return_t kr = bootstrap_look_up(bootstrap_port, "xyz.hacktricks.mig", &amp;port);
+if (kr != KERN_SUCCESS) {
+printf("bootstrap_look_up() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("Port right name %d\n", port);
+USERPREFSubtract(port, 40, 2);
+}
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="ndr_record"><a class="header" href="#ndr_record">NDR_record</a></h3>
+<p>NDR_record 是由 <code>libsystem_kernel.dylib</code> 导出的，它是一个结构体，允许 MIG <strong>转换数据，使其与所使用的系统无关</strong>，因为 MIG 被认为是用于不同系统之间的（而不仅仅是在同一台机器上）。</p>
+<p>这很有趣，因为如果在二进制文件中找到 <code>_NDR_record</code> 作为依赖项（<code>jtool2 -S &lt;binary&gt; | grep NDR</code> 或 <code>nm</code>），这意味着该二进制文件是一个 MIG 客户端或服务器。</p>
+<p>此外，<strong>MIG 服务器</strong>在 <code>__DATA.__const</code> 中有调度表（在 macOS 内核中为 <code>__CONST.__constdata</code>，在其他 *OS 内核中为 <code>__DATA_CONST.__const</code>）。这可以通过 <strong><code>jtool2</code></strong> 转储。</p>
+<p>而 <strong>MIG 客户端</strong> 将使用 <code>__NDR_record</code> 通过 <code>__mach_msg</code> 发送给服务器。</p>
+<h2 id="二进制分析"><a class="header" href="#二进制分析">二进制分析</a></h2>
+<h3 id="jtool"><a class="header" href="#jtool">jtool</a></h3>
+<p>由于许多二进制文件现在使用 MIG 来暴露 mach 端口，因此了解如何 <strong>识别 MIG 的使用</strong> 以及 <strong>MIG 执行的每个消息 ID 的函数</strong> 是很有趣的。</p>
+<p><a href="../../macos-apps-inspecting-debugging-and-fuzzing/#jtool2"><strong>jtool2</strong></a> 可以解析 Mach-O 二进制文件中的 MIG 信息，指示消息 ID 并识别要执行的函数：</p>
+<pre><code class="language-bash">jtool2 -d __DATA.__const myipc_server | grep MIG
+</code></pre>
+<p>此外，MIG 函数只是实际被调用函数的包装，这意味着通过获取其反汇编并搜索 BL，您可能能够找到实际被调用的函数：</p>
+<pre><code class="language-bash">jtool2 -d __DATA.__const myipc_server | grep BL
+</code></pre>
+<h3 id="assembly"><a class="header" href="#assembly">Assembly</a></h3>
+<p>之前提到过，负责<strong>根据接收到的消息 ID 调用正确函数</strong>的函数是 <code>myipc_server</code>。然而，通常你不会拥有二进制文件的符号（没有函数名），因此检查<strong>反编译后的样子</strong>是很有趣的，因为它总是非常相似（该函数的代码与暴露的函数无关）：</p>
+<p>{% tabs %}
+{% tab title="myipc_server decompiled 1" %}</p>
+<pre class="language-c"><code class="lang-c">int _myipc_server(int arg0, int arg1) {
+var_10 = arg0;
+var_18 = arg1;
+// 初始指令以找到正确的函数指针
+*(int32_t *)var_18 = *(int32_t *)var_10 &#x26; 0x1f;
+*(int32_t *)(var_18 + 0x8) = *(int32_t *)(var_10 + 0x8);
+*(int32_t *)(var_18 + 0x4) = 0x24;
+*(int32_t *)(var_18 + 0xc) = 0x0;
+*(int32_t *)(var_18 + 0x14) = *(int32_t *)(var_10 + 0x14) + 0x64;
+*(int32_t *)(var_18 + 0x10) = 0x0;
+if (*(int32_t *)(var_10 + 0x14) &#x3C;= 0x1f4 &#x26;&#x26; *(int32_t *)(var_10 + 0x14) >= 0x1f4) {
+rax = *(int32_t *)(var_10 + 0x14);
+// 调用 sign_extend_64，可以帮助识别该函数
+// 这将指针存储在 rax 中，以便调用需要调用的函数
+// 检查地址 0x100004040 的使用（函数地址数组）
+// 0x1f4 = 500（起始 ID）
+<strong>            rax = *(sign_extend_64(rax - 0x1f4) * 0x28 + 0x100004040);
+</strong>            var_20 = rax;
+// 如果 - else，if 返回 false，而 else 调用正确的函数并返回 true
+<strong>            if (rax == 0x0) {
+</strong>                    *(var_18 + 0x18) = **_NDR_record;
+*(int32_t *)(var_18 + 0x20) = 0xfffffffffffffed1;
+var_4 = 0x0;
+}
+else {
+// 计算的地址调用带有 2 个参数的正确函数
+<strong>                    (var_20)(var_10, var_18);
+</strong>                    var_4 = 0x1;
+}
+}
+else {
+*(var_18 + 0x18) = **_NDR_record;
+*(int32_t *)(var_18 + 0x20) = 0xfffffffffffffed1;
+var_4 = 0x0;
+}
+rax = var_4;
+return rax;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="myipc_server decompiled 2" %}
+这是在不同的 Hopper 免费版本中反编译的相同函数：</p>
+<pre class="language-c"><code class="lang-c">int _myipc_server(int arg0, int arg1) {
+r31 = r31 - 0x40;
+saved_fp = r29;
+stack[-8] = r30;
+var_10 = arg0;
+var_18 = arg1;
+// 初始指令以找到正确的函数指针
+*(int32_t *)var_18 = *(int32_t *)var_10 &#x26; 0x1f | 0x0;
+*(int32_t *)(var_18 + 0x8) = *(int32_t *)(var_10 + 0x8);
+*(int32_t *)(var_18 + 0x4) = 0x24;
+*(int32_t *)(var_18 + 0xc) = 0x0;
+*(int32_t *)(var_18 + 0x14) = *(int32_t *)(var_10 + 0x14) + 0x64;
+*(int32_t *)(var_18 + 0x10) = 0x0;
+r8 = *(int32_t *)(var_10 + 0x14);
+r8 = r8 - 0x1f4;
+if (r8 > 0x0) {
+if (CPU_FLAGS &#x26; G) {
+r8 = 0x1;
+}
+}
+if ((r8 &#x26; 0x1) == 0x0) {
+r8 = *(int32_t *)(var_10 + 0x14);
+r8 = r8 - 0x1f4;
+if (r8 &#x3C; 0x0) {
+if (CPU_FLAGS &#x26; L) {
+r8 = 0x1;
+}
+}
+if ((r8 &#x26; 0x1) == 0x0) {
+r8 = *(int32_t *)(var_10 + 0x14);
+// 0x1f4 = 500（起始 ID）
+<strong>                    r8 = r8 - 0x1f4;
+</strong>                    asm { smaddl     x8, w8, w9, x10 };
+r8 = *(r8 + 0x8);
+var_20 = r8;
+r8 = r8 - 0x0;
+if (r8 != 0x0) {
+if (CPU_FLAGS &#x26; NE) {
+r8 = 0x1;
+}
+}
+// 与之前版本相同的 if else
+// 检查地址 0x100004040 的使用（函数地址数组）
+<strong>                    if ((r8 &#x26; 0x1) == 0x0) {
+</strong><strong>                            *(var_18 + 0x18) = **0x100004000;
+</strong>                            *(int32_t *)(var_18 + 0x20) = 0xfffffed1;
+var_4 = 0x0;
+}
+else {
+// 调用计算的地址，函数应该在这里
+<strong>                            (var_20)(var_10, var_18);
+</strong>                            var_4 = 0x1;
+}
+}
+else {
+*(var_18 + 0x18) = **0x100004000;
+*(int32_t *)(var_18 + 0x20) = 0xfffffed1;
+var_4 = 0x0;
+}
+}
+else {
+*(var_18 + 0x18) = **0x100004000;
+*(int32_t *)(var_18 + 0x20) = 0xfffffed1;
+var_4 = 0x0;
+}
+r0 = var_4;
+return r0;
+}
+
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>实际上，如果你去到函数**<code>0x100004000</code><strong>，你会发现</strong><code>routine_descriptor</code>** 结构的数组。结构的第一个元素是<strong>函数</strong>实现的<strong>地址</strong>，并且<strong>结构占用 0x28 字节</strong>，因此从字节 0 开始每 0x28 字节你可以获取 8 字节，这将是<strong>将被调用的函数的地址</strong>：</p>
+<figure><img src="../../../../.gitbook/assets/image (35).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (36).png" alt=""><figcaption></figcaption></figure>
+<p>这些数据可以通过<a href="https://github.com/knightsc/hopper/blob/master/scripts/MIG%20Detect.py"><strong>使用这个 Hopper 脚本</strong></a>提取。</p>
+<h3 id="debug"><a class="header" href="#debug">Debug</a></h3>
+<p>MIG 生成的代码还调用 <code>kernel_debug</code> 以生成有关进入和退出操作的日志。可以使用**<code>trace</code><strong>或</strong><code>kdv</code>**检查它们：<code>kdv all | grep MIG</code></p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://www.amazon.com/MacOS-iOS-Internals-User-Mode/dp/099105556X">*OS Internals, Volume I, User Mode, Jonathan Levin</a></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

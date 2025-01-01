@@ -1,0 +1,282 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sub-GHz RF</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="sub-ghz-rf"><a class="header" href="#sub-ghz-rf">Sub-GHz RF</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="车库门"><a class="header" href="#车库门">车库门</a></h2>
+<p>车库门开启器通常在 300-190 MHz 范围内工作，最常见的频率为 300 MHz、310 MHz、315 MHz 和 390 MHz。这个频率范围通常用于车库门开启器，因为它比其他频段更不拥挤，并且不太可能受到其他设备的干扰。</p>
+<h2 id="汽车门"><a class="header" href="#汽车门">汽车门</a></h2>
+<p>大多数汽车钥匙遥控器工作在 <strong>315 MHz 或 433 MHz</strong>。这两者都是无线电频率，广泛用于各种不同的应用。两个频率之间的主要区别是 433 MHz 的范围比 315 MHz 更长。这意味着 433 MHz 更适合需要更长范围的应用，例如远程无钥匙进入。<br />
+在欧洲，常用 433.92MHz，而在美国和日本则是 315MHz。</p>
+<h2 id="暴力攻击"><a class="header" href="#暴力攻击"><strong>暴力攻击</strong></a></h2>
+<figure><img src="../../.gitbook/assets/image (1084).png" alt=""><figcaption></figcaption></figure>
+<p>如果不发送每个代码 5 次（这样发送是为了确保接收器接收到），而只发送一次，时间将减少到 6 分钟：</p>
+<figure><img src="../../.gitbook/assets/image (622).png" alt=""><figcaption></figcaption></figure>
+<p>如果你 <strong>去掉信号之间的 2 毫秒等待</strong>，你可以 <strong>将时间减少到 3 分钟。</strong></p>
+<p>此外，通过使用 De Bruijn 序列（减少发送所有潜在二进制数字所需的位数的方法），这个 <strong>时间仅减少到 8 秒</strong>：</p>
+<figure><img src="../../.gitbook/assets/image (583).png" alt=""><figcaption></figcaption></figure>
+<p>此攻击的示例已在 <a href="https://github.com/samyk/opensesame">https://github.com/samyk/opensesame</a> 中实现。</p>
+<p>要求 <strong>前导码将避免 De Bruijn 序列</strong> 优化，而 <strong>滚动代码将防止此攻击</strong>（假设代码足够长，不易被暴力破解）。</p>
+<h2 id="sub-ghz-攻击"><a class="header" href="#sub-ghz-攻击">Sub-GHz 攻击</a></h2>
+<p>要攻击这些信号，请查看 Flipper Zero：</p>
+<p>{% content-ref url="flipper-zero/fz-sub-ghz.md" %}
+<a href="flipper-zero/fz-sub-ghz.html">fz-sub-ghz.md</a>
+{% endcontent-ref %}</p>
+<h2 id="滚动代码保护"><a class="header" href="#滚动代码保护">滚动代码保护</a></h2>
+<p>自动车库门开启器通常使用无线遥控器来打开和关闭车库门。遥控器 <strong>发送无线电频率 (RF) 信号</strong> 到车库门开启器，激活电机以打开或关闭门。</p>
+<p>有人可能会使用称为代码抓取器的设备来拦截 RF 信号并记录以备后用。这被称为 <strong>重放攻击</strong>。为了防止这种类型的攻击，许多现代车库门开启器使用一种更安全的加密方法，称为 <strong>滚动代码</strong> 系统。</p>
+<p><strong>RF 信号通常使用滚动代码进行传输</strong>，这意味着每次使用时代码都会变化。这使得 <strong>拦截</strong> 信号并 <strong>利用</strong> 它获得 <strong>未授权</strong> 访问车库变得 <strong>困难</strong>。</p>
+<p>在滚动代码系统中，遥控器和车库门开启器有一个 <strong>共享算法</strong>，每次使用遥控器时 <strong>生成一个新代码</strong>。车库门开启器只会对 <strong>正确代码</strong> 作出响应，这使得仅通过捕获代码就获得未授权访问车库变得更加困难。</p>
+<h3 id="缺失链接攻击"><a class="header" href="#缺失链接攻击"><strong>缺失链接攻击</strong></a></h3>
+<p>基本上，你监听按钮并 <strong>在遥控器超出设备范围时捕获信号</strong>（比如汽车或车库）。然后你移动到设备并 <strong>使用捕获的代码打开它</strong>。</p>
+<h3 id="完整链接干扰攻击"><a class="header" href="#完整链接干扰攻击">完整链接干扰攻击</a></h3>
+<p>攻击者可以 <strong>在车辆或接收器附近干扰信号</strong>，使得 <strong>接收器无法真正“听到”代码</strong>，一旦发生这种情况，你可以简单地 <strong>捕获并重放</strong> 代码，当你停止干扰时。</p>
+<p>受害者在某个时刻会使用 <strong>钥匙锁定汽车</strong>，但攻击者将 <strong>记录足够的“关门”代码</strong>，希望能够重新发送以打开门（可能需要 <strong>更改频率</strong>，因为有些汽车使用相同的代码来打开和关闭，但在不同频率下监听两个命令）。</p>
+<p>{% hint style="warning" %}
+<strong>干扰有效</strong>，但很明显，因为如果 <strong>锁车的人简单地测试车门</strong> 以确保它们被锁定，他们会注意到汽车未锁。此外，如果他们意识到这种攻击，他们甚至可以听到车门在按下“锁定”按钮时从未发出锁定 <strong>声音</strong> 或汽车 <strong>灯光</strong> 在按下“锁定”按钮时从未闪烁。
+{% endhint %}</p>
+<h3 id="代码抓取攻击又名rolljam"><a class="header" href="#代码抓取攻击又名rolljam"><strong>代码抓取攻击（又名‘RollJam’）</strong></a></h3>
+<p>这是一种更 <strong>隐蔽的干扰技术</strong>。攻击者将干扰信号，因此当受害者尝试锁门时将无法工作，但攻击者会 <strong>记录此代码</strong>。然后，受害者将 <strong>再次尝试锁定汽车</strong>，按下按钮，汽车将 <strong>记录第二个代码</strong>。<br />
+紧接着，<strong>攻击者可以发送第一个代码</strong>，然后 <strong>汽车将锁定</strong>（受害者会认为第二次按下锁定了）。然后，攻击者将能够 <strong>发送第二个被盗代码以打开</strong> 汽车（假设 <strong>“关车”代码也可以用来打开</strong>）。可能需要更改频率（因为有些汽车使用相同的代码来打开和关闭，但在不同频率下监听两个命令）。</p>
+<p>攻击者可以 <strong>干扰汽车接收器而不是他的接收器</strong>，因为如果汽车接收器在例如 1MHz 宽带中监听，攻击者不会 <strong>干扰</strong> 遥控器使用的确切频率，而是 <strong>在该频谱中的一个接近频率</strong>，同时 <strong>攻击者的接收器将在更小的范围内监听</strong>，他可以在 <strong>没有干扰信号</strong> 的情况下监听遥控信号。</p>
+<p>{% hint style="warning" %}
+其他规格中的实现显示 <strong>滚动代码是发送的总代码的一部分</strong>。即发送的代码是 <strong>24 位密钥</strong>，其中前 <strong>12 位是滚动代码</strong>，<strong>第二个 8 位是命令</strong>（如锁定或解锁），最后 4 位是 <strong>校验和</strong>。实施这种类型的车辆也自然容易受到攻击，因为攻击者只需替换滚动代码段即可 <strong>在两个频率上使用任何滚动代码</strong>。
+{% endhint %}</p>
+<p>{% hint style="danger" %}
+请注意，如果受害者在攻击者发送第一个代码时发送第三个代码，则第一个和第二个代码将失效。
+{% endhint %}</p>
+<h3 id="报警声干扰攻击"><a class="header" href="#报警声干扰攻击">报警声干扰攻击</a></h3>
+<p>在对安装在汽车上的后市场滚动代码系统进行测试时，<strong>立即发送相同的代码两次</strong> <strong>激活了报警</strong> 和防盗装置，提供了一个独特的 <strong>拒绝服务</strong> 机会。讽刺的是，<strong>禁用报警</strong> 和防盗装置的方法是 <strong>按下</strong> <strong>遥控器</strong>，这使攻击者能够 <strong>持续执行 DoS 攻击</strong>。或者将此攻击与 <strong>前一个攻击结合以获取更多代码</strong>，因为受害者希望尽快停止攻击。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.americanradioarchives.com/what-radio-frequency-does-car-key-fobs-run-on/">https://www.americanradioarchives.com/what-radio-frequency-does-car-key-fobs-run-on/</a></li>
+<li><a href="https://www.andrewmohawk.com/2016/02/05/bypassing-rolling-code-systems/">https://www.andrewmohawk.com/2016/02/05/bypassing-rolling-code-systems/</a></li>
+<li><a href="https://samy.pl/defcon2015/">https://samy.pl/defcon2015/</a></li>
+<li><a href="https://hackaday.io/project/164566-how-to-hack-a-car/details">https://hackaday.io/project/164566-how-to-hack-a-car/details</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../todo/radio-hacking/infrared.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../todo/radio-hacking/ibutton.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../todo/radio-hacking/infrared.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../todo/radio-hacking/ibutton.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

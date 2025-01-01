@@ -1,0 +1,362 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Abusing Tokens</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="滥用令牌"><a class="header" href="#滥用令牌">滥用令牌</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="令牌"><a class="header" href="#令牌">令牌</a></h2>
+<p>如果你<strong>不知道 Windows 访问令牌是什么</strong>，请在继续之前阅读此页面：</p>
+<p>{% content-ref url="access-tokens.md" %}
+<a href="access-tokens.html">access-tokens.md</a>
+{% endcontent-ref %}</p>
+<p><strong>也许你可以通过滥用你已经拥有的令牌来提升权限</strong></p>
+<h3 id="seimpersonateprivilege"><a class="header" href="#seimpersonateprivilege">SeImpersonatePrivilege</a></h3>
+<p>这是任何进程持有的特权，允许对任何令牌进行 impersonation（但不允许创建），前提是可以获得其句柄。可以通过诱使 Windows 服务（DCOM）对一个漏洞执行 NTLM 认证来获取特权令牌，从而启用以 SYSTEM 权限执行进程。可以使用各种工具利用此漏洞，例如 <a href="https://github.com/ohpe/juicy-potato">juicy-potato</a>、<a href="https://github.com/antonioCoco/RogueWinRM">RogueWinRM</a>（需要禁用 winrm）、<a href="https://github.com/CCob/SweetPotato">SweetPotato</a> 和 <a href="https://github.com/itm4n/PrintSpoofer">PrintSpoofer</a>。</p>
+<p>{% content-ref url="roguepotato-and-printspoofer.md" %}
+<a href="roguepotato-and-printspoofer.html">roguepotato-and-printspoofer.md</a>
+{% endcontent-ref %}</p>
+<p>{% content-ref url="juicypotato.md" %}
+<a href="juicypotato.html">juicypotato.md</a>
+{% endcontent-ref %}</p>
+<h3 id="seassignprimaryprivilege"><a class="header" href="#seassignprimaryprivilege">SeAssignPrimaryPrivilege</a></h3>
+<p>它与 <strong>SeImpersonatePrivilege</strong> 非常相似，将使用 <strong>相同的方法</strong> 来获取特权令牌。<br />
+然后，此特权允许<strong>将主令牌分配</strong>给新的/挂起的进程。使用特权 impersonation 令牌可以派生出主令牌（DuplicateTokenEx）。<br />
+使用该令牌，可以通过 'CreateProcessAsUser' 创建一个 <strong>新进程</strong>，或创建一个挂起的进程并<strong>设置令牌</strong>（通常，无法修改正在运行的进程的主令牌）。</p>
+<h3 id="setcbprivilege"><a class="header" href="#setcbprivilege">SeTcbPrivilege</a></h3>
+<p>如果你启用了此令牌，可以使用 <strong>KERB_S4U_LOGON</strong> 为任何其他用户获取 <strong>impersonation 令牌</strong>，而无需知道凭据，<strong>向令牌添加任意组</strong>（管理员），将令牌的 <strong>完整性级别</strong> 设置为 "<strong>中等</strong>"，并将此令牌分配给 <strong>当前线程</strong>（SetThreadToken）。</p>
+<h3 id="sebackupprivilege"><a class="header" href="#sebackupprivilege">SeBackupPrivilege</a></h3>
+<p>此特权使系统能够<strong>授予对任何文件的所有读取访问</strong>控制（仅限读取操作）。它用于<strong>从注册表中读取本地管理员</strong>帐户的密码哈希，随后可以使用像 "<strong>psexec</strong>" 或 "<strong>wmiexec</strong>" 这样的工具与哈希一起使用（Pass-the-Hash 技术）。然而，在以下两种情况下，此技术会失败：当本地管理员帐户被禁用，或当有政策限制本地管理员的远程连接的管理权限时。<br />
+你可以通过以下方式<strong>滥用此特权</strong>：</p>
+<ul>
+<li><a href="https://github.com/Hackplayers/PsCabesha-tools/blob/master/Privesc/Acl-FullControl.ps1">https://github.com/Hackplayers/PsCabesha-tools/blob/master/Privesc/Acl-FullControl.ps1</a></li>
+<li><a href="https://github.com/giuliano108/SeBackupPrivilege/tree/master/SeBackupPrivilegeCmdLets/bin/Debug">https://github.com/giuliano108/SeBackupPrivilege/tree/master/SeBackupPrivilegeCmdLets/bin/Debug</a></li>
+<li>关注 <strong>IppSec</strong> 在 <a href="https://www.youtube.com/watch?v=IfCysW0Od8w&amp;t=2610&amp;ab_channel=IppSec">https://www.youtube.com/watch?v=IfCysW0Od8w&amp;t=2610&amp;ab_channel=IppSec</a></li>
+<li>或如在以下内容中所述的 <strong>使用备份操作员提升权限</strong> 部分：</li>
+</ul>
+<p>{% content-ref url="../active-directory-methodology/privileged-groups-and-token-privileges.md" %}
+<a href="../active-directory-methodology/privileged-groups-and-token-privileges.html">privileged-groups-and-token-privileges.md</a>
+{% endcontent-ref %}</p>
+<h3 id="serestoreprivilege"><a class="header" href="#serestoreprivilege">SeRestorePrivilege</a></h3>
+<p>此特权提供对任何系统文件的 <strong>写访问</strong> 权限，无论文件的访问控制列表（ACL）如何。它为提升权限打开了许多可能性，包括<strong>修改服务</strong>、执行 DLL 劫持以及通过图像文件执行选项设置 <strong>调试器</strong>等多种技术。</p>
+<h3 id="secreatetokenprivilege"><a class="header" href="#secreatetokenprivilege">SeCreateTokenPrivilege</a></h3>
+<p>SeCreateTokenPrivilege 是一种强大的权限，特别是在用户具备 impersonate 令牌的能力时，但在缺乏 SeImpersonatePrivilege 的情况下也很有用。此能力依赖于能够 impersonate 代表同一用户的令牌，并且其完整性级别不超过当前进程的完整性级别。</p>
+<p><strong>关键点：</strong></p>
+<ul>
+<li><strong>在没有 SeImpersonatePrivilege 的情况下进行 impersonation：</strong> 可以利用 SeCreateTokenPrivilege 在特定条件下通过 impersonate 令牌实现权限提升。</li>
+<li><strong>令牌 impersonation 的条件：</strong> 成功的 impersonation 要求目标令牌属于同一用户，并且其完整性级别小于或等于尝试 impersonation 的进程的完整性级别。</li>
+<li><strong>创建和修改 impersonation 令牌：</strong> 用户可以创建一个 impersonation 令牌，并通过添加特权组的 SID（安全标识符）来增强它。</li>
+</ul>
+<h3 id="seloaddriverprivilege"><a class="header" href="#seloaddriverprivilege">SeLoadDriverPrivilege</a></h3>
+<p>此特权允许<strong>加载和卸载设备驱动程序</strong>，通过创建具有特定值的注册表项 <code>ImagePath</code> 和 <code>Type</code>。由于对 <code>HKLM</code>（HKEY_LOCAL_MACHINE）的直接写访问受到限制，因此必须使用 <code>HKCU</code>（HKEY_CURRENT_USER）。然而，为了使 <code>HKCU</code> 对内核可识别以进行驱动程序配置，必须遵循特定路径。</p>
+<p>此路径为 <code>\Registry\User\&lt;RID&gt;\System\CurrentControlSet\Services\DriverName</code>，其中 <code>&lt;RID&gt;</code> 是当前用户的相对标识符。在 <code>HKCU</code> 中，必须创建整个路径，并设置两个值：</p>
+<ul>
+<li><code>ImagePath</code>，即要执行的二进制文件的路径</li>
+<li><code>Type</code>，值为 <code>SERVICE_KERNEL_DRIVER</code>（<code>0x00000001</code>）。</li>
+</ul>
+<p><strong>遵循的步骤：</strong></p>
+<ol>
+<li>由于写访问受限，访问 <code>HKCU</code> 而不是 <code>HKLM</code>。</li>
+<li>在 <code>HKCU</code> 中创建路径 <code>\Registry\User\&lt;RID&gt;\System\CurrentControlSet\Services\DriverName</code>，其中 <code>&lt;RID&gt;</code> 代表当前用户的相对标识符。</li>
+<li>将 <code>ImagePath</code> 设置为二进制文件的执行路径。</li>
+<li>将 <code>Type</code> 设置为 <code>SERVICE_KERNEL_DRIVER</code>（<code>0x00000001</code>）。</li>
+</ol>
+<pre><code class="language-python"># Example Python code to set the registry values
+import winreg as reg
+
+# Define the path and values
+path = r'Software\YourPath\System\CurrentControlSet\Services\DriverName' # Adjust 'YourPath' as needed
+key = reg.OpenKey(reg.HKEY_CURRENT_USER, path, 0, reg.KEY_WRITE)
+reg.SetValueEx(key, "ImagePath", 0, reg.REG_SZ, "path_to_binary")
+reg.SetValueEx(key, "Type", 0, reg.REG_DWORD, 0x00000001)
+reg.CloseKey(key)
+</code></pre>
+<p>更多滥用此权限的方法在 <a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges#seloaddriverprivilege">https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/privileged-accounts-and-token-privileges#seloaddriverprivilege</a></p>
+<h3 id="setakeownershipprivilege"><a class="header" href="#setakeownershipprivilege">SeTakeOwnershipPrivilege</a></h3>
+<p>这与 <strong>SeRestorePrivilege</strong> 类似。其主要功能允许一个进程 <strong>假定对象的所有权</strong>，绕过通过提供 WRITE_OWNER 访问权限的明确自由裁量访问要求。该过程首先确保获得所需注册表项的所有权以进行写入，然后更改 DACL 以启用写入操作。</p>
+<pre><code class="language-bash">takeown /f 'C:\some\file.txt' #Now the file is owned by you
+icacls 'C:\some\file.txt' /grant &lt;your_username&gt;:F #Now you have full access
+# Use this with files that might contain credentials such as
+%WINDIR%\repair\sam
+%WINDIR%\repair\system
+%WINDIR%\repair\software
+%WINDIR%\repair\security
+%WINDIR%\system32\config\security.sav
+%WINDIR%\system32\config\software.sav
+%WINDIR%\system32\config\system.sav
+%WINDIR%\system32\config\SecEvent.Evt
+%WINDIR%\system32\config\default.sav
+c:\inetpub\wwwwroot\web.config
+</code></pre>
+<h3 id="sedebugprivilege"><a class="header" href="#sedebugprivilege">SeDebugPrivilege</a></h3>
+<p>此权限允许<strong>调试其他进程</strong>，包括读取和写入内存。可以利用此权限采用各种内存注入策略，能够规避大多数杀毒软件和主机入侵防御解决方案。</p>
+<h4 id="dump-memory"><a class="header" href="#dump-memory">Dump memory</a></h4>
+<p>您可以使用<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/procdump">ProcDump</a>来自<a href="https://docs.microsoft.com/en-us/sysinternals/downloads/sysinternals-suite">SysInternals Suite</a>来<strong>捕获进程的内存</strong>。具体来说，这可以应用于<strong>本地安全授权子系统服务（</strong><a href="https://en.wikipedia.org/wiki/Local_Security_Authority_Subsystem_Service"><strong>LSASS</strong></a>**）**进程，该进程负责在用户成功登录系统后存储用户凭据。</p>
+<p>然后，您可以在mimikatz中加载此转储以获取密码：</p>
+<pre><code>mimikatz.exe
+mimikatz # log
+mimikatz # sekurlsa::minidump lsass.dmp
+mimikatz # sekurlsa::logonpasswords
+</code></pre>
+<h4 id="rce"><a class="header" href="#rce">RCE</a></h4>
+<p>如果你想获得一个 <code>NT SYSTEM</code> shell，你可以使用：</p>
+<ul>
+<li><a href="https://github.com/bruno-1337/SeDebugPrivilege-Exploit"><strong>SeDebugPrivilege-Exploit (C++)</strong></a></li>
+<li><a href="https://github.com/daem0nc0re/PrivFu/tree/main/PrivilegedOperations/SeDebugPrivilegePoC"><strong>SeDebugPrivilegePoC (C#)</strong></a></li>
+<li><a href="https://raw.githubusercontent.com/decoder-it/psgetsystem/master/psgetsys.ps1"><strong>psgetsys.ps1 (Powershell Script)</strong></a></li>
+</ul>
+<pre><code class="language-powershell"># Get the PID of a process running as NT SYSTEM
+import-module psgetsys.ps1; [MyProcess]::CreateProcessFromParent(&lt;system_pid&gt;,&lt;command_to_execute&gt;)
+</code></pre>
+<h2 id="检查权限"><a class="header" href="#检查权限">检查权限</a></h2>
+<pre><code>whoami /priv
+</code></pre>
+<p><strong>显示为禁用的令牌</strong>可以被启用，您实际上可以利用_启用_和_禁用_令牌。</p>
+<h3 id="启用所有令牌"><a class="header" href="#启用所有令牌">启用所有令牌</a></h3>
+<p>如果您有禁用的令牌，可以使用脚本<a href="https://raw.githubusercontent.com/fashionproof/EnableAllTokenPrivs/master/EnableAllTokenPrivs.ps1"><strong>EnableAllTokenPrivs.ps1</strong></a>来启用所有令牌：</p>
+<pre><code class="language-powershell">.\EnableAllTokenPrivs.ps1
+whoami /priv
+</code></pre>
+<p>或嵌入在这个<a href="https://www.leeholmes.com/adjusting-token-privileges-in-powershell/"><strong>帖子</strong></a>中的<strong>脚本</strong>。</p>
+<h2 id="表格"><a class="header" href="#表格">表格</a></h2>
+<p>完整的令牌权限备忘单在<a href="https://github.com/gtworek/Priv2Admin">https://github.com/gtworek/Priv2Admin</a>，下面的摘要将仅列出直接利用该权限以获得管理员会话或读取敏感文件的方法。</p>
+<div class="table-wrapper"><table><thead><tr><th>权限</th><th>影响</th><th>工具</th><th>执行路径</th><th>备注</th></tr></thead><tbody>
+<tr><td><strong><code>SeAssignPrimaryToken</code></strong></td><td><em><strong>管理员</strong></em></td><td>第三方工具</td><td><em>"这将允许用户模拟令牌并使用诸如potato.exe、rottenpotato.exe和juicypotato.exe等工具提升到nt系统"</em></td><td>感谢<a href="https://twitter.com/Defte_">Aurélien Chalot</a>的更新。我会尽快尝试将其重新表述为更像食谱的内容。</td></tr>
+<tr><td><strong><code>SeBackup</code></strong></td><td><strong>威胁</strong></td><td><em><strong>内置命令</strong></em></td><td>使用<code>robocopy /b</code>读取敏感文件</td><td><p>- 如果您可以读取%WINDIR%\MEMORY.DMP，可能会更有趣<br><br>- <code>SeBackupPrivilege</code>（和robocopy）在打开文件时没有帮助。<br><br>- Robocopy需要同时具有SeBackup和SeRestore才能使用/b参数。</p></td></tr>
+<tr><td><strong><code>SeCreateToken</code></strong></td><td><em><strong>管理员</strong></em></td><td>第三方工具</td><td>使用<code>NtCreateToken</code>创建任意令牌，包括本地管理员权限。</td><td></td></tr>
+<tr><td><strong><code>SeDebug</code></strong></td><td><em><strong>管理员</strong></em></td><td><strong>PowerShell</strong></td><td>复制<code>lsass.exe</code>令牌。</td><td>脚本可以在<a href="https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Conjure-LSASS.ps1">FuzzySecurity</a>找到</td></tr>
+<tr><td><strong><code>SeLoadDriver</code></strong></td><td><em><strong>管理员</strong></em></td><td>第三方工具</td><td><p>1. 加载有缺陷的内核驱动程序，如<code>szkg64.sys</code><br>2. 利用驱动程序漏洞<br><br>或者，该权限可用于卸载与安全相关的驱动程序，使用<code>ftlMC</code>内置命令。即：<code>fltMC sysmondrv</code></p></td><td><p>1. <code>szkg64</code>漏洞被列为<a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2018-15732">CVE-2018-15732</a><br>2. <code>szkg64</code> <a href="https://www.greyhathacker.net/?p=1025">利用代码</a>由<a href="https://twitter.com/parvezghh">Parvez Anwar</a>创建</p></td></tr>
+<tr><td><strong><code>SeRestore</code></strong></td><td><em><strong>管理员</strong></em></td><td><strong>PowerShell</strong></td><td><p>1. 启动具有SeRestore权限的PowerShell/ISE。<br>2. 使用<a href="https://github.com/gtworek/PSBits/blob/master/Misc/EnableSeRestorePrivilege.ps1">Enable-SeRestorePrivilege</a>启用该权限。<br>3. 将utilman.exe重命名为utilman.old<br>4. 将cmd.exe重命名为utilman.exe<br>5. 锁定控制台并按Win+U</p></td><td><p>攻击可能会被某些AV软件检测到。</p><p>替代方法依赖于使用相同权限替换存储在“Program Files”中的服务二进制文件</p></td></tr>
+<tr><td><strong><code>SeTakeOwnership</code></strong></td><td><em><strong>管理员</strong></em></td><td><em><strong>内置命令</strong></em></td><td><p>1. <code>takeown.exe /f "%windir%\system32"</code><br>2. <code>icalcs.exe "%windir%\system32" /grant "%username%":F</code><br>3. 将cmd.exe重命名为utilman.exe<br>4. 锁定控制台并按Win+U</p></td><td><p>攻击可能会被某些AV软件检测到。</p><p>替代方法依赖于使用相同权限替换存储在“Program Files”中的服务二进制文件。</p></td></tr>
+<tr><td><strong><code>SeTcb</code></strong></td><td><em><strong>管理员</strong></em></td><td>第三方工具</td><td><p>操纵令牌以包含本地管理员权限。可能需要SeImpersonate。</p><p>待验证。</p></td><td></td></tr>
+</tbody></table>
+</div>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li>查看定义Windows令牌的此表： <a href="https://github.com/gtworek/Priv2Admin">https://github.com/gtworek/Priv2Admin</a></li>
+<li>查看关于使用令牌进行privesc的<a href="https://github.com/hatRiot/token-priv/blob/master/abusing_token_eop_1.0.txt"><strong>这篇论文</strong></a>。</li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践AWS黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客攻击： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>在Twitter上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github库提交PR来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/access-tokens.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/access-tokens.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

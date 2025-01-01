@@ -1,0 +1,249 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Physical Attacks</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="物理攻击"><a class="header" href="#物理攻击">物理攻击</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+{% endhint %}
+<h2 id="bios-密码恢复和系统安全"><a class="header" href="#bios-密码恢复和系统安全">BIOS 密码恢复和系统安全</a></h2>
+<p><strong>重置 BIOS</strong> 可以通过几种方式实现。大多数主板都包含一个 <strong>电池</strong>，当移除约 <strong>30 分钟</strong> 后，将重置 BIOS 设置，包括密码。或者，可以通过调整 <strong>主板上的跳线</strong> 来重置这些设置，方法是连接特定的引脚。</p>
+<p>对于无法或不实用进行硬件调整的情况，<strong>软件工具</strong> 提供了解决方案。使用 <strong>Kali Linux</strong> 等发行版从 <strong>Live CD/USB</strong> 运行系统，可以访问像 <strong><em>killCmos</em></strong> 和 <strong><em>CmosPWD</em></strong> 这样的工具，帮助进行 BIOS 密码恢复。</p>
+<p>在 BIOS 密码未知的情况下，错误输入 <strong>三次</strong> 通常会导致错误代码。可以在像 <a href="https://bios-pw.org">https://bios-pw.org</a> 这样的网站上使用此代码来检索可用的密码。</p>
+<h3 id="uefi-安全"><a class="header" href="#uefi-安全">UEFI 安全</a></h3>
+<p>对于使用 <strong>UEFI</strong> 而非传统 BIOS 的现代系统，可以利用工具 <strong>chipsec</strong> 来分析和修改 UEFI 设置，包括禁用 <strong>安全启动</strong>。可以使用以下命令完成此操作：</p>
+<p><code>python chipsec_main.py -module exploits.secure.boot.pk</code></p>
+<h3 id="ram-分析和冷启动攻击"><a class="header" href="#ram-分析和冷启动攻击">RAM 分析和冷启动攻击</a></h3>
+<p>在断电后，RAM 会短暂保留数据，通常为 <strong>1 到 2 分钟</strong>。通过施加冷物质，如液氮，可以将这种持续时间延长至 <strong>10 分钟</strong>。在此延长期间，可以使用像 <strong>dd.exe</strong> 和 <strong>volatility</strong> 这样的工具创建 <strong>内存转储</strong> 进行分析。</p>
+<h3 id="直接内存访问-dma-攻击"><a class="header" href="#直接内存访问-dma-攻击">直接内存访问 (DMA) 攻击</a></h3>
+<p><strong>INCEPTION</strong> 是一个旨在通过 DMA 进行 <strong>物理内存操作</strong> 的工具，兼容 <strong>FireWire</strong> 和 <strong>Thunderbolt</strong> 等接口。它允许通过修补内存以接受任何密码来绕过登录程序。然而，它对 <strong>Windows 10</strong> 系统无效。</p>
+<h3 id="live-cdusb-进行系统访问"><a class="header" href="#live-cdusb-进行系统访问">Live CD/USB 进行系统访问</a></h3>
+<p>通过用 <strong><em>cmd.exe</em></strong> 的副本替换系统二进制文件，如 <strong><em>sethc.exe</em></strong> 或 <strong><em>Utilman.exe</em></strong>，可以提供具有系统权限的命令提示符。可以使用像 <strong>chntpw</strong> 这样的工具编辑 Windows 安装的 <strong>SAM</strong> 文件，从而允许更改密码。</p>
+<p><strong>Kon-Boot</strong> 是一个工具，可以在不知道密码的情况下登录 Windows 系统，通过临时修改 Windows 内核或 UEFI。更多信息可以在 <a href="https://www.raymond.cc/blog/login-to-windows-administrator-and-linux-root-account-without-knowing-or-changing-current-password/">https://www.raymond.cc</a> 找到。</p>
+<h3 id="处理-windows-安全功能"><a class="header" href="#处理-windows-安全功能">处理 Windows 安全功能</a></h3>
+<h4 id="启动和恢复快捷键"><a class="header" href="#启动和恢复快捷键">启动和恢复快捷键</a></h4>
+<ul>
+<li><strong>Supr</strong>：访问 BIOS 设置。</li>
+<li><strong>F8</strong>：进入恢复模式。</li>
+<li>在 Windows 横幅后按 <strong>Shift</strong> 可以绕过自动登录。</li>
+</ul>
+<h4 id="bad-usb-设备"><a class="header" href="#bad-usb-设备">BAD USB 设备</a></h4>
+<p>像 <strong>Rubber Ducky</strong> 和 <strong>Teensyduino</strong> 这样的设备作为创建 <strong>坏 USB</strong> 设备的平台，能够在连接到目标计算机时执行预定义的有效载荷。</p>
+<h4 id="卷影复制"><a class="header" href="#卷影复制">卷影复制</a></h4>
+<p>管理员权限允许通过 PowerShell 创建敏感文件的副本，包括 <strong>SAM</strong> 文件。</p>
+<h3 id="绕过-bitlocker-加密"><a class="header" href="#绕过-bitlocker-加密">绕过 BitLocker 加密</a></h3>
+<p>如果在内存转储文件 (<strong>MEMORY.DMP</strong>) 中找到 <strong>恢复密码</strong>，则可能绕过 BitLocker 加密。可以使用像 <strong>Elcomsoft Forensic Disk Decryptor</strong> 或 <strong>Passware Kit Forensic</strong> 这样的工具来实现这一目的。</p>
+<h3 id="社会工程学用于恢复密钥添加"><a class="header" href="#社会工程学用于恢复密钥添加">社会工程学用于恢复密钥添加</a></h3>
+<p>可以通过社会工程学策略添加新的 BitLocker 恢复密钥，说服用户执行一个命令，添加一个由零组成的新恢复密钥，从而简化解密过程。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../https://cloud.hacktricks.xyz/pentesting-ci-cd/pentesting-ci-cd-methodology.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../hardware-physical-access/escaping-from-gui-applications.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../https://cloud.hacktricks.xyz/pentesting-ci-cd/pentesting-ci-cd-methodology.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../hardware-physical-access/escaping-from-gui-applications.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

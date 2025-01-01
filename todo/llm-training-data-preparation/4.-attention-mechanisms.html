@@ -1,0 +1,540 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>4. Attention Mechanisms</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="4-注意机制"><a class="header" href="#4-注意机制">4. 注意机制</a></h1>
+<h2 id="神经网络中的注意机制和自注意力"><a class="header" href="#神经网络中的注意机制和自注意力">神经网络中的注意机制和自注意力</a></h2>
+<p>注意机制允许神经网络在生成输出的每个部分时<strong>专注于输入的特定部分</strong>。它们为不同的输入分配不同的权重，帮助模型决定哪些输入与当前任务最相关。这在机器翻译等任务中至关重要，因为理解整个句子的上下文对于准确翻译是必要的。</p>
+<p>{% hint style="success" %}
+这一阶段的目标非常简单：<strong>应用一些注意机制</strong>。这些将是许多<strong>重复的层</strong>，将<strong>捕捉词汇中一个词与当前用于训练LLM的句子中其邻居的关系</strong>。<br />
+为此使用了很多层，因此将有很多可训练的参数来捕捉这些信息。
+{% endhint %}</p>
+<h3 id="理解注意机制"><a class="header" href="#理解注意机制">理解注意机制</a></h3>
+<p>在传统的序列到序列模型中，模型将输入序列编码为固定大小的上下文向量。然而，这种方法在处理长句子时会遇到困难，因为固定大小的上下文向量可能无法捕捉所有必要的信息。注意机制通过允许模型在生成每个输出标记时考虑所有输入标记来解决这一限制。</p>
+<h4 id="示例机器翻译"><a class="header" href="#示例机器翻译">示例：机器翻译</a></h4>
+<p>考虑将德语句子“Kannst du mir helfen diesen Satz zu übersetzen”翻译成英语。逐字翻译不会产生语法正确的英语句子，因为不同语言之间的语法结构存在差异。注意机制使模型在生成输出句子的每个单词时能够专注于输入句子的相关部分，从而导致更准确和连贯的翻译。</p>
+<h3 id="自注意力介绍"><a class="header" href="#自注意力介绍">自注意力介绍</a></h3>
+<p>自注意力或内部注意力是一种机制，其中注意力在单个序列内应用，以计算该序列的表示。它允许序列中的每个标记关注所有其他标记，帮助模型捕捉标记之间的依赖关系，而不管它们在序列中的距离。</p>
+<h4 id="关键概念"><a class="header" href="#关键概念">关键概念</a></h4>
+<ul>
+<li><strong>标记</strong>：输入序列的单个元素（例如，句子中的单词）。</li>
+<li><strong>嵌入</strong>：标记的向量表示，捕捉语义信息。</li>
+<li><strong>注意权重</strong>：确定每个标记相对于其他标记重要性的值。</li>
+</ul>
+<h3 id="计算注意权重逐步示例"><a class="header" href="#计算注意权重逐步示例">计算注意权重：逐步示例</a></h3>
+<p>让我们考虑句子**“Hello shiny sun!”**并用3维嵌入表示每个单词：</p>
+<ul>
+<li><strong>Hello</strong>: <code>[0.34, 0.22, 0.54]</code></li>
+<li><strong>shiny</strong>: <code>[0.53, 0.34, 0.98]</code></li>
+<li><strong>sun</strong>: <code>[0.29, 0.54, 0.93]</code></li>
+</ul>
+<p>我们的目标是使用自注意力计算**“shiny”<strong>的</strong>上下文向量**。</p>
+<h4 id="步骤1计算注意分数"><a class="header" href="#步骤1计算注意分数">步骤1：计算注意分数</a></h4>
+<p>{% hint style="success" %}
+只需将查询的每个维度值与每个标记的相关维度相乘并加上结果。你将为每对标记获得1个值。
+{% endhint %}</p>
+<p>对于句子中的每个单词，通过计算它们嵌入的点积来计算与“shiny”的<strong>注意分数</strong>。</p>
+<p><strong>“Hello”和“shiny”之间的注意分数</strong></p>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<p><strong>“shiny”和“shiny”之间的注意分数</strong></p>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<p><strong>“sun”和“shiny”之间的注意分数</strong></p>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<h4 id="步骤2归一化注意分数以获得注意权重"><a class="header" href="#步骤2归一化注意分数以获得注意权重">步骤2：归一化注意分数以获得注意权重</a></h4>
+<p>{% hint style="success" %}
+不要迷失在数学术语中，这个函数的目标很简单，归一化所有权重，使<strong>它们的总和为1</strong>。</p>
+<p>此外，<strong>softmax</strong>函数被使用，因为它通过指数部分强调差异，使得更容易检测有用的值。
+{% endhint %}</p>
+<p>将<strong>softmax函数</strong>应用于注意分数，将其转换为总和为1的注意权重。</p>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1).png" alt="" width="293"><figcaption></figcaption></figure>
+<p>计算指数：</p>
+<figure><img src="../../.gitbook/assets/image (4) (1) (1) (1).png" alt="" width="249"><figcaption></figcaption></figure>
+<p>计算总和：</p>
+<figure><img src="../../.gitbook/assets/image (5) (1) (1).png" alt="" width="563"><figcaption></figcaption></figure>
+<p>计算注意权重：</p>
+<figure><img src="../../.gitbook/assets/image (6) (1) (1).png" alt="" width="404"><figcaption></figcaption></figure>
+<h4 id="步骤3计算上下文向量"><a class="header" href="#步骤3计算上下文向量">步骤3：计算上下文向量</a></h4>
+<p>{% hint style="success" %}
+只需获取每个注意权重并将其乘以相关标记的维度，然后将所有维度相加以获得一个向量（上下文向量） 
+{% endhint %}</p>
+<p><strong>上下文向量</strong>是通过使用注意权重对所有单词的嵌入进行加权求和计算得出的。</p>
+<figure><img src="../../.gitbook/assets/image (16).png" alt="" width="369"><figcaption></figcaption></figure>
+<p>计算每个分量：</p>
+<ul>
+<li><strong>“Hello”的加权嵌入</strong>：</li>
+</ul>
+<figure><img src="../../.gitbook/assets/image (7) (1) (1).png" alt=""><figcaption></figcaption></figure>
+*   **“shiny”的加权嵌入**：
+<figure><img src="../../.gitbook/assets/image (8) (1) (1).png" alt=""><figcaption></figcaption></figure>
+*   **“sun”的加权嵌入**：
+<figure><img src="../../.gitbook/assets/image (9) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<p>加权嵌入求和：</p>
+<p><code>context vector=[0.0779+0.2156+0.1057, 0.0504+0.1382+0.1972, 0.1237+0.3983+0.3390]=[0.3992,0.3858,0.8610]</code></p>
+<p><strong>这个上下文向量表示了“shiny”的丰富嵌入，结合了句子中所有单词的信息。</strong></p>
+<h3 id="过程总结"><a class="header" href="#过程总结">过程总结</a></h3>
+<ol>
+<li><strong>计算注意分数</strong>：使用目标单词的嵌入与序列中所有单词的嵌入之间的点积。</li>
+<li><strong>归一化分数以获得注意权重</strong>：将softmax函数应用于注意分数以获得总和为1的权重。</li>
+<li><strong>计算上下文向量</strong>：将每个单词的嵌入乘以其注意权重并求和结果。</li>
+</ol>
+<h2 id="带可训练权重的自注意力"><a class="header" href="#带可训练权重的自注意力">带可训练权重的自注意力</a></h2>
+<p>在实践中，自注意力机制使用<strong>可训练权重</strong>来学习查询、键和值的最佳表示。这涉及引入三个权重矩阵：</p>
+<figure><img src="../../.gitbook/assets/image (10) (1) (1).png" alt="" width="239"><figcaption></figcaption></figure>
+<p>查询是像以前一样使用的数据，而键和值矩阵只是随机可训练的矩阵。</p>
+<h4 id="步骤1计算查询键和值"><a class="header" href="#步骤1计算查询键和值">步骤1：计算查询、键和值</a></h4>
+<p>每个标记将通过将其维度值与定义的矩阵相乘，拥有自己的查询、键和值矩阵：</p>
+<figure><img src="../../.gitbook/assets/image (11).png" alt="" width="253"><figcaption></figcaption></figure>
+<p>这些矩阵将原始嵌入转换为适合计算注意力的新空间。</p>
+<p><strong>示例</strong></p>
+<p>假设：</p>
+<ul>
+<li>输入维度 <code>din=3</code>（嵌入大小）</li>
+<li>输出维度 <code>dout=2</code>（查询、键和值的期望维度）</li>
+</ul>
+<p>初始化权重矩阵：</p>
+<pre><code class="language-python">import torch.nn as nn
+
+d_in = 3
+d_out = 2
+
+W_query = nn.Parameter(torch.rand(d_in, d_out))
+W_key = nn.Parameter(torch.rand(d_in, d_out))
+W_value = nn.Parameter(torch.rand(d_in, d_out))
+</code></pre>
+<p>计算查询、键和值：</p>
+<pre><code class="language-python">queries = torch.matmul(inputs, W_query)
+keys = torch.matmul(inputs, W_key)
+values = torch.matmul(inputs, W_value)
+</code></pre>
+<h4 id="step-2-计算缩放点积注意力"><a class="header" href="#step-2-计算缩放点积注意力">Step 2: 计算缩放点积注意力</a></h4>
+<p><strong>计算注意力分数</strong></p>
+<p>与之前的示例类似，但这次我们使用的是令牌的键矩阵（已经使用维度计算得出），而不是令牌的维度值。因此，对于每个查询 <code>qi</code>​ 和键 <code>kj​</code>：</p>
+<figure><img src="../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<p><strong>缩放分数</strong></p>
+<p>为了防止点积变得过大，将其缩放为键维度 <code>dk</code>​ 的平方根：</p>
+<figure><img src="../../.gitbook/assets/image (13).png" alt="" width="295"><figcaption></figcaption></figure>
+<p>{% hint style="success" %}
+分数除以维度的平方根是因为点积可能变得非常大，这有助于调节它们。
+{% endhint %}</p>
+<p><strong>应用Softmax以获得注意力权重：</strong> 与最初的示例一样，规范化所有值，使它们的总和为1。 </p>
+<figure><img src="../../.gitbook/assets/image (14).png" alt="" width="295"><figcaption></figcaption></figure>
+<h4 id="step-3-计算上下文向量"><a class="header" href="#step-3-计算上下文向量">Step 3: 计算上下文向量</a></h4>
+<p>与最初的示例一样，只需将所有值矩阵相加，每个值乘以其注意力权重：</p>
+<figure><img src="../../.gitbook/assets/image (15).png" alt="" width="328"><figcaption></figcaption></figure>
+<h3 id="代码示例"><a class="header" href="#代码示例">代码示例</a></h3>
+<p>从 <a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb">https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb</a> 获取一个示例，您可以查看这个实现我们所讨论的自注意力功能的类：</p>
+<pre><code class="language-python">import torch
+
+inputs = torch.tensor(
+[[0.43, 0.15, 0.89], # Your     (x^1)
+[0.55, 0.87, 0.66], # journey  (x^2)
+[0.57, 0.85, 0.64], # starts   (x^3)
+[0.22, 0.58, 0.33], # with     (x^4)
+[0.77, 0.25, 0.10], # one      (x^5)
+[0.05, 0.80, 0.55]] # step     (x^6)
+)
+
+import torch.nn as nn
+class SelfAttention_v2(nn.Module):
+
+def __init__(self, d_in, d_out, qkv_bias=False):
+super().__init__()
+self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_key   = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+
+def forward(self, x):
+keys = self.W_key(x)
+queries = self.W_query(x)
+values = self.W_value(x)
+
+attn_scores = queries @ keys.T
+attn_weights = torch.softmax(attn_scores / keys.shape[-1]**0.5, dim=-1)
+
+context_vec = attn_weights @ values
+return context_vec
+
+d_in=3
+d_out=2
+torch.manual_seed(789)
+sa_v2 = SelfAttention_v2(d_in, d_out)
+print(sa_v2(inputs))
+</code></pre>
+<p>{% hint style="info" %}
+请注意，<code>nn.Linear</code>用于将所有权重标记为可训练参数，而不是用随机值初始化矩阵。
+{% endhint %}</p>
+<h2 id="因果注意力隐藏未来词汇"><a class="header" href="#因果注意力隐藏未来词汇">因果注意力：隐藏未来词汇</a></h2>
+<p>对于LLM，我们希望模型只考虑当前位之前出现的标记，以便<strong>预测下一个标记</strong>。<strong>因果注意力</strong>，也称为<strong>掩蔽注意力</strong>，通过修改注意力机制来防止访问未来标记，从而实现这一点。</p>
+<h3 id="应用因果注意力掩码"><a class="header" href="#应用因果注意力掩码">应用因果注意力掩码</a></h3>
+<p>为了实现因果注意力，我们在<strong>softmax操作之前</strong>对注意力分数应用掩码，以便剩余的分数仍然相加为1。该掩码将未来标记的注意力分数设置为负无穷，确保在softmax之后，它们的注意力权重为零。</p>
+<p><strong>步骤</strong></p>
+<ol>
+<li><strong>计算注意力分数</strong>：与之前相同。</li>
+<li><strong>应用掩码</strong>：使用一个上三角矩阵，在对角线以上填充负无穷。</li>
+</ol>
+<pre><code class="language-python">mask = torch.triu(torch.ones(seq_len, seq_len), diagonal=1) * float('-inf')
+masked_scores = attention_scores + mask
+</code></pre>
+<ol start="3">
+<li><strong>应用Softmax</strong>：使用掩蔽分数计算注意力权重。</li>
+</ol>
+<pre><code class="language-python">attention_weights = torch.softmax(masked_scores, dim=-1)
+</code></pre>
+<h3 id="使用dropout掩蔽额外的注意力权重"><a class="header" href="#使用dropout掩蔽额外的注意力权重">使用Dropout掩蔽额外的注意力权重</a></h3>
+<p>为了<strong>防止过拟合</strong>，我们可以在softmax操作后对注意力权重应用<strong>dropout</strong>。Dropout在训练期间<strong>随机将一些注意力权重置为零</strong>。</p>
+<pre><code class="language-python">dropout = nn.Dropout(p=0.5)
+attention_weights = dropout(attention_weights)
+</code></pre>
+<p>一个常规的 dropout 约为 10-20%。</p>
+<h3 id="代码示例-1"><a class="header" href="#代码示例-1">代码示例</a></h3>
+<p>代码示例来自 <a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb">https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb</a>:</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+
+inputs = torch.tensor(
+[[0.43, 0.15, 0.89], # Your     (x^1)
+[0.55, 0.87, 0.66], # journey  (x^2)
+[0.57, 0.85, 0.64], # starts   (x^3)
+[0.22, 0.58, 0.33], # with     (x^4)
+[0.77, 0.25, 0.10], # one      (x^5)
+[0.05, 0.80, 0.55]] # step     (x^6)
+)
+
+batch = torch.stack((inputs, inputs), dim=0)
+print(batch.shape)
+
+class CausalAttention(nn.Module):
+
+def __init__(self, d_in, d_out, context_length,
+dropout, qkv_bias=False):
+super().__init__()
+self.d_out = d_out
+self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_key   = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.dropout = nn.Dropout(dropout)
+self.register_buffer('mask', torch.triu(torch.ones(context_length, context_length), diagonal=1)) # New
+
+def forward(self, x):
+b, num_tokens, d_in = x.shape
+# b is the num of batches
+# num_tokens is the number of tokens per batch
+# d_in is the dimensions er token
+
+keys = self.W_key(x) # This generates the keys of the tokens
+queries = self.W_query(x)
+values = self.W_value(x)
+
+attn_scores = queries @ keys.transpose(1, 2) # Moves the third dimension to the second one and the second one to the third one to be able to multiply
+attn_scores.masked_fill_(  # New, _ ops are in-place
+self.mask.bool()[:num_tokens, :num_tokens], -torch.inf)  # `:num_tokens` to account for cases where the number of tokens in the batch is smaller than the supported context_size
+attn_weights = torch.softmax(
+attn_scores / keys.shape[-1]**0.5, dim=-1
+)
+attn_weights = self.dropout(attn_weights)
+
+context_vec = attn_weights @ values
+return context_vec
+
+torch.manual_seed(123)
+
+context_length = batch.shape[1]
+d_in = 3
+d_out = 2
+ca = CausalAttention(d_in, d_out, context_length, 0.0)
+
+context_vecs = ca(batch)
+
+print(context_vecs)
+print("context_vecs.shape:", context_vecs.shape)
+</code></pre>
+<h2 id="扩展单头注意力到多头注意力"><a class="header" href="#扩展单头注意力到多头注意力">扩展单头注意力到多头注意力</a></h2>
+<p><strong>多头注意力</strong> 在实际操作中是执行 <strong>多个实例</strong> 的自注意力函数，每个实例都有 <strong>自己的权重</strong>，因此计算出不同的最终向量。</p>
+<h3 id="代码示例-2"><a class="header" href="#代码示例-2">代码示例</a></h3>
+<p>可以重用之前的代码，只需添加一个包装器来多次启动它，但这是一个更优化的版本，来自 <a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb">https://github.com/rasbt/LLMs-from-scratch/blob/main/ch03/01_main-chapter-code/ch03.ipynb</a>，它同时处理所有头（减少了昂贵的 for 循环数量）。正如您在代码中看到的，每个标记的维度根据头的数量被划分为不同的维度。这样，如果标记有 8 个维度，而我们想使用 3 个头，维度将被划分为 2 个 4 维的数组，每个头将使用其中一个：</p>
+<pre><code class="language-python">class MultiHeadAttention(nn.Module):
+def __init__(self, d_in, d_out, context_length, dropout, num_heads, qkv_bias=False):
+super().__init__()
+assert (d_out % num_heads == 0), \
+"d_out must be divisible by num_heads"
+
+self.d_out = d_out
+self.num_heads = num_heads
+self.head_dim = d_out // num_heads # Reduce the projection dim to match desired output dim
+
+self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_key = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.out_proj = nn.Linear(d_out, d_out)  # Linear layer to combine head outputs
+self.dropout = nn.Dropout(dropout)
+self.register_buffer(
+"mask",
+torch.triu(torch.ones(context_length, context_length),
+diagonal=1)
+)
+
+def forward(self, x):
+b, num_tokens, d_in = x.shape
+# b is the num of batches
+# num_tokens is the number of tokens per batch
+# d_in is the dimensions er token
+
+keys = self.W_key(x) # Shape: (b, num_tokens, d_out)
+queries = self.W_query(x)
+values = self.W_value(x)
+
+# We implicitly split the matrix by adding a `num_heads` dimension
+# Unroll last dim: (b, num_tokens, d_out) -&gt; (b, num_tokens, num_heads, head_dim)
+keys = keys.view(b, num_tokens, self.num_heads, self.head_dim)
+values = values.view(b, num_tokens, self.num_heads, self.head_dim)
+queries = queries.view(b, num_tokens, self.num_heads, self.head_dim)
+
+# Transpose: (b, num_tokens, num_heads, head_dim) -&gt; (b, num_heads, num_tokens, head_dim)
+keys = keys.transpose(1, 2)
+queries = queries.transpose(1, 2)
+values = values.transpose(1, 2)
+
+# Compute scaled dot-product attention (aka self-attention) with a causal mask
+attn_scores = queries @ keys.transpose(2, 3)  # Dot product for each head
+
+# Original mask truncated to the number of tokens and converted to boolean
+mask_bool = self.mask.bool()[:num_tokens, :num_tokens]
+
+# Use the mask to fill attention scores
+attn_scores.masked_fill_(mask_bool, -torch.inf)
+
+attn_weights = torch.softmax(attn_scores / keys.shape[-1]**0.5, dim=-1)
+attn_weights = self.dropout(attn_weights)
+
+# Shape: (b, num_tokens, num_heads, head_dim)
+context_vec = (attn_weights @ values).transpose(1, 2)
+
+# Combine heads, where self.d_out = self.num_heads * self.head_dim
+context_vec = context_vec.contiguous().view(b, num_tokens, self.d_out)
+context_vec = self.out_proj(context_vec) # optional projection
+
+return context_vec
+
+torch.manual_seed(123)
+
+batch_size, context_length, d_in = batch.shape
+d_out = 2
+mha = MultiHeadAttention(d_in, d_out, context_length, 0.0, num_heads=2)
+
+context_vecs = mha(batch)
+
+print(context_vecs)
+print("context_vecs.shape:", context_vecs.shape)
+
+</code></pre>
+<p>对于另一个紧凑且高效的实现，您可以使用 PyTorch 中的 <a href="https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html"><code>torch.nn.MultiheadAttention</code></a> 类。</p>
+<p>{% hint style="success" %}
+ChatGPT 关于为什么将令牌的维度分配给各个头而不是让每个头检查所有令牌的所有维度的简短回答：</p>
+<p>虽然允许每个头处理所有嵌入维度似乎有利，因为每个头将能够访问完整信息，但标准做法是 <strong>将嵌入维度分配给各个头</strong>。这种方法在计算效率与模型性能之间取得平衡，并鼓励每个头学习多样化的表示。因此，通常更倾向于分割嵌入维度，而不是让每个头检查所有维度。
+{% endhint %}</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.manning.com/books/build-a-large-language-model-from-scratch">https://www.manning.com/books/build-a-large-language-model-from-scratch</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../todo/llm-training-data-preparation/3.-token-embeddings.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../todo/llm-training-data-preparation/5.-llm-architecture.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../todo/llm-training-data-preparation/3.-token-embeddings.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../todo/llm-training-data-preparation/5.-llm-architecture.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

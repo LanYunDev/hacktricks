@@ -1,0 +1,542 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Docker Security</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="docker-安全"><a class="header" href="#docker-安全">Docker 安全</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=docker-security"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=docker-security" %}</p>
+<h2 id="基本-docker-引擎安全"><a class="header" href="#基本-docker-引擎安全"><strong>基本 Docker 引擎安全</strong></a></h2>
+<p><strong>Docker 引擎</strong> 利用 Linux 内核的 <strong>Namespaces</strong> 和 <strong>Cgroups</strong> 来隔离容器，提供基本的安全层。通过 <strong>能力丢弃</strong>、<strong>Seccomp</strong> 和 <strong>SELinux/AppArmor</strong> 提供额外保护，增强容器隔离。一个 <strong>auth 插件</strong> 可以进一步限制用户操作。</p>
+<p><img src="https://sreeninet.files.wordpress.com/2016/03/dockersec1.png" alt="Docker 安全" /></p>
+<h3 id="安全访问-docker-引擎"><a class="header" href="#安全访问-docker-引擎">安全访问 Docker 引擎</a></h3>
+<p>Docker 引擎可以通过 Unix 套接字本地访问或通过 HTTP 远程访问。对于远程访问，使用 HTTPS 和 <strong>TLS</strong> 确保机密性、完整性和身份验证至关重要。</p>
+<p>Docker 引擎默认在 <code>unix:///var/run/docker.sock</code> 上监听 Unix 套接字。在 Ubuntu 系统上，Docker 的启动选项在 <code>/etc/default/docker</code> 中定义。要启用对 Docker API 和客户端的远程访问，通过添加以下设置来通过 HTTP 套接字公开 Docker 守护进程：</p>
+<pre><code class="language-bash">DOCKER_OPTS="-D -H unix:///var/run/docker.sock -H tcp://192.168.56.101:2376"
+sudo service docker restart
+</code></pre>
+<p>然而，由于安全问题，不建议通过HTTP暴露Docker守护进程。建议使用HTTPS来保护连接。保护连接的主要方法有两种：</p>
+<ol>
+<li>客户端验证服务器的身份。</li>
+<li>客户端和服务器相互验证对方的身份。</li>
+</ol>
+<p>证书用于确认服务器的身份。有关这两种方法的详细示例，请参阅<a href="https://sreeninet.wordpress.com/2016/03/06/docker-security-part-3engine-access/"><strong>本指南</strong></a>。</p>
+<h3 id="容器镜像的安全性"><a class="header" href="#容器镜像的安全性">容器镜像的安全性</a></h3>
+<p>容器镜像可以存储在私有或公共仓库中。Docker为容器镜像提供了几种存储选项：</p>
+<ul>
+<li><a href="https://hub.docker.com"><strong>Docker Hub</strong></a>: Docker的公共注册服务。</li>
+<li><a href="https://github.com/docker/distribution"><strong>Docker Registry</strong></a>: 一个开源项目，允许用户托管自己的注册表。</li>
+<li><a href="https://www.docker.com/docker-trusted-registry"><strong>Docker Trusted Registry</strong></a>: Docker的商业注册表产品，具有基于角色的用户身份验证和与LDAP目录服务的集成。</li>
+</ul>
+<h3 id="镜像扫描"><a class="header" href="#镜像扫描">镜像扫描</a></h3>
+<p>容器可能存在<strong>安全漏洞</strong>，这可能是由于基础镜像或在基础镜像上安装的软件造成的。Docker正在进行一个名为<strong>Nautilus</strong>的项目，该项目对容器进行安全扫描并列出漏洞。Nautilus通过将每个容器镜像层与漏洞库进行比较来识别安全漏洞。</p>
+<p>有关更多<a href="https://docs.docker.com/engine/scan/"><strong>信息，请阅读此文</strong></a>。</p>
+<ul>
+<li><strong><code>docker scan</code></strong></li>
+</ul>
+<p>**<code>docker scan</code>**命令允许您使用镜像名称或ID扫描现有的Docker镜像。例如，运行以下命令以扫描hello-world镜像：</p>
+<pre><code class="language-bash">docker scan hello-world
+
+Testing hello-world...
+
+Organization:      docker-desktop-test
+Package manager:   linux
+Project name:      docker-image|hello-world
+Docker image:      hello-world
+Licenses:          enabled
+
+✓ Tested 0 dependencies for known issues, no vulnerable paths found.
+
+Note that we do not currently have vulnerability data for your image.
+</code></pre>
+<ul>
+<li><a href="https://github.com/aquasecurity/trivy"><strong><code>trivy</code></strong></a></li>
+</ul>
+<pre><code class="language-bash">trivy -q -f json &lt;container_name&gt;:&lt;tag&gt;
+</code></pre>
+<ul>
+<li><a href="https://docs.snyk.io/snyk-cli/getting-started-with-the-cli"><strong><code>snyk</code></strong></a></li>
+</ul>
+<pre><code class="language-bash">snyk container test &lt;image&gt; --json-file-output=&lt;output file&gt; --severity-threshold=high
+</code></pre>
+<ul>
+<li><a href="https://github.com/arminc/clair-scanner"><strong><code>clair-scanner</code></strong></a></li>
+</ul>
+<pre><code class="language-bash">clair-scanner -w example-alpine.yaml --ip YOUR_LOCAL_IP alpine:3.5
+</code></pre>
+<h3 id="docker-镜像签名"><a class="header" href="#docker-镜像签名">Docker 镜像签名</a></h3>
+<p>Docker 镜像签名确保了在容器中使用的镜像的安全性和完整性。以下是简要说明：</p>
+<ul>
+<li><strong>Docker 内容信任</strong> 利用基于更新框架 (TUF) 的 Notary 项目来管理镜像签名。有关更多信息，请参见 <a href="https://github.com/docker/notary">Notary</a> 和 <a href="https://theupdateframework.github.io">TUF</a>。</li>
+<li>要激活 Docker 内容信任，请设置 <code>export DOCKER_CONTENT_TRUST=1</code>。在 Docker 版本 1.10 及更高版本中，此功能默认关闭。</li>
+<li>启用此功能后，仅可以下载签名的镜像。初始镜像推送需要为根密钥和标记密钥设置密码短语，Docker 还支持 Yubikey 以增强安全性。更多详细信息可以在 <a href="https://blog.docker.com/2015/11/docker-content-trust-yubikey/">这里</a> 找到。</li>
+<li>尝试在启用内容信任的情况下拉取未签名的镜像会导致 "No trust data for latest" 错误。</li>
+<li>在第一次之后的镜像推送中，Docker 会要求输入存储库密钥的密码短语以签署镜像。</li>
+</ul>
+<p>要备份您的私钥，请使用以下命令：</p>
+<pre><code class="language-bash">tar -zcvf private_keys_backup.tar.gz ~/.docker/trust/private
+</code></pre>
+<p>当切换 Docker 主机时，必须移动根和存储库密钥以维持操作。</p>
+<hr />
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=docker-security"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=docker-security" %}</p>
+<h2 id="容器安全特性"><a class="header" href="#容器安全特性">容器安全特性</a></h2>
+<details>
+<summary>容器安全特性摘要</summary>
+<p><strong>主要进程隔离特性</strong></p>
+<p>在容器化环境中，隔离项目及其进程对于安全和资源管理至关重要。以下是关键概念的简化解释：</p>
+<p><strong>命名空间</strong></p>
+<ul>
+<li><strong>目的</strong>：确保进程、网络和文件系统等资源的隔离。特别是在 Docker 中，命名空间使容器的进程与主机和其他容器分开。</li>
+<li><strong><code>unshare</code> 的使用</strong>：<code>unshare</code> 命令（或底层系统调用）用于创建新的命名空间，提供额外的隔离层。然而，虽然 Kubernetes 本身并不阻止这一点，但 Docker 是会的。</li>
+<li><strong>限制</strong>：创建新命名空间并不允许进程恢复到主机的默认命名空间。要进入主机命名空间，通常需要访问主机的 <code>/proc</code> 目录，并使用 <code>nsenter</code> 进行进入。</li>
+</ul>
+<p><strong>控制组 (CGroups)</strong></p>
+<ul>
+<li><strong>功能</strong>：主要用于在进程之间分配资源。</li>
+<li><strong>安全方面</strong>：CGroups 本身不提供隔离安全，除了 <code>release_agent</code> 特性，如果配置错误，可能会被利用进行未经授权的访问。</li>
+</ul>
+<p><strong>能力丢弃</strong></p>
+<ul>
+<li><strong>重要性</strong>：这是进程隔离的重要安全特性。</li>
+<li><strong>功能</strong>：通过丢弃某些能力来限制根进程可以执行的操作。即使进程以根权限运行，缺乏必要的能力也会阻止其执行特权操作，因为系统调用将因权限不足而失败。</li>
+</ul>
+<p>这些是进程丢弃其他能力后的 <strong>剩余能力</strong>：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code>Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
+</code></pre>
+<p>{% endcode %}</p>
+<p><strong>Seccomp</strong></p>
+<p>它在 Docker 中默认启用。它有助于<strong>进一步限制进程可以调用的系统调用</strong>。<br />
+<strong>默认的 Docker Seccomp 配置文件</strong>可以在 <a href="https://github.com/moby/moby/blob/master/profiles/seccomp/default.json">https://github.com/moby/moby/blob/master/profiles/seccomp/default.json</a> 找到。</p>
+<p><strong>AppArmor</strong></p>
+<p>Docker 有一个可以激活的模板：<a href="https://github.com/moby/moby/tree/master/profiles/apparmor">https://github.com/moby/moby/tree/master/profiles/apparmor</a></p>
+<p>这将允许减少能力、系统调用、对文件和文件夹的访问...</p>
+</details>
+<h3 id="namespaces"><a class="header" href="#namespaces">Namespaces</a></h3>
+<p><strong>Namespaces</strong> 是 Linux 内核的一个特性，它<strong>将内核资源进行分区</strong>，使得一组<strong>进程****看到</strong>一组<strong>资源</strong>，而<strong>另一</strong>组<strong>进程</strong>看到<strong>不同</strong>的资源。该特性通过为一组资源和进程使用相同的命名空间来工作，但这些命名空间指向不同的资源。资源可以存在于多个空间中。</p>
+<p>Docker 利用以下 Linux 内核命名空间来实现容器隔离：</p>
+<ul>
+<li>pid namespace</li>
+<li>mount namespace</li>
+<li>network namespace</li>
+<li>ipc namespace</li>
+<li>UTS namespace</li>
+</ul>
+<p>有关<strong>命名空间的更多信息</strong>，请查看以下页面：</p>
+<p>{% content-ref url="namespaces/" %}
+<a href="namespaces/">namespaces</a>
+{% endcontent-ref %}</p>
+<h3 id="cgroups"><a class="header" href="#cgroups">cgroups</a></h3>
+<p>Linux 内核特性<strong>cgroups</strong>提供了<strong>限制一组进程的资源，如 CPU、内存、IO、网络带宽</strong>的能力。Docker 允许使用 cgroup 特性创建容器，从而实现对特定容器的资源控制。<br />
+以下是一个用户空间内存限制为 500m，内核内存限制为 50m，CPU 共享为 512，blkio-weight 为 400 的容器。CPU 共享是控制容器 CPU 使用的比例。它的默认值为 1024，范围在 0 到 1024 之间。如果三个容器的 CPU 共享均为 1024，则在 CPU 资源争用的情况下，每个容器最多可以占用 33% 的 CPU。blkio-weight 是控制容器 IO 的比例。它的默认值为 500，范围在 10 到 1000 之间。</p>
+<pre><code>docker run -it -m 500M --kernel-memory 50M --cpu-shares 512 --blkio-weight 400 --name ubuntu1 ubuntu bash
+</code></pre>
+<p>要获取容器的 cgroup，您可以执行：</p>
+<pre><code class="language-bash">docker run -dt --rm denial sleep 1234 #Run a large sleep inside a Debian container
+ps -ef | grep 1234 #Get info about the sleep process
+ls -l /proc/&lt;PID&gt;/ns #Get the Group and the namespaces (some may be uniq to the hosts and some may be shred with it)
+</code></pre>
+<p>有关更多信息，请查看：</p>
+<p>{% content-ref url="cgroups.md" %}
+<a href="cgroups.html">cgroups.md</a>
+{% endcontent-ref %}</p>
+<h3 id="能力"><a class="header" href="#能力">能力</a></h3>
+<p>能力允许<strong>对可以允许的根用户能力进行更细粒度的控制</strong>。Docker使用Linux内核能力特性来<strong>限制可以在容器内执行的操作</strong>，无论用户类型如何。</p>
+<p>当运行docker容器时，<strong>进程会放弃敏感能力，以防止进程逃离隔离</strong>。这试图确保进程无法执行敏感操作并逃逸：</p>
+<p>{% content-ref url="../linux-capabilities.md" %}
+<a href="../linux-capabilities.html">linux-capabilities.md</a>
+{% endcontent-ref %}</p>
+<h3 id="docker中的seccomp"><a class="header" href="#docker中的seccomp">Docker中的Seccomp</a></h3>
+<p>这是一种安全特性，允许Docker<strong>限制可以在容器内使用的系统调用</strong>：</p>
+<p>{% content-ref url="seccomp.md" %}
+<a href="seccomp.html">seccomp.md</a>
+{% endcontent-ref %}</p>
+<h3 id="docker中的apparmor"><a class="header" href="#docker中的apparmor">Docker中的AppArmor</a></h3>
+<p><strong>AppArmor</strong>是一个内核增强，用于将<strong>容器</strong>限制在<strong>有限</strong>的<strong>资源</strong>集内，并具有<strong>每个程序的配置文件</strong>：</p>
+<p>{% content-ref url="apparmor.md" %}
+<a href="apparmor.html">apparmor.md</a>
+{% endcontent-ref %}</p>
+<h3 id="docker中的selinux"><a class="header" href="#docker中的selinux">Docker中的SELinux</a></h3>
+<ul>
+<li><strong>标记系统</strong>：SELinux为每个进程和文件系统对象分配一个唯一的标签。</li>
+<li><strong>策略执行</strong>：它执行定义进程标签可以对系统内其他标签执行哪些操作的安全策略。</li>
+<li><strong>容器进程标签</strong>：当容器引擎启动容器进程时，通常会分配一个受限的SELinux标签，通常为<code>container_t</code>。</li>
+<li><strong>容器内的文件标记</strong>：容器内的文件通常标记为<code>container_file_t</code>。</li>
+<li><strong>策略规则</strong>：SELinux策略主要确保具有<code>container_t</code>标签的进程只能与标记为<code>container_file_t</code>的文件进行交互（读取、写入、执行）。</li>
+</ul>
+<p>该机制确保即使容器内的进程被攻陷，它也仅限于与具有相应标签的对象进行交互，从而显著限制此类攻陷可能造成的损害。</p>
+<p>{% content-ref url="../selinux.md" %}
+<a href="../selinux.html">selinux.md</a>
+{% endcontent-ref %}</p>
+<h3 id="authz--authn"><a class="header" href="#authz--authn">AuthZ &amp; AuthN</a></h3>
+<p>在Docker中，授权插件在安全性方面发挥着关键作用，通过决定是否允许或阻止对Docker守护进程的请求来实现。这一决定是通过检查两个关键上下文来做出的：</p>
+<ul>
+<li><strong>身份验证上下文</strong>：这包括有关用户的全面信息，例如他们是谁以及他们如何进行身份验证。</li>
+<li><strong>命令上下文</strong>：这包括与所发出请求相关的所有相关数据。</li>
+</ul>
+<p>这些上下文有助于确保只有经过身份验证的用户的合法请求被处理，从而增强Docker操作的安全性。</p>
+<p>{% content-ref url="authz-and-authn-docker-access-authorization-plugin.md" %}
+<a href="authz-and-authn-docker-access-authorization-plugin.html">authz-and-authn-docker-access-authorization-plugin.md</a>
+{% endcontent-ref %}</p>
+<h2 id="来自容器的dos"><a class="header" href="#来自容器的dos">来自容器的DoS</a></h2>
+<p>如果您没有正确限制容器可以使用的资源，则被攻陷的容器可能会对其运行的主机造成DoS。</p>
+<ul>
+<li>CPU DoS</li>
+</ul>
+<pre><code class="language-bash"># stress-ng
+sudo apt-get install -y stress-ng &amp;&amp; stress-ng --vm 1 --vm-bytes 1G --verify -t 5m
+
+# While loop
+docker run -d --name malicious-container -c 512 busybox sh -c 'while true; do :; done'
+</code></pre>
+<ul>
+<li>带宽 DoS</li>
+</ul>
+<pre><code class="language-bash">nc -lvp 4444 &gt;/dev/null &amp; while true; do cat /dev/urandom | nc &lt;target IP&gt; 4444; done
+</code></pre>
+<h2 id="有趣的-docker-标志"><a class="header" href="#有趣的-docker-标志">有趣的 Docker 标志</a></h2>
+<h3 id="--privileged-标志"><a class="header" href="#--privileged-标志">--privileged 标志</a></h3>
+<p>在以下页面中，您可以了解 <strong><code>--privileged</code> 标志的含义</strong>：</p>
+<p>{% content-ref url="docker-privileged.md" %}
+<a href="docker-privileged.html">docker-privileged.md</a>
+{% endcontent-ref %}</p>
+<h3 id="--security-opt"><a class="header" href="#--security-opt">--security-opt</a></h3>
+<h4 id="no-new-privileges"><a class="header" href="#no-new-privileges">no-new-privileges</a></h4>
+<p>如果您正在运行一个容器，攻击者设法以低权限用户身份获得访问权限。如果您有一个 <strong>配置错误的 suid 二进制文件</strong>，攻击者可能会利用它并 <strong>在容器内提升权限</strong>。这可能允许他逃离容器。</p>
+<p>启用 <strong><code>no-new-privileges</code></strong> 选项运行容器将 <strong>防止这种权限提升</strong>。</p>
+<pre><code>docker run -it --security-opt=no-new-privileges:true nonewpriv
+</code></pre>
+<h4 id="其他"><a class="header" href="#其他">其他</a></h4>
+<pre><code class="language-bash">#You can manually add/drop capabilities with
+--cap-add
+--cap-drop
+
+# You can manually disable seccomp in docker with
+--security-opt seccomp=unconfined
+
+# You can manually disable seccomp in docker with
+--security-opt apparmor=unconfined
+
+# You can manually disable selinux in docker with
+--security-opt label:disable
+</code></pre>
+<p>对于更多 <strong><code>--security-opt</code></strong> 选项，请查看: <a href="https://docs.docker.com/engine/reference/run/#security-configuration">https://docs.docker.com/engine/reference/run/#security-configuration</a></p>
+<h2 id="其他安全考虑"><a class="header" href="#其他安全考虑">其他安全考虑</a></h2>
+<h3 id="管理机密最佳实践"><a class="header" href="#管理机密最佳实践">管理机密：最佳实践</a></h3>
+<p>避免直接在 Docker 镜像中嵌入机密或使用环境变量至关重要，因为这些方法会通过 <code>docker inspect</code> 或 <code>exec</code> 等命令将您的敏感信息暴露给任何可以访问容器的人。</p>
+<p><strong>Docker 卷</strong> 是一种更安全的替代方案，推荐用于访问敏感信息。它们可以作为内存中的临时文件系统使用，从而降低与 <code>docker inspect</code> 和日志记录相关的风险。然而，根用户和具有 <code>exec</code> 访问权限的用户仍然可能访问这些机密。</p>
+<p><strong>Docker secrets</strong> 提供了一种更安全的方法来处理敏感信息。对于在镜像构建阶段需要机密的实例，<strong>BuildKit</strong> 提供了一种高效的解决方案，支持构建时机密，提升构建速度并提供额外功能。</p>
+<p>要利用 BuildKit，可以通过三种方式激活：</p>
+<ol>
+<li>通过环境变量: <code>export DOCKER_BUILDKIT=1</code></li>
+<li>通过命令前缀: <code>DOCKER_BUILDKIT=1 docker build .</code></li>
+<li>通过在 Docker 配置中默认启用: <code>{ "features": { "buildkit": true } }</code>，然后重启 Docker。</li>
+</ol>
+<p>BuildKit 允许使用 <code>--secret</code> 选项来使用构建时机密，确保这些机密不包含在镜像构建缓存或最终镜像中，使用命令如下:</p>
+<pre><code class="language-bash">docker build --secret my_key=my_value ,src=path/to/my_secret_file .
+</code></pre>
+<p>对于运行中的容器所需的秘密，<strong>Docker Compose 和 Kubernetes</strong> 提供了强大的解决方案。Docker Compose 在服务定义中使用 <code>secrets</code> 键来指定秘密文件，如 <code>docker-compose.yml</code> 示例所示：</p>
+<pre><code class="language-yaml">version: "3.7"
+services:
+my_service:
+image: centos:7
+entrypoint: "cat /run/secrets/my_secret"
+secrets:
+- my_secret
+secrets:
+my_secret:
+file: ./my_secret_file.txt
+</code></pre>
+<p>此配置允许在使用 Docker Compose 启动服务时使用秘密。</p>
+<p>在 Kubernetes 环境中，秘密是原生支持的，并且可以通过像 <a href="https://github.com/futuresimple/helm-secrets">Helm-Secrets</a> 这样的工具进一步管理。Kubernetes 的基于角色的访问控制 (RBAC) 增强了秘密管理的安全性，类似于 Docker Enterprise。</p>
+<h3 id="gvisor"><a class="header" href="#gvisor">gVisor</a></h3>
+<p><strong>gVisor</strong> 是一个应用内核，使用 Go 编写，实施了 Linux 系统表面的相当大一部分。它包括一个名为 <code>runsc</code> 的 <a href="https://www.opencontainers.org">开放容器倡议 (OCI)</a> 运行时，提供了 <strong>应用程序与主机内核之间的隔离边界</strong>。<code>runsc</code> 运行时与 Docker 和 Kubernetes 集成，使得运行沙箱容器变得简单。</p>
+<p>{% embed url="https://github.com/google/gvisor" %}</p>
+<h3 id="kata-containers"><a class="header" href="#kata-containers">Kata Containers</a></h3>
+<p><strong>Kata Containers</strong> 是一个开源社区，致力于构建一个安全的容器运行时，使用轻量级虚拟机，感觉和表现像容器，但提供 <strong>使用硬件虚拟化技术的更强工作负载隔离</strong> 作为第二道防线。</p>
+<p>{% embed url="https://katacontainers.io/" %}</p>
+<h3 id="总结提示"><a class="header" href="#总结提示">总结提示</a></h3>
+<ul>
+<li><strong>不要使用 <code>--privileged</code> 标志或在容器内挂载</strong> <a href="https://raesene.github.io/blog/2016/03/06/The-Dangers-Of-Docker.sock/"><strong>Docker 套接字</strong></a><strong>。</strong> Docker 套接字允许生成容器，因此这是完全控制主机的简单方法，例如，通过使用 <code>--privileged</code> 标志运行另一个容器。</li>
+<li><strong>不要在容器内以 root 身份运行。使用</strong> <a href="https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user"><strong>不同用户</strong></a> <strong>和</strong> <a href="https://docs.docker.com/engine/security/userns-remap/"><strong>用户命名空间</strong></a><strong>。</strong> 容器中的 root 与主机上的 root 是相同的，除非通过用户命名空间重新映射。它仅受到 Linux 命名空间、能力和 cgroups 的轻微限制。</li>
+<li><a href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities"><strong>丢弃所有能力</strong></a> <strong>(<code>--cap-drop=all</code>)，仅启用所需的能力</strong> (<code>--cap-add=...</code>)。许多工作负载不需要任何能力，添加它们会增加潜在攻击的范围。</li>
+<li><a href="https://raesene.github.io/blog/2019/06/01/docker-capabilities-and-no-new-privs/"><strong>使用“no-new-privileges”安全选项</strong></a> 防止进程获得更多权限，例如通过 suid 二进制文件。</li>
+<li><a href="https://docs.docker.com/engine/reference/run/#runtime-constraints-on-resources"><strong>限制容器可用的资源</strong></a><strong>。</strong> 资源限制可以保护机器免受拒绝服务攻击。</li>
+<li><strong>调整</strong> <a href="https://docs.docker.com/engine/security/seccomp/"><strong>seccomp</strong></a><strong>、</strong> <a href="https://docs.docker.com/engine/security/apparmor/"><strong>AppArmor</strong></a> <strong>（或 SELinux）</strong> 配置文件，以将容器可用的操作和系统调用限制到最低要求。</li>
+<li><strong>使用</strong> <a href="https://docs.docker.com/docker-hub/official_images/"><strong>官方 Docker 镜像</strong></a> <strong>并要求签名</strong>，或基于它们构建自己的镜像。不要继承或使用 <a href="https://arstechnica.com/information-technology/2018/06/backdoored-images-downloaded-5-million-times-finally-removed-from-docker-hub/">后门</a> 镜像。还要将 root 密钥、密码短语存放在安全的地方。Docker 计划通过 UCP 管理密钥。</li>
+<li><strong>定期</strong> <strong>重建</strong> 镜像以 <strong>应用安全补丁到主机和镜像。</strong></li>
+<li>明智地管理您的 <strong>秘密</strong>，使攻击者难以访问它们。</li>
+<li>如果您 <strong>暴露 Docker 守护进程，请使用 HTTPS</strong>，并进行客户端和服务器身份验证。</li>
+<li>在您的 Dockerfile 中，<strong>优先使用 COPY 而不是 ADD</strong>。ADD 会自动提取压缩文件，并可以从 URL 复制文件。COPY 没有这些功能。尽可能避免使用 ADD，以免受到通过远程 URL 和 Zip 文件的攻击。</li>
+<li>为每个微服务 <strong>使用单独的容器</strong></li>
+<li><strong>不要在容器内放置 ssh</strong>，可以使用 “docker exec” 连接到容器。</li>
+<li>拥有 <strong>更小的</strong> 容器 <strong>镜像</strong></li>
+</ul>
+<h2 id="docker-突破--权限提升"><a class="header" href="#docker-突破--权限提升">Docker 突破 / 权限提升</a></h2>
+<p>如果您 <strong>在 Docker 容器内</strong> 或者您有权访问 <strong>docker 组中的用户</strong>，您可以尝试 <strong>逃逸并提升权限</strong>：</p>
+<p>{% content-ref url="docker-breakout-privilege-escalation/" %}
+<a href="docker-breakout-privilege-escalation/">docker-breakout-privilege-escalation</a>
+{% endcontent-ref %}</p>
+<h2 id="docker-身份验证插件绕过"><a class="header" href="#docker-身份验证插件绕过">Docker 身份验证插件绕过</a></h2>
+<p>如果您可以访问 Docker 套接字或有权访问 <strong>docker 组中的用户，但您的操作受到 Docker 身份验证插件的限制</strong>，请检查您是否可以 <strong>绕过它：</strong></p>
+<p>{% content-ref url="authz-and-authn-docker-access-authorization-plugin.md" %}
+<a href="authz-and-authn-docker-access-authorization-plugin.html">authz-and-authn-docker-access-authorization-plugin.md</a>
+{% endcontent-ref %}</p>
+<h2 id="加固-docker"><a class="header" href="#加固-docker">加固 Docker</a></h2>
+<ul>
+<li>工具 <a href="https://github.com/docker/docker-bench-security"><strong>docker-bench-security</strong></a> 是一个脚本，检查在生产中部署 Docker 容器的数十个常见最佳实践。所有测试都是自动化的，基于 <a href="https://www.cisecurity.org/benchmark/docker/">CIS Docker 基准 v1.3.1</a>。<br />
+您需要从运行 Docker 的主机或具有足够权限的容器中运行该工具。了解 <strong>如何在 README 中运行它：</strong> <a href="https://github.com/docker/docker-bench-security"><strong>https://github.com/docker/docker-bench-security</strong></a>。</li>
+</ul>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/">https://blog.trailofbits.com/2019/07/19/understanding-docker-container-escapes/</a></li>
+<li><a href="https://twitter.com/_fel1x/status/1151487051986087936">https://twitter.com/_fel1x/status/1151487051986087936</a></li>
+<li><a href="https://ajxchapman.github.io/containers/2020/11/19/privileged-container-escape.html">https://ajxchapman.github.io/containers/2020/11/19/privileged-container-escape.html</a></li>
+<li><a href="https://sreeninet.wordpress.com/2016/03/06/docker-security-part-1overview/">https://sreeninet.wordpress.com/2016/03/06/docker-security-part-1overview/</a></li>
+<li><a href="https://sreeninet.wordpress.com/2016/03/06/docker-security-part-2docker-engine/">https://sreeninet.wordpress.com/2016/03/06/docker-security-part-2docker-engine/</a></li>
+<li><a href="https://sreeninet.wordpress.com/2016/03/06/docker-security-part-3engine-access/">https://sreeninet.wordpress.com/2016/03/06/docker-security-part-3engine-access/</a></li>
+<li><a href="https://sreeninet.wordpress.com/2016/03/06/docker-security-part-4container-image/">https://sreeninet.wordpress.com/2016/03/06/docker-security-part-4container-image/</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Linux_namespaces">https://en.wikipedia.org/wiki/Linux_namespaces</a></li>
+<li><a href="https://towardsdatascience.com/top-20-docker-security-tips-81c41dd06f57">https://towardsdatascience.com/top-20-docker-security-tips-81c41dd06f57</a></li>
+<li><a href="https://www.redhat.com/sysadmin/privileged-flag-container-engines">https://www.redhat.com/sysadmin/privileged-flag-container-engines</a></li>
+<li><a href="https://docs.docker.com/engine/extend/plugins_authorization">https://docs.docker.com/engine/extend/plugins_authorization</a></li>
+<li><a href="https://towardsdatascience.com/top-20-docker-security-tips-81c41dd06f57">https://towardsdatascience.com/top-20-docker-security-tips-81c41dd06f57</a></li>
+<li><a href="https://resources.experfy.com/bigdata-cloud/top-20-docker-security-tips/">https://resources.experfy.com/bigdata-cloud/top-20-docker-security-tips/</a></li>
+</ul>
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=docker-security"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=docker-security" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/privilege-escalation/d-bus-enumeration-and-command-injection-privilege-escalation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/privilege-escalation/d-bus-enumeration-and-command-injection-privilege-escalation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/abusing-docker-socket-for-privilege-escalation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

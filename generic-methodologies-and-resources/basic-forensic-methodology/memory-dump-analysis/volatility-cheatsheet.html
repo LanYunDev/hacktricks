@@ -1,0 +1,800 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Volatility - CheatSheet</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="volatility---cheatsheet"><a class="header" href="#volatility---cheatsheet">Volatility - CheatSheet</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>​</p>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p>​​<a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的事件之一。该大会的 <strong>使命是促进技术知识</strong>，是各个学科技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}
+如果您需要一个可以自动化内存分析的工具，具有不同的扫描级别并能并行运行多个 Volatility3 插件，您可以使用 autoVolatility3:: <a href="https://github.com/H3xKatana/autoVolatility3/">https://github.com/H3xKatana/autoVolatility3/</a></p>
+<pre><code class="language-bash"># Full scan (runs all plugins)
+python3 autovol3.py -f MEMFILE -o OUT_DIR -s full
+
+# Minimal scan (runs a limited set of plugins)
+python3 autovol3.py -f MEMFILE -o OUT_DIR -s minimal
+
+# Normal scan (runs a balanced set of plugins)
+python3 autovol3.py -f MEMFILE -o OUT_DIR -s normal
+
+</code></pre>
+<p>如果你想要一些<strong>快速而疯狂</strong>的东西，可以并行启动多个Volatility插件，你可以使用：<a href="https://github.com/carlospolop/autoVolatility">https://github.com/carlospolop/autoVolatility</a></p>
+<pre><code class="language-bash">python autoVolatility.py -f MEMFILE -d OUT_DIRECTORY -e /home/user/tools/volatility/vol.py # It will use the most important plugins (could use a lot of space depending on the size of the memory)
+</code></pre>
+<h2 id="安装"><a class="header" href="#安装">安装</a></h2>
+<h3 id="volatility3"><a class="header" href="#volatility3">volatility3</a></h3>
+<pre><code class="language-bash">git clone https://github.com/volatilityfoundation/volatility3.git
+cd volatility3
+python3 setup.py install
+python3 vol.py —h
+</code></pre>
+<h3 id="volatility2"><a class="header" href="#volatility2">volatility2</a></h3>
+<p>{% tabs %}
+{% tab title="方法1" %}</p>
+<pre><code>Download the executable from https://www.volatilityfoundation.org/26
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="方法 2" %}</p>
+<pre><code class="language-bash">git clone https://github.com/volatilityfoundation/volatility.git
+cd volatility
+python setup.py install
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="volatility-命令"><a class="header" href="#volatility-命令">Volatility 命令</a></h2>
+<p>访问官方文档 <a href="https://github.com/volatilityfoundation/volatility/wiki/Command-Reference#kdbgscan">Volatility 命令参考</a></p>
+<h3 id="关于list和scan插件的说明"><a class="header" href="#关于list和scan插件的说明">关于“list”和“scan”插件的说明</a></h3>
+<p>Volatility 有两种主要的插件方法，有时在其名称中反映出来。“list” 插件将尝试通过 Windows 内核结构导航以检索信息，如进程（定位并遍历内存中的 <code>_EPROCESS</code> 结构的链表）、操作系统句柄（定位和列出句柄表，解引用找到的任何指针等）。它们的行为或多或少类似于 Windows API，如果请求列出进程的话。</p>
+<p>这使得“list”插件非常快速，但与 Windows API 一样容易受到恶意软件的操控。例如，如果恶意软件使用 DKOM 从 <code>_EPROCESS</code> 链表中取消链接一个进程，它将不会出现在任务管理器中，也不会出现在 pslist 中。</p>
+<p>另一方面，“scan” 插件将采取类似于在内存中雕刻可能在解引用为特定结构时有意义的内容的方法。例如，<code>psscan</code> 将读取内存并尝试从中创建 <code>_EPROCESS</code> 对象（它使用池标签扫描，搜索指示感兴趣结构存在的 4 字节字符串）。其优点是它可以挖掘已退出的进程，即使恶意软件篡改了 <code>_EPROCESS</code> 链表，插件仍然会找到在内存中存在的结构（因为它仍然需要存在以便进程运行）。缺点是“scan”插件比“list”插件稍慢，有时可能会产生误报（一个退出时间过长且其结构部分被其他操作覆盖的进程）。</p>
+<p>来自: <a href="http://tomchop.me/2016/11/21/tutorial-volatility-plugins-malware-analysis/">http://tomchop.me/2016/11/21/tutorial-volatility-plugins-malware-analysis/</a></p>
+<h2 id="操作系统配置文件"><a class="header" href="#操作系统配置文件">操作系统配置文件</a></h2>
+<h3 id="volatility3-1"><a class="header" href="#volatility3-1">Volatility3</a></h3>
+<p>如 readme 中所述，您需要将您想要支持的 <strong>操作系统符号表</strong> 放入 <em>volatility3/volatility/symbols</em> 中。<br />
+各种操作系统的符号表包可在以下位置 <strong>下载</strong>：</p>
+<ul>
+<li><a href="https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip">https://downloads.volatilityfoundation.org/volatility3/symbols/windows.zip</a></li>
+<li><a href="https://downloads.volatilityfoundation.org/volatility3/symbols/mac.zip">https://downloads.volatilityfoundation.org/volatility3/symbols/mac.zip</a></li>
+<li><a href="https://downloads.volatilityfoundation.org/volatility3/symbols/linux.zip">https://downloads.volatilityfoundation.org/volatility3/symbols/linux.zip</a></li>
+</ul>
+<h3 id="volatility2-1"><a class="header" href="#volatility2-1">Volatility2</a></h3>
+<h4 id="外部配置文件"><a class="header" href="#外部配置文件">外部配置文件</a></h4>
+<p>您可以通过以下方式获取支持的配置文件列表：</p>
+<pre><code class="language-bash">./volatility_2.6_lin64_standalone --info | grep "Profile"
+</code></pre>
+<p>如果您想使用<strong>您下载的新配置文件</strong>（例如 Linux 配置文件），您需要在某处创建以下文件夹结构：<em>plugins/overlays/linux</em>，并将包含配置文件的 zip 文件放入此文件夹中。然后，使用以下命令获取配置文件的编号：</p>
+<pre><code class="language-bash">./vol --plugins=/home/kali/Desktop/ctfs/final/plugins --info
+Volatility Foundation Volatility Framework 2.6
+
+
+Profiles
+--------
+LinuxCentOS7_3_10_0-123_el7_x86_64_profilex64 - A Profile for Linux CentOS7_3.10.0-123.el7.x86_64_profile x64
+VistaSP0x64                                   - A Profile for Windows Vista SP0 x64
+VistaSP0x86                                   - A Profile for Windows Vista SP0 x86
+</code></pre>
+<p>您可以<strong>从 <a href="https://github.com/volatilityfoundation/profiles">https://github.com/volatilityfoundation/profiles</a> 下载 Linux 和 Mac 配置文件</strong>。</p>
+<p>在前面的部分中，您可以看到配置文件名为 <code>LinuxCentOS7_3_10_0-123_el7_x86_64_profilex64</code>，您可以使用它来执行类似的操作：</p>
+<pre><code class="language-bash">./vol -f file.dmp --plugins=. --profile=LinuxCentOS7_3_10_0-123_el7_x86_64_profilex64 linux_netscan
+</code></pre>
+<h4 id="发现配置文件"><a class="header" href="#发现配置文件">发现配置文件</a></h4>
+<pre><code>volatility imageinfo -f file.dmp
+volatility kdbgscan -f file.dmp
+</code></pre>
+<h4 id="imageinfo-和-kdbgscan-之间的区别"><a class="header" href="#imageinfo-和-kdbgscan-之间的区别"><strong>imageinfo 和 kdbgscan 之间的区别</strong></a></h4>
+<p><a href="https://www.andreafortuna.org/2017/06/25/volatility-my-own-cheatsheet-part-1-image-identification/"><strong>从这里</strong></a>: 与仅提供配置文件建议的 imageinfo 相比，<strong>kdbgscan</strong> 旨在准确识别正确的配置文件和正确的 KDBG 地址（如果存在多个）。该插件扫描与 Volatility 配置文件相关的 KDBGHeader 签名，并应用合理性检查以减少误报。输出的详细程度和可以执行的合理性检查数量取决于 Volatility 是否能够找到 DTB，因此如果您已经知道正确的配置文件（或者如果您有来自 imageinfo 的配置文件建议），请确保使用它。</p>
+<p>始终查看 <strong>kdbgscan 找到的进程数量</strong>。有时 imageinfo 和 kdbgscan 可以找到 <strong>多个</strong> 合适的 <strong>配置文件</strong>，但只有 <strong>有效的一个会有一些相关的进程</strong>（这是因为提取进程需要正确的 KDBG 地址）。</p>
+<pre><code class="language-bash"># GOOD
+PsActiveProcessHead           : 0xfffff800011977f0 (37 processes)
+PsLoadedModuleList            : 0xfffff8000119aae0 (116 modules)
+</code></pre>
+<pre><code class="language-bash"># BAD
+PsActiveProcessHead           : 0xfffff800011947f0 (0 processes)
+PsLoadedModuleList            : 0xfffff80001197ac0 (0 modules)
+</code></pre>
+<h4 id="kdbg"><a class="header" href="#kdbg">KDBG</a></h4>
+<p><strong>内核调试器块</strong>，在Volatility中称为<strong>KDBG</strong>，对于Volatility和各种调试器执行的取证任务至关重要。它被识别为<code>KdDebuggerDataBlock</code>，类型为<code>_KDDEBUGGER_DATA64</code>，包含重要的引用，如<code>PsActiveProcessHead</code>。这个特定的引用指向进程列表的头部，使得能够列出所有进程，这对于全面的内存分析是基础。</p>
+<h2 id="操作系统信息"><a class="header" href="#操作系统信息">操作系统信息</a></h2>
+<pre><code class="language-bash">#vol3 has a plugin to give OS information (note that imageinfo from vol2 will give you OS info)
+./vol.py -f file.dmp windows.info.Info
+</code></pre>
+<p>The plugin <code>banners.Banners</code> 可以在 <strong>vol3 中尝试查找 linux 横幅</strong> 在转储中。</p>
+<h2 id="哈希密码"><a class="header" href="#哈希密码">哈希/密码</a></h2>
+<p>提取 SAM 哈希，<a href="../../../windows-hardening/stealing-credentials/credentials-protections.html#cached-credentials">域缓存凭据</a> 和 <a href="../../../windows-hardening/authentication-credentials-uac-and-efs/#lsa-secrets">lsa 密钥</a>。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.hashdump.Hashdump #Grab common windows hashes (SAM+SYSTEM)
+./vol.py -f file.dmp windows.cachedump.Cachedump #Grab domain cache hashes inside the registry
+./vol.py -f file.dmp windows.lsadump.Lsadump #Grab lsa secrets
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 hashdump -f file.dmp #Grab common windows hashes (SAM+SYSTEM)
+volatility --profile=Win7SP1x86_23418 cachedump -f file.dmp #Grab domain cache hashes inside the registry
+volatility --profile=Win7SP1x86_23418 lsadump -f file.dmp #Grab lsa secrets
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="内存转储"><a class="header" href="#内存转储">内存转储</a></h2>
+<p>进程的内存转储将<strong>提取当前进程状态的所有内容</strong>。<strong>procdump</strong>模块将仅<strong>提取****代码</strong>。</p>
+<pre><code>volatility -f file.dmp --profile=Win7SP1x86 memdump -p 2168 -D conhost/
+</code></pre>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p>​​​<a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的活动之一。该大会的 <strong>使命是促进技术知识</strong>，是各个学科的技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<h2 id="进程"><a class="header" href="#进程">进程</a></h2>
+<h3 id="列出进程"><a class="header" href="#列出进程">列出进程</a></h3>
+<p>尝试查找 <strong>可疑</strong> 进程（按名称）或 <strong>意外</strong> 子 <strong>进程</strong>（例如 cmd.exe 作为 iexplorer.exe 的子进程）。<br />
+比较 pslist 的结果与 psscan 的结果，以识别隐藏进程可能会很有趣。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">python3 vol.py -f file.dmp windows.pstree.PsTree # Get processes tree (not hidden)
+python3 vol.py -f file.dmp windows.pslist.PsList # Get process list (EPROCESS)
+python3 vol.py -f file.dmp windows.psscan.PsScan # Get hidden process list(malware)
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=PROFILE pstree -f file.dmp # Get process tree (not hidden)
+volatility --profile=PROFILE pslist -f file.dmp # Get process list (EPROCESS)
+volatility --profile=PROFILE psscan -f file.dmp # Get hidden process list(malware)
+volatility --profile=PROFILE psxview -f file.dmp # Get hidden process list
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="转储进程"><a class="header" href="#转储进程">转储进程</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.dumpfiles.DumpFiles --pid &lt;pid&gt; #Dump the .exe and dlls of the process in the current directory
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 procdump --pid=3152 -n --dump-dir=. -f file.dmp
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="命令行"><a class="header" href="#命令行">命令行</a></h3>
+<p>是否执行了任何可疑的操作？</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">python3 vol.py -f file.dmp windows.cmdline.CmdLine #Display process command-line arguments
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=PROFILE cmdline -f file.dmp #Display process command-line arguments
+volatility --profile=PROFILE consoles -f file.dmp #command history by scanning for _CONSOLE_INFORMATION
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>在 <code>cmd.exe</code> 中执行的命令由 <strong><code>conhost.exe</code></strong>（或在 Windows 7 之前的系统中为 <code>csrss.exe</code>）管理。这意味着如果攻击者在获取内存转储之前终止了 <strong><code>cmd.exe</code></strong>，仍然可以从 <strong><code>conhost.exe</code></strong> 的内存中恢复会话的命令历史记录。为此，如果在控制台的模块中检测到异常活动，则应转储相关 <strong><code>conhost.exe</code></strong> 进程的内存。然后，通过在此转储中搜索 <strong>strings</strong>，可以提取会话中使用的命令行。</p>
+<h3 id="环境"><a class="header" href="#环境">环境</a></h3>
+<p>获取每个运行进程的环境变量。可能会有一些有趣的值。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">python3 vol.py -f file.dmp windows.envars.Envars [--pid &lt;pid&gt;] #Display process environment variables
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=PROFILE envars -f file.dmp [--pid &lt;pid&gt;] #Display process environment variables
+
+volatility --profile=PROFILE -f file.dmp linux_psenv [-p &lt;pid&gt;] #Get env of process. runlevel var means the runlevel where the proc is initated
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="令牌权限"><a class="header" href="#令牌权限">令牌权限</a></h3>
+<p>检查意外服务中的权限令牌。<br />
+列出使用某些特权令牌的进程可能会很有趣。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">#Get enabled privileges of some processes
+python3 vol.py -f file.dmp windows.privileges.Privs [--pid &lt;pid&gt;]
+#Get all processes with interesting privileges
+python3 vol.py -f file.dmp windows.privileges.Privs | grep "SeImpersonatePrivilege\|SeAssignPrimaryPrivilege\|SeTcbPrivilege\|SeBackupPrivilege\|SeRestorePrivilege\|SeCreateTokenPrivilege\|SeLoadDriverPrivilege\|SeTakeOwnershipPrivilege\|SeDebugPrivilege"
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">#Get enabled privileges of some processes
+volatility --profile=Win7SP1x86_23418 privs --pid=3152 -f file.dmp | grep Enabled
+#Get all processes with interesting privileges
+volatility --profile=Win7SP1x86_23418 privs -f file.dmp | grep "SeImpersonatePrivilege\|SeAssignPrimaryPrivilege\|SeTcbPrivilege\|SeBackupPrivilege\|SeRestorePrivilege\|SeCreateTokenPrivilege\|SeLoadDriverPrivilege\|SeTakeOwnershipPrivilege\|SeDebugPrivilege"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="sids"><a class="header" href="#sids">SIDs</a></h3>
+<p>检查每个由进程拥有的SSID。<br />
+列出使用特权SID的进程（以及使用某些服务SID的进程）可能会很有趣。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.getsids.GetSIDs [--pid &lt;pid&gt;] #Get SIDs of processes
+./vol.py -f file.dmp windows.getservicesids.GetServiceSIDs #Get the SID of services
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 getsids -f file.dmp #Get the SID owned by each process
+volatility --profile=Win7SP1x86_23418 getservicesids -f file.dmp #Get the SID of each service
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="句柄"><a class="header" href="#句柄">句柄</a></h3>
+<p>了解一个 <strong>进程拥有的句柄</strong>（已打开）指向哪些其他文件、密钥、线程、进程... 是很有用的</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">vol.py -f file.dmp windows.handles.Handles [--pid &lt;pid&gt;]
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 -f file.dmp handles [--pid=&lt;pid&gt;]
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="dlls"><a class="header" href="#dlls">DLLs</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.dlllist.DllList [--pid &lt;pid&gt;] #List dlls used by each
+./vol.py -f file.dmp windows.dumpfiles.DumpFiles --pid &lt;pid&gt; #Dump the .exe and dlls of the process in the current directory process
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 dlllist --pid=3152 -f file.dmp #Get dlls of a proc
+volatility --profile=Win7SP1x86_23418 dlldump --pid=3152 --dump-dir=. -f file.dmp #Dump dlls of a proc
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="每个进程的字符串"><a class="header" href="#每个进程的字符串">每个进程的字符串</a></h3>
+<p>Volatility 允许我们检查一个字符串属于哪个进程。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">strings file.dmp &gt; /tmp/strings.txt
+./vol.py -f /tmp/file.dmp windows.strings.Strings --strings-file /tmp/strings.txt
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">strings file.dmp &gt; /tmp/strings.txt
+volatility -f /tmp/file.dmp windows.strings.Strings --string-file /tmp/strings.txt
+
+volatility -f /tmp/file.dmp --profile=Win81U1x64 memdump -p 3532 --dump-dir .
+strings 3532.dmp &gt; strings_file
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>它还允许使用 yarascan 模块在进程中搜索字符串：</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.vadyarascan.VadYaraScan --yara-rules "https://" --pid 3692 3840 3976 3312 3084 2784
+./vol.py -f file.dmp yarascan.YaraScan --yara-rules "https://"
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 yarascan -Y "https://" -p 3692,3840,3976,3312,3084,2784
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="userassist"><a class="header" href="#userassist">UserAssist</a></h3>
+<p><strong>Windows</strong> 通过注册表中的一个功能 <strong>UserAssist keys</strong> 跟踪您运行的程序。这些键记录每个程序执行的次数以及最后一次运行的时间。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.registry.userassist.UserAssist
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code>volatility --profile=Win7SP1x86_23418 -f file.dmp userassist
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>​</p>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p>​​​​<a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的活动之一。该大会 <strong>旨在促进技术知识</strong>，是各个学科技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<h2 id="服务"><a class="header" href="#服务">服务</a></h2>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.svcscan.SvcScan #List services
+./vol.py -f file.dmp windows.getservicesids.GetServiceSIDs #Get the SID of services
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">#Get services and binary path
+volatility --profile=Win7SP1x86_23418 svcscan -f file.dmp
+#Get name of the services and SID (slow)
+volatility --profile=Win7SP1x86_23418 getservicesids -f file.dmp
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="网络"><a class="header" href="#网络">网络</a></h2>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.netscan.NetScan
+#For network info of linux use volatility2
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 netscan -f file.dmp
+volatility --profile=Win7SP1x86_23418 connections -f file.dmp#XP and 2003 only
+volatility --profile=Win7SP1x86_23418 connscan -f file.dmp#TCP connections
+volatility --profile=Win7SP1x86_23418 sockscan -f file.dmp#Open sockets
+volatility --profile=Win7SP1x86_23418 sockets -f file.dmp#Scanner for tcp socket objects
+
+volatility --profile=SomeLinux -f file.dmp linux_ifconfig
+volatility --profile=SomeLinux -f file.dmp linux_netstat
+volatility --profile=SomeLinux -f file.dmp linux_netfilter
+volatility --profile=SomeLinux -f file.dmp linux_arp #ARP table
+volatility --profile=SomeLinux -f file.dmp linux_list_raw #Processes using promiscuous raw sockets (comm between processes)
+volatility --profile=SomeLinux -f file.dmp linux_route_cache
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="注册表蜂巢"><a class="header" href="#注册表蜂巢">注册表蜂巢</a></h2>
+<h3 id="打印可用的蜂巢"><a class="header" href="#打印可用的蜂巢">打印可用的蜂巢</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.registry.hivelist.HiveList #List roots
+./vol.py -f file.dmp windows.registry.printkey.PrintKey #List roots and get initial subkeys
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 -f file.dmp hivelist #List roots
+volatility --profile=Win7SP1x86_23418 -f file.dmp printkey #List roots and get initial subkeys
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="获取一个值"><a class="header" href="#获取一个值">获取一个值</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.registry.printkey.PrintKey --key "Software\Microsoft\Windows NT\CurrentVersion"
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 printkey -K "Software\Microsoft\Windows NT\CurrentVersion" -f file.dmp
+# Get Run binaries registry value
+volatility -f file.dmp --profile=Win7SP1x86 printkey -o 0x9670e9d0 -K 'Software\Microsoft\Windows\CurrentVersion\Run'
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="转储"><a class="header" href="#转储">转储</a></h3>
+<pre><code class="language-bash">#Dump a hive
+volatility --profile=Win7SP1x86_23418 hivedump -o 0x9aad6148 -f file.dmp #Offset extracted by hivelist
+#Dump all hives
+volatility --profile=Win7SP1x86_23418 hivedump -f file.dmp
+</code></pre>
+<h2 id="文件系统"><a class="header" href="#文件系统">文件系统</a></h2>
+<h3 id="挂载"><a class="header" href="#挂载">挂载</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">#See vol2
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=SomeLinux -f file.dmp linux_mount
+volatility --profile=SomeLinux -f file.dmp linux_recover_filesystem #Dump the entire filesystem (if possible)
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="扫描转储"><a class="header" href="#扫描转储">扫描/转储</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.filescan.FileScan #Scan for files inside the dump
+./vol.py -f file.dmp windows.dumpfiles.DumpFiles --physaddr &lt;0xAAAAA&gt; #Offset from previous command
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 filescan -f file.dmp #Scan for files inside the dump
+volatility --profile=Win7SP1x86_23418 dumpfiles -n --dump-dir=/tmp -f file.dmp #Dump all files
+volatility --profile=Win7SP1x86_23418 dumpfiles -n --dump-dir=/tmp -Q 0x000000007dcaa620 -f file.dmp
+
+volatility --profile=SomeLinux -f file.dmp linux_enumerate_files
+volatility --profile=SomeLinux -f file.dmp linux_find_file -F /path/to/file
+volatility --profile=SomeLinux -f file.dmp linux_find_file -i 0xINODENUMBER -O /path/to/dump/file
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="主文件表"><a class="header" href="#主文件表">主文件表</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash"># I couldn't find any plugin to extract this information in volatility3
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 mftparser -f file.dmp
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p><strong>NTFS文件系统</strong>使用一个称为_主文件表_（MFT）的关键组件。该表为卷上的每个文件至少包含一个条目，也包括MFT本身。关于每个文件的重要细节，如<strong>大小、时间戳、权限和实际数据</strong>，都封装在MFT条目中或在MFT外部但由这些条目引用的区域中。更多详细信息可以在<a href="https://docs.microsoft.com/en-us/windows/win32/fileio/master-file-table">官方文档</a>中找到。</p>
+<h3 id="ssl密钥证书"><a class="header" href="#ssl密钥证书">SSL密钥/证书</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">#vol3 allows to search for certificates inside the registry
+./vol.py -f file.dmp windows.registry.certificates.Certificates
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">#vol2 allos you to search and dump certificates from memory
+#Interesting options for this modules are: --pid, --name, --ssl
+volatility --profile=Win7SP1x86_23418 dumpcerts --dump-dir=. -f file.dmp
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="恶意软件"><a class="header" href="#恶意软件">恶意软件</a></h2>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.malfind.Malfind [--dump] #Find hidden and injected code, [dump each suspicious section]
+#Malfind will search for suspicious structures related to malware
+./vol.py -f file.dmp windows.driverirp.DriverIrp #Driver IRP hook detection
+./vol.py -f file.dmp windows.ssdt.SSDT #Check system call address from unexpected addresses
+
+./vol.py -f file.dmp linux.check_afinfo.Check_afinfo #Verifies the operation function pointers of network protocols
+./vol.py -f file.dmp linux.check_creds.Check_creds #Checks if any processes are sharing credential structures
+./vol.py -f file.dmp linux.check_idt.Check_idt #Checks if the IDT has been altered
+./vol.py -f file.dmp linux.check_syscall.Check_syscall #Check system call table for hooks
+./vol.py -f file.dmp linux.check_modules.Check_modules #Compares module list to sysfs info, if available
+./vol.py -f file.dmp linux.tty_check.tty_check #Checks tty devices for hooks
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 -f file.dmp malfind [-D /tmp] #Find hidden and injected code [dump each suspicious section]
+volatility --profile=Win7SP1x86_23418 -f file.dmp apihooks #Detect API hooks in process and kernel memory
+volatility --profile=Win7SP1x86_23418 -f file.dmp driverirp #Driver IRP hook detection
+volatility --profile=Win7SP1x86_23418 -f file.dmp ssdt #Check system call address from unexpected addresses
+
+volatility --profile=SomeLinux -f file.dmp linux_check_afinfo
+volatility --profile=SomeLinux -f file.dmp linux_check_creds
+volatility --profile=SomeLinux -f file.dmp linux_check_fop
+volatility --profile=SomeLinux -f file.dmp linux_check_idt
+volatility --profile=SomeLinux -f file.dmp linux_check_syscall
+volatility --profile=SomeLinux -f file.dmp linux_check_modules
+volatility --profile=SomeLinux -f file.dmp linux_check_tty
+volatility --profile=SomeLinux -f file.dmp linux_keyboard_notifiers #Keyloggers
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="使用-yara-扫描"><a class="header" href="#使用-yara-扫描">使用 yara 扫描</a></h3>
+<p>使用此脚本从 github 下载并合并所有 yara 恶意软件规则: <a href="https://gist.github.com/andreafortuna/29c6ea48adf3d45a979a78763cdc7ce9">https://gist.github.com/andreafortuna/29c6ea48adf3d45a979a78763cdc7ce9</a><br />
+创建 <em><strong>rules</strong></em> 目录并执行它。这将创建一个名为 <em><strong>malware_rules.yar</strong></em> 的文件，其中包含所有恶意软件的 yara 规则。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">wget https://gist.githubusercontent.com/andreafortuna/29c6ea48adf3d45a979a78763cdc7ce9/raw/4ec711d37f1b428b63bed1f786b26a0654aa2f31/malware_yara_rules.py
+mkdir rules
+python malware_yara_rules.py
+#Only Windows
+./vol.py -f file.dmp windows.vadyarascan.VadYaraScan --yara-file /tmp/malware_rules.yar
+#All
+./vol.py -f file.dmp yarascan.YaraScan --yara-file /tmp/malware_rules.yar
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">wget https://gist.githubusercontent.com/andreafortuna/29c6ea48adf3d45a979a78763cdc7ce9/raw/4ec711d37f1b428b63bed1f786b26a0654aa2f31/malware_yara_rules.py
+mkdir rules
+python malware_yara_rules.py
+volatility --profile=Win7SP1x86_23418 yarascan -y malware_rules.yar -f ch2.dmp | grep "Rule:" | grep -v "Str_Win32" | sort | uniq
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h2 id="misc"><a class="header" href="#misc">MISC</a></h2>
+<h3 id="外部插件"><a class="header" href="#外部插件">外部插件</a></h3>
+<p>如果您想使用外部插件，请确保与插件相关的文件夹是第一个使用的参数。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py --plugin-dirs "/tmp/plugins/" [...]
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatilitye --plugins="/tmp/plugins/" [...]
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h4 id="autoruns"><a class="header" href="#autoruns">Autoruns</a></h4>
+<p>从 <a href="https://github.com/tomchop/volatility-autoruns">https://github.com/tomchop/volatility-autoruns</a> 下载</p>
+<pre><code>volatility --plugins=volatility-autoruns/ --profile=WinXPSP2x86 -f file.dmp autoruns
+</code></pre>
+<h3 id="mutexes"><a class="header" href="#mutexes">Mutexes</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code>./vol.py -f file.dmp windows.mutantscan.MutantScan
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 mutantscan -f file.dmp
+volatility --profile=Win7SP1x86_23418 -f file.dmp handles -p &lt;PID&gt; -t mutant
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="符号链接"><a class="header" href="#符号链接">符号链接</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp windows.symlinkscan.SymlinkScan
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 -f file.dmp symlinkscan
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
+<p>可以<strong>从内存中读取bash历史记录。</strong> 你也可以转储_.bash_history_文件，但它已被禁用，你会很高兴可以使用这个volatility模块。</p>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code>./vol.py -f file.dmp linux.bash.Bash
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code>volatility --profile=Win7SP1x86_23418 -f file.dmp linux_bash
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="时间线"><a class="header" href="#时间线">时间线</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code class="language-bash">./vol.py -f file.dmp timeLiner.TimeLiner
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code>volatility --profile=Win7SP1x86_23418 -f timeliner
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="驱动程序"><a class="header" href="#驱动程序">驱动程序</a></h3>
+<p>{% tabs %}
+{% tab title="vol3" %}</p>
+<pre><code>./vol.py -f file.dmp windows.driverscan.DriverScan
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="vol2" %}</p>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 -f file.dmp driverscan
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="获取剪贴板"><a class="header" href="#获取剪贴板">获取剪贴板</a></h3>
+<pre><code class="language-bash">#Just vol2
+volatility --profile=Win7SP1x86_23418 clipboard -f file.dmp
+</code></pre>
+<h3 id="获取ie历史记录"><a class="header" href="#获取ie历史记录">获取IE历史记录</a></h3>
+<pre><code class="language-bash">#Just vol2
+volatility --profile=Win7SP1x86_23418 iehistory -f file.dmp
+</code></pre>
+<h3 id="获取记事本文本"><a class="header" href="#获取记事本文本">获取记事本文本</a></h3>
+<pre><code class="language-bash">#Just vol2
+volatility --profile=Win7SP1x86_23418 notepad -f file.dmp
+</code></pre>
+<h3 id="截图"><a class="header" href="#截图">截图</a></h3>
+<pre><code class="language-bash">#Just vol2
+volatility --profile=Win7SP1x86_23418 screenshot -f file.dmp
+</code></pre>
+<h3 id="主引导记录-mbr"><a class="header" href="#主引导记录-mbr">主引导记录 (MBR)</a></h3>
+<pre><code class="language-bash">volatility --profile=Win7SP1x86_23418 mbrparser -f file.dmp
+</code></pre>
+<p><strong>主引导记录 (MBR)</strong> 在管理存储介质的逻辑分区中发挥着至关重要的作用，这些分区采用不同的 <a href="https://en.wikipedia.org/wiki/File_system">文件系统</a> 进行结构化。它不仅包含分区布局信息，还包含作为引导加载程序的可执行代码。该引导加载程序要么直接启动操作系统的二阶段加载过程（参见 <a href="https://en.wikipedia.org/wiki/Second-stage_boot_loader">二阶段引导加载程序</a>），要么与每个分区的 <a href="https://en.wikipedia.org/wiki/Volume_boot_record">卷引导记录</a> (VBR) 协同工作。有关深入知识，请参阅 <a href="https://en.wikipedia.org/wiki/Master_boot_record">MBR 维基百科页面</a>。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://andreafortuna.org/2017/06/25/volatility-my-own-cheatsheet-part-1-image-identification/">https://andreafortuna.org/2017/06/25/volatility-my-own-cheatsheet-part-1-image-identification/</a></li>
+<li><a href="https://scudette.blogspot.com/2012/11/finding-kernel-debugger-block.html">https://scudette.blogspot.com/2012/11/finding-kernel-debugger-block.html</a></li>
+<li><a href="https://or10nlabs.tech/cgi-sys/suspendedpage.cgi">https://or10nlabs.tech/cgi-sys/suspendedpage.cgi</a></li>
+<li><a href="https://www.aldeid.com/wiki/Windows-userassist-keys">https://www.aldeid.com/wiki/Windows-userassist-keys</a> ​* <a href="https://learn.microsoft.com/en-us/windows/win32/fileio/master-file-table">https://learn.microsoft.com/en-us/windows/win32/fileio/master-file-table</a></li>
+<li><a href="https://answers.microsoft.com/en-us/windows/forum/all/uefi-based-pc-protective-mbr-what-is-it/0fc7b558-d8d4-4a7d-bae2-395455bb19aa">https://answers.microsoft.com/en-us/windows/forum/all/uefi-based-pc-protective-mbr-what-is-it/0fc7b558-d8d4-4a7d-bae2-395455bb19aa</a></li>
+</ul>
+<figure><img src="https://files.gitbook.com/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-L_2uGJGU7AVNRcqRvEi%2Fuploads%2FelPCTwoecVdnsfjxCZtN%2Fimage.png?alt=media&#x26;token=9ee4ff3e-92dc-471c-abfe-1c25e446a6ed" alt=""><figcaption></figcaption></figure>
+<p><a href="https://www.rootedcon.com/"><strong>RootedCON</strong></a> 是 <strong>西班牙</strong> 最相关的网络安全事件，也是 <strong>欧洲</strong> 最重要的事件之一。该大会 <strong>旨在促进技术知识</strong>，是各个学科的技术和网络安全专业人士的热烈交流平台。</p>
+<p>{% embed url="https://www.rootedcon.com/" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 渗透测试：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 渗透测试：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/memory-dump-analysis/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/memory-dump-analysis/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

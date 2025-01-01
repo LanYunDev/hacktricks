@@ -1,0 +1,411 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS GCD - Grand Central Dispatch</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-gcd---grand-central-dispatch"><a class="header" href="#macos-gcd---grand-central-dispatch">macOS GCD - Grand Central Dispatch</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="basic-information"><a class="header" href="#basic-information">Basic Information</a></h2>
+<p><strong>Grand Central Dispatch (GCD)</strong>，也称为<strong>libdispatch</strong>（<code>libdispatch.dyld</code>），在macOS和iOS中均可用。它是苹果公司开发的一项技术，旨在优化应用程序对多核硬件的并发（多线程）执行的支持。</p>
+<p><strong>GCD</strong>提供并管理<strong>FIFO队列</strong>，您的应用程序可以以<strong>块对象</strong>的形式<strong>提交任务</strong>。提交到调度队列的块将在系统完全管理的线程池上<strong>执行</strong>。GCD会自动创建线程以执行调度队列中的任务，并安排这些任务在可用核心上运行。</p>
+<p>{% hint style="success" %}
+总之，为了<strong>并行</strong>执行代码，进程可以将<strong>代码块发送到GCD</strong>，GCD将负责其执行。因此，进程不会创建新线程；<strong>GCD使用其自己的线程池执行给定的代码</strong>（线程池可能根据需要增加或减少）。
+{% endhint %}</p>
+<p>这对于成功管理并行执行非常有帮助，极大地减少了进程创建的线程数量，并优化了并行执行。这对于需要<strong>高度并行性</strong>（暴力破解？）的任务或不应阻塞主线程的任务是理想的：例如，iOS上的主线程处理UI交互，因此任何可能导致应用程序挂起的其他功能（搜索、访问网页、读取文件等）都是以这种方式管理的。</p>
+<h3 id="blocks"><a class="header" href="#blocks">Blocks</a></h3>
+<p>块是一个<strong>自包含的代码段</strong>（类似于带有参数返回值的函数），也可以指定绑定变量。<br />
+然而，在编译器级别，块并不存在，它们是<code>os_object</code>。每个这些对象由两个结构组成：</p>
+<ul>
+<li><strong>块字面量</strong>：</li>
+<li>它以**<code>isa</code>**字段开始，指向块的类：</li>
+<li><code>NSConcreteGlobalBlock</code>（来自<code>__DATA.__const</code>的块）</li>
+<li><code>NSConcreteMallocBlock</code>（堆中的块）</li>
+<li><code>NSConcreateStackBlock</code>（栈中的块）</li>
+<li>它具有**<code>flags</code>**（指示块描述符中存在的字段）和一些保留字节</li>
+<li>调用的函数指针</li>
+<li>指向块描述符的指针</li>
+<li>导入的块变量（如果有）</li>
+<li><strong>块描述符</strong>：其大小取决于存在的数据（如前面标志所示）</li>
+<li>它具有一些保留字节</li>
+<li>它的大小</li>
+<li>通常会有一个指向Objective-C风格签名的指针，以了解参数所需的空间（标志<code>BLOCK_HAS_SIGNATURE</code>）</li>
+<li>如果引用了变量，则此块还将具有指向复制助手（在开始时复制值）和处置助手（释放它）的指针。</li>
+</ul>
+<h3 id="queues"><a class="header" href="#queues">Queues</a></h3>
+<p>调度队列是一个命名对象，提供块的FIFO执行顺序。</p>
+<p>块被设置在队列中以供执行，这些队列支持两种模式：<code>DISPATCH_QUEUE_SERIAL</code>和<code>DISPATCH_QUEUE_CONCURRENT</code>。当然，<strong>串行</strong>队列<strong>不会有竞争条件</strong>问题，因为块不会在前一个块完成之前执行。但是<strong>另一种类型的队列可能会有</strong>。</p>
+<p>默认队列：</p>
+<ul>
+<li><code>.main-thread</code>：来自<code>dispatch_get_main_queue()</code></li>
+<li><code>.libdispatch-manager</code>：GCD的队列管理器</li>
+<li><code>.root.libdispatch-manager</code>：GCD的队列管理器</li>
+<li><code>.root.maintenance-qos</code>：最低优先级任务</li>
+<li><code>.root.maintenance-qos.overcommit</code></li>
+<li><code>.root.background-qos</code>：可用作<code>DISPATCH_QUEUE_PRIORITY_BACKGROUND</code></li>
+<li><code>.root.background-qos.overcommit</code></li>
+<li><code>.root.utility-qos</code>：可用作<code>DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE</code></li>
+<li><code>.root.utility-qos.overcommit</code></li>
+<li><code>.root.default-qos</code>：可用作<code>DISPATCH_QUEUE_PRIORITY_DEFAULT</code></li>
+<li><code>.root.background-qos.overcommit</code></li>
+<li><code>.root.user-initiated-qos</code>：可用作<code>DISPATCH_QUEUE_PRIORITY_HIGH</code></li>
+<li><code>.root.background-qos.overcommit</code></li>
+<li><code>.root.user-interactive-qos</code>：最高优先级</li>
+<li><code>.root.background-qos.overcommit</code></li>
+</ul>
+<p>请注意，系统将决定<strong>在每个时刻哪个线程处理哪个队列</strong>（多个线程可能在同一队列中工作，或者同一线程可能在某些时刻在不同队列中工作）</p>
+<h4 id="attributtes"><a class="header" href="#attributtes">Attributtes</a></h4>
+<p>使用**<code>dispatch_queue_create</code>**创建队列时，第三个参数是<code>dispatch_queue_attr_t</code>，通常是<code>DISPATCH_QUEUE_SERIAL</code>（实际上是NULL）或<code>DISPATCH_QUEUE_CONCURRENT</code>，它是指向<code>dispatch_queue_attr_t</code>结构的指针，允许控制队列的一些参数。</p>
+<h3 id="dispatch-objects"><a class="header" href="#dispatch-objects">Dispatch objects</a></h3>
+<p>libdispatch使用多个对象，队列和块只是其中两个。可以使用<code>dispatch_object_create</code>创建这些对象：</p>
+<ul>
+<li><code>block</code></li>
+<li><code>data</code>：数据块</li>
+<li><code>group</code>：块组</li>
+<li><code>io</code>：异步I/O请求</li>
+<li><code>mach</code>：Mach端口</li>
+<li><code>mach_msg</code>：Mach消息</li>
+<li><code>pthread_root_queue</code>：具有pthread线程池而不是工作队列的队列</li>
+<li><code>queue</code></li>
+<li><code>semaphore</code></li>
+<li><code>source</code>：事件源</li>
+</ul>
+<h2 id="objective-c"><a class="header" href="#objective-c">Objective-C</a></h2>
+<p>在Objective-C中，有不同的函数可以将块发送到并行执行：</p>
+<ul>
+<li><a href="https://developer.apple.com/documentation/dispatch/1453057-dispatch_async"><strong>dispatch_async</strong></a>：提交一个块以在调度队列上异步执行，并立即返回。</li>
+<li><a href="https://developer.apple.com/documentation/dispatch/1452870-dispatch_sync"><strong>dispatch_sync</strong></a>：提交一个块对象以执行，并在该块完成执行后返回。</li>
+<li><a href="https://developer.apple.com/documentation/dispatch/1447169-dispatch_once"><strong>dispatch_once</strong></a>：在应用程序的生命周期内仅执行一次块对象。</li>
+<li><a href="https://developer.apple.com/documentation/dispatch/3191901-dispatch_async_and_wait"><strong>dispatch_async_and_wait</strong></a>：提交一个工作项以执行，并仅在其完成执行后返回。与<a href="https://developer.apple.com/documentation/dispatch/1452870-dispatch_sync"><strong><code>dispatch_sync</code></strong></a>不同，此函数在执行块时尊重队列的所有属性。</li>
+</ul>
+<p>这些函数期望这些参数：<a href="https://developer.apple.com/documentation/dispatch/dispatch_queue_t"><strong><code>dispatch_queue_t</code></strong></a> <strong><code>queue,</code></strong> <a href="https://developer.apple.com/documentation/dispatch/dispatch_block_t"><strong><code>dispatch_block_t</code></strong></a> <strong><code>block</code></strong></p>
+<p>这是<strong>块的结构</strong>：</p>
+<pre><code class="language-c">struct Block {
+void *isa; // NSConcreteStackBlock,...
+int flags;
+int reserved;
+void *invoke;
+struct BlockDescriptor *descriptor;
+// captured variables go here
+};
+</code></pre>
+<p>这是一个使用 <strong>parallelism</strong> 和 <strong><code>dispatch_async</code></strong> 的示例：</p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+
+// Define a block
+void (^backgroundTask)(void) = ^{
+// Code to be executed in the background
+for (int i = 0; i &lt; 10; i++) {
+NSLog(@"Background task %d", i);
+sleep(1);  // Simulate a long-running task
+}
+};
+
+int main(int argc, const char * argv[]) {
+@autoreleasepool {
+// Create a dispatch queue
+dispatch_queue_t backgroundQueue = dispatch_queue_create("com.example.backgroundQueue", NULL);
+
+// Submit the block to the queue for asynchronous execution
+dispatch_async(backgroundQueue, backgroundTask);
+
+// Continue with other work on the main queue or thread
+for (int i = 0; i &lt; 10; i++) {
+NSLog(@"Main task %d", i);
+sleep(1);  // Simulate a long-running task
+}
+}
+return 0;
+}
+</code></pre>
+<h2 id="swift"><a class="header" href="#swift">Swift</a></h2>
+<p><strong><code>libswiftDispatch</code></strong> 是一个库，提供 <strong>Swift 绑定</strong> 到最初用 C 编写的 Grand Central Dispatch (GCD) 框架。<br />
+<strong><code>libswiftDispatch</code></strong> 库将 C GCD API 封装在一个更适合 Swift 的接口中，使 Swift 开发者更容易和直观地使用 GCD。</p>
+<ul>
+<li><strong><code>DispatchQueue.global().sync{ ... }</code></strong></li>
+<li><strong><code>DispatchQueue.global().async{ ... }</code></strong></li>
+<li><strong><code>let onceToken = DispatchOnce(); onceToken.perform { ... }</code></strong></li>
+<li><strong><code>async await</code></strong></li>
+<li><strong><code>var (data, response) = await URLSession.shared.data(from: URL(string: "https://api.example.com/getData"))</code></strong></li>
+</ul>
+<p><strong>代码示例</strong>:</p>
+<pre><code class="language-swift">import Foundation
+
+// Define a closure (the Swift equivalent of a block)
+let backgroundTask: () -&gt; Void = {
+for i in 0..&lt;10 {
+print("Background task \(i)")
+sleep(1)  // Simulate a long-running task
+}
+}
+
+// Entry point
+autoreleasepool {
+// Create a dispatch queue
+let backgroundQueue = DispatchQueue(label: "com.example.backgroundQueue")
+
+// Submit the closure to the queue for asynchronous execution
+backgroundQueue.async(execute: backgroundTask)
+
+// Continue with other work on the main queue
+for i in 0..&lt;10 {
+print("Main task \(i)")
+sleep(1)  // Simulate a long-running task
+}
+}
+</code></pre>
+<h2 id="frida"><a class="header" href="#frida">Frida</a></h2>
+<p>以下Frida脚本可用于**钩取多个<code>dispatch</code>**函数并提取队列名称、回溯和块：<a href="https://github.com/seemoo-lab/frida-scripts/blob/main/scripts/libdispatch.js"><strong>https://github.com/seemoo-lab/frida-scripts/blob/main/scripts/libdispatch.js</strong></a></p>
+<pre><code class="language-bash">frida -U &lt;prog_name&gt; -l libdispatch.js
+
+dispatch_sync
+Calling queue: com.apple.UIKit._UIReusePool.reuseSetAccess
+Callback function: 0x19e3a6488 UIKitCore!__26-[_UIReusePool addObject:]_block_invoke
+Backtrace:
+0x19e3a6460 UIKitCore!-[_UIReusePool addObject:]
+0x19e3a5db8 UIKitCore!-[UIGraphicsRenderer _enqueueContextForReuse:]
+0x19e3a57fc UIKitCore!+[UIGraphicsRenderer _destroyCGContext:withRenderer:]
+[...]
+</code></pre>
+<h2 id="ghidra"><a class="header" href="#ghidra">Ghidra</a></h2>
+<p>目前 Ghidra 既不理解 ObjectiveC <strong><code>dispatch_block_t</code></strong> 结构，也不理解 <strong><code>swift_dispatch_block</code></strong> 结构。</p>
+<p>所以如果你想让它理解这些结构，你可以<strong>声明它们</strong>：</p>
+<figure><img src="../../.gitbook/assets/image (1160).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1162).png" alt="" width="563"><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1163).png" alt="" width="563"><figcaption></figcaption></figure>
+<p>然后，找到代码中<strong>使用</strong>它们的地方：</p>
+<p>{% hint style="success" %}
+注意所有提到“block”的引用，以了解你如何能够判断该结构正在被使用。
+{% endhint %}</p>
+<figure><img src="../../.gitbook/assets/image (1164).png" alt="" width="563"><figcaption></figcaption></figure>
+<p>右键单击变量 -&gt; 重新定义变量，并在这种情况下选择 <strong><code>swift_dispatch_block</code></strong>：</p>
+<figure><img src="../../.gitbook/assets/image (1165).png" alt="" width="563"><figcaption></figcaption></figure>
+<p>Ghidra 将自动重写所有内容：</p>
+<figure><img src="../../.gitbook/assets/image (1166).png" alt="" width="563"><figcaption></figcaption></figure>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://www.amazon.com/MacOS-iOS-Internals-User-Mode/dp/099105556X"><strong>*OS Internals, Volume I: User Mode. By Jonathan Levin</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../macos-hardening/macos-security-and-privilege-escalation/macos-defensive-apps.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../macos-hardening/macos-security-and-privilege-escalation/mac-os-architecture/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../macos-hardening/macos-security-and-privilege-escalation/macos-defensive-apps.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../macos-hardening/macos-security-and-privilege-escalation/mac-os-architecture/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

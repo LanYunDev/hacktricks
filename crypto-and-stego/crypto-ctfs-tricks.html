@@ -1,0 +1,472 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Crypto CTFs Tricks</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="crypto-ctfs-tricks"><a class="header" href="#crypto-ctfs-tricks">Crypto CTFs Tricks</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="在线哈希数据库"><a class="header" href="#在线哈希数据库">在线哈希数据库</a></h2>
+<ul>
+<li><em><strong>谷歌一下</strong></em></li>
+<li><a href="http://hashtoolkit.com/reverse-hash?hash=4d186321c1a7f0f354b297e8914ab240">http://hashtoolkit.com/reverse-hash?hash=4d186321c1a7f0f354b297e8914ab240</a></li>
+<li><a href="https://www.onlinehashcrack.com">https://www.onlinehashcrack.com/</a></li>
+<li><a href="https://crackstation.net">https://crackstation.net/</a></li>
+<li><a href="https://md5decrypt.net">https://md5decrypt.net/</a></li>
+<li><a href="https://www.onlinehashcrack.com">https://www.onlinehashcrack.com</a></li>
+<li><a href="https://gpuhash.me">https://gpuhash.me/</a></li>
+<li><a href="https://hashes.org/search.php">https://hashes.org/search.php</a></li>
+<li><a href="https://www.cmd5.org">https://www.cmd5.org/</a></li>
+<li><a href="https://hashkiller.co.uk/Cracker/MD5">https://hashkiller.co.uk/Cracker/MD5</a></li>
+<li><a href="https://www.md5online.org/md5-decrypt.html">https://www.md5online.org/md5-decrypt.html</a></li>
+</ul>
+<h2 id="魔法自动解码器"><a class="header" href="#魔法自动解码器">魔法自动解码器</a></h2>
+<ul>
+<li><a href="https://github.com/Ciphey/Ciphey"><strong>https://github.com/Ciphey/Ciphey</strong></a></li>
+<li><a href="https://gchq.github.io/CyberChef/">https://gchq.github.io/CyberChef/</a> (魔法模块)</li>
+<li><a href="https://github.com/dhondta/python-codext">https://github.com/dhondta/python-codext</a></li>
+<li><a href="https://www.boxentriq.com/code-breaking">https://www.boxentriq.com/code-breaking</a></li>
+</ul>
+<h2 id="编码器"><a class="header" href="#编码器">编码器</a></h2>
+<p>大多数编码数据可以通过这两个资源解码：</p>
+<ul>
+<li><a href="https://www.dcode.fr/tools-list">https://www.dcode.fr/tools-list</a></li>
+<li><a href="https://gchq.github.io/CyberChef/">https://gchq.github.io/CyberChef/</a></li>
+</ul>
+<h3 id="替换自动解码器"><a class="header" href="#替换自动解码器">替换自动解码器</a></h3>
+<ul>
+<li><a href="https://www.boxentriq.com/code-breaking/cryptogram">https://www.boxentriq.com/code-breaking/cryptogram</a></li>
+<li><a href="https://quipqiup.com">https://quipqiup.com/</a> - 非常好！</li>
+</ul>
+<h4 id="凯撒---rotx-自动解码器"><a class="header" href="#凯撒---rotx-自动解码器">凯撒 - ROTx 自动解码器</a></h4>
+<ul>
+<li><a href="https://www.nayuki.io/page/automatic-caesar-cipher-breaker-javascript">https://www.nayuki.io/page/automatic-caesar-cipher-breaker-javascript</a></li>
+</ul>
+<h4 id="atbash-密码"><a class="header" href="#atbash-密码">Atbash 密码</a></h4>
+<ul>
+<li><a href="http://rumkin.com/tools/cipher/atbash.php">http://rumkin.com/tools/cipher/atbash.php</a></li>
+</ul>
+<h3 id="基础编码自动解码器"><a class="header" href="#基础编码自动解码器">基础编码自动解码器</a></h3>
+<p>使用以下链接检查所有这些基础：<a href="https://github.com/dhondta/python-codext">https://github.com/dhondta/python-codext</a></p>
+<ul>
+<li><strong>Ascii85</strong></li>
+<li><code>BQ%]q@psCd@rH0l</code></li>
+<li><strong>Base26</strong> [<em>A-Z</em>]</li>
+<li><code>BQEKGAHRJKHQMVZGKUXNT</code></li>
+<li><strong>Base32</strong> [<em>A-Z2-7=</em>]</li>
+<li><code>NBXWYYLDMFZGCY3PNRQQ====</code></li>
+<li><strong>Zbase32</strong> [<em>ybndrfg8ejkmcpqxot1uwisza345h769</em>]</li>
+<li><code>pbzsaamdcf3gna5xptoo====</code></li>
+<li><strong>Base32 Geohash</strong> [<em>0-9b-hjkmnp-z</em>]</li>
+<li><code>e1rqssc3d5t62svgejhh====</code></li>
+<li><strong>Base32 Crockford</strong> [<em>0-9A-HJKMNP-TV-Z</em>]</li>
+<li><code>D1QPRRB3C5S62RVFDHGG====</code></li>
+<li><strong>Base32 Extended Hexadecimal</strong> [<em>0-9A-V</em>]</li>
+<li><code>D1NMOOB3C5P62ORFDHGG====</code></li>
+<li><strong>Base45</strong> [<em>0-9A-Z $%*+-./:</em>]</li>
+<li><code>59DPVDGPCVKEUPCPVD</code></li>
+<li><strong>Base58 (bitcoin)</strong> [<em>1-9A-HJ-NP-Za-km-z</em>]</li>
+<li><code>2yJiRg5BF9gmsU6AC</code></li>
+<li><strong>Base58 (flickr)</strong> [<em>1-9a-km-zA-HJ-NP-Z</em>]</li>
+<li><code>2YiHqF5bf9FLSt6ac</code></li>
+<li><strong>Base58 (ripple)</strong> [<em>rpshnaf39wBUDNEGHJKLM4PQ-T7V-Z2b-eCg65jkm8oFqi1tuvAxyz</em>]</li>
+<li><code>pyJ5RgnBE9gm17awU</code></li>
+<li><strong>Base62</strong> [<em>0-9A-Za-z</em>]</li>
+<li><code>g2AextRZpBKRBzQ9</code></li>
+<li><strong>Base64</strong> [<em>A-Za-z0-9+/=</em>]</li>
+<li><code>aG9sYWNhcmFjb2xh</code></li>
+<li><strong>Base67</strong> [<em>A-Za-z0-9-</em>.!~_]</li>
+<li><code>NI9JKX0cSUdqhr!p</code></li>
+<li><strong>Base85 (Ascii85)</strong> [<em>!"#$%&amp;'()*+,-./0-9:;&lt;=&gt;?@A-Z[\]^_`a-u</em>]</li>
+<li><code>BQ%]q@psCd@rH0l</code></li>
+<li><strong>Base85 (Adobe)</strong> [<em>!"#$%&amp;'()*+,-./0-9:;&lt;=&gt;?@A-Z[\]^_`a-u</em>]</li>
+<li><code>&lt;~BQ%]q@psCd@rH0l~&gt;</code></li>
+<li><strong>Base85 (IPv6 or RFC1924)</strong> [<em>0-9A-Za-z!#$%&amp;()*+-;&lt;=&gt;?@^</em>`{|}~_]</li>
+<li><code>Xm4y</code>V_|Y(V{dF&gt;`</li>
+<li><strong>Base85 (xbtoa)</strong> [<em>!"#$%&amp;'()*+,-./0-9:;&lt;=&gt;?@A-Z[\]^_`a-u</em>]</li>
+<li><code>xbtoa Begin\nBQ%]q@psCd@rH0l\nxbtoa End N 12 c E 1a S 4e6 R 6991d</code></li>
+<li><strong>Base85 (XML)</strong> [<em>0-9A-Za-y!#$()*+,-./:;=?@^`{|}~z_</em>]</li>
+<li><code>Xm4y|V{~Y+V}dF?</code></li>
+<li><strong>Base91</strong> [<em>A-Za-z0-9!#$%&amp;()*+,./:;&lt;=&gt;?@[]^_`{|}~"</em>]</li>
+<li><code>frDg[*jNN!7&amp;BQM</code></li>
+<li><strong>Base100</strong> []</li>
+<li><code>👟👦👣👘👚👘👩👘👚👦👣👘</code></li>
+<li><strong>Base122</strong> []</li>
+<li><code>4F ˂r0Xmvc</code></li>
+<li><strong>ATOM-128</strong> [<em>/128GhIoPQROSTeUbADfgHijKLM+n0pFWXY456xyzB7=39VaqrstJklmNuZvwcdEC</em>]</li>
+<li><code>MIc3KiXa+Ihz+lrXMIc3KbCC</code></li>
+<li><strong>HAZZ15</strong> [<em>HNO4klm6ij9n+J2hyf0gzA8uvwDEq3X1Q7ZKeFrWcVTts/MRGYbdxSo=ILaUpPBC5</em>]</li>
+<li><code>DmPsv8J7qrlKEoY7</code></li>
+<li><strong>MEGAN35</strong> [<em>3G-Ub=c-pW-Z/12+406-9Vaq-zA-F5</em>]</li>
+<li><code>kLD8iwKsigSalLJ5</code></li>
+<li><strong>ZONG22</strong> [<em>ZKj9n+yf0wDVX1s/5YbdxSo=ILaUpPBCHg8uvNO4klm6iJGhQ7eFrWczAMEq3RTt2</em>]</li>
+<li><code>ayRiIo1gpO+uUc7g</code></li>
+<li><strong>ESAB46</strong> []</li>
+<li><code>3sHcL2NR8WrT7mhR</code></li>
+<li><strong>MEGAN45</strong> []</li>
+<li><code>kLD8igSXm2KZlwrX</code></li>
+<li><strong>TIGO3FX</strong> []</li>
+<li><code>7AP9mIzdmltYmIP9mWXX</code></li>
+<li><strong>TRIPO5</strong> []</li>
+<li><code>UE9vSbnBW6psVzxB</code></li>
+<li><strong>FERON74</strong> []</li>
+<li><code>PbGkNudxCzaKBm0x</code></li>
+<li><strong>GILA7</strong> []</li>
+<li><code>D+nkv8C1qIKMErY1</code></li>
+<li><strong>Citrix CTX1</strong> []</li>
+<li><code>MNGIKCAHMOGLKPAKMMGJKNAINPHKLOBLNNHILCBHNOHLLPBK</code></li>
+</ul>
+<p><a href="http://k4.cba.pl/dw/crypo/tools/eng_atom128c.html">http://k4.cba.pl/dw/crypo/tools/eng_atom128c.html</a> - 404 死链: <a href="https://web.archive.org/web/20190228181208/http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html">https://web.archive.org/web/20190228181208/http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html</a></p>
+<h3 id="hackerizexs-Λ"><a class="header" href="#hackerizexs-Λ">HackerizeXS [<em>╫Λ↻├☰┏</em>]</a></h3>
+<pre><code>╫☐↑Λ↻Λ┏Λ↻☐↑Λ
+</code></pre>
+<ul>
+<li><a href="http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html">http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html</a> - 404 死链接: <a href="https://web.archive.org/web/20190228181208/http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html">https://web.archive.org/web/20190228181208/http://k4.cba.pl/dw/crypo/tools/eng_hackerize.html</a></li>
+</ul>
+<h3 id="摩尔斯"><a class="header" href="#摩尔斯">摩尔斯</a></h3>
+<pre><code>.... --- .-.. -.-. .- .-. .- -.-. --- .-.. .-
+</code></pre>
+<ul>
+<li><a href="http://k4.cba.pl/dw/crypo/tools/eng_morse-encode.html">http://k4.cba.pl/dw/crypo/tools/eng_morse-encode.html</a> - 404 死链接: <a href="https://gchq.github.io/CyberChef/">https://gchq.github.io/CyberChef/</a></li>
+</ul>
+<h3 id="uu编码器"><a class="header" href="#uu编码器">UU编码器</a></h3>
+<pre><code>begin 644 webutils_pl
+M2$],04A/3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/3$%(
+M3TQ!2$],04A/3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/
+F3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/3$%(3TQ!2$],04A/3$$`
+`
+end
+</code></pre>
+<ul>
+<li><a href="http://www.webutils.pl/index.php?idx=uu">http://www.webutils.pl/index.php?idx=uu</a></li>
+</ul>
+<h3 id="xxencoder"><a class="header" href="#xxencoder">XXEncoder</a></h3>
+<pre><code>begin 644 webutils_pl
+hG2xAEIVDH236Hol-G2xAEIVDH236Hol-G2xAEIVDH236Hol-G2xAEIVDH236
+5Hol-G2xAEE++
+end
+</code></pre>
+<ul>
+<li><a href="https://github.com/carlospolop/hacktricks/tree/bf578e4c5a955b4f6cdbe67eb4a543e16a3f848d/crypto/www.webutils.pl/index.php?idx=xx">www.webutils.pl/index.php?idx=xx</a></li>
+</ul>
+<h3 id="yencoder"><a class="header" href="#yencoder">YEncoder</a></h3>
+<pre><code>=ybegin line=128 size=28 name=webutils_pl
+ryvkryvkryvkryvkryvkryvkryvk
+=yend size=28 crc32=35834c86
+</code></pre>
+<ul>
+<li><a href="http://www.webutils.pl/index.php?idx=yenc">http://www.webutils.pl/index.php?idx=yenc</a></li>
+</ul>
+<h3 id="binhex"><a class="header" href="#binhex">BinHex</a></h3>
+<pre><code>(This file must be converted with BinHex 4.0)
+:#hGPBR9dD@acAh"X!$mr2cmr2cmr!!!!!!!8!!!!!-ka5%p-38K26%&amp;)6da"5%p
+-38K26%'d9J!!:
+</code></pre>
+<ul>
+<li><a href="http://www.webutils.pl/index.php?idx=binhex">http://www.webutils.pl/index.php?idx=binhex</a></li>
+</ul>
+<h3 id="ascii85"><a class="header" href="#ascii85">ASCII85</a></h3>
+<pre><code>&lt;~85DoF85DoF85DoF85DoF85DoF85DoF~&gt;
+</code></pre>
+<ul>
+<li><a href="http://www.webutils.pl/index.php?idx=ascii85">http://www.webutils.pl/index.php?idx=ascii85</a></li>
+</ul>
+<h3 id="dvorak-键盘"><a class="header" href="#dvorak-键盘">Dvorak 键盘</a></h3>
+<pre><code>drnajapajrna
+</code></pre>
+<ul>
+<li><a href="https://www.geocachingtoolbox.com/index.php?lang=en&amp;page=dvorakKeyboard">https://www.geocachingtoolbox.com/index.php?lang=en&amp;page=dvorakKeyboard</a></li>
+</ul>
+<h3 id="a1z26"><a class="header" href="#a1z26">A1Z26</a></h3>
+<p>字母对应其数字值</p>
+<pre><code>8 15 12 1 3 1 18 1 3 15 12 1
+</code></pre>
+<h3 id="affine-cipher-encode"><a class="header" href="#affine-cipher-encode">Affine Cipher Encode</a></h3>
+<p>字母到数字 <code>(ax+b)%26</code> (<em>a</em> 和 <em>b</em> 是密钥，<em>x</em> 是字母) 并将结果转换回字母</p>
+<pre><code>krodfdudfrod
+</code></pre>
+<h3 id="sms-code"><a class="header" href="#sms-code">SMS Code</a></h3>
+<p><strong>Multitap</strong> <a href="https://www.dcode.fr/word-letter-change">通过重复数字</a> 替换字母，这些数字由手机 <a href="https://www.dcode.fr/phone-keypad-cipher">键盘</a> 上对应的键码定义（此模式在编写 SMS 时使用）。<br />
+例如：2=A，22=B，222=C，3=D...<br />
+您可以通过看到** 多个数字重复** 来识别此代码。</p>
+<p>您可以在以下网址解码此代码：<a href="https://www.dcode.fr/multitap-abc-cipher">https://www.dcode.fr/multitap-abc-cipher</a></p>
+<h3 id="bacon-code"><a class="header" href="#bacon-code">Bacon Code</a></h3>
+<p>将每个字母替换为 4 个 A 或 B（或 1 和 0）</p>
+<pre><code>00111 01101 01010 00000 00010 00000 10000 00000 00010 01101 01010 00000
+AABBB ABBAB ABABA AAAAA AAABA AAAAA BAAAA AAAAA AAABA ABBAB ABABA AAAAA
+</code></pre>
+<h3 id="符文"><a class="header" href="#符文">符文</a></h3>
+<p><img src="../.gitbook/assets/runes.jpg" alt="" /></p>
+<h2 id="压缩"><a class="header" href="#压缩">压缩</a></h2>
+<p><strong>原始压缩</strong> 和 <strong>原始解压</strong>（你可以在 Cyberchef 中找到这两者）可以在没有头部的情况下压缩和解压数据。</p>
+<h2 id="简易加密"><a class="header" href="#简易加密">简易加密</a></h2>
+<h3 id="异或---自动解密器"><a class="header" href="#异或---自动解密器">异或 - 自动解密器</a></h3>
+<ul>
+<li><a href="https://wiremask.eu/tools/xor-cracker/">https://wiremask.eu/tools/xor-cracker/</a></li>
+</ul>
+<h3 id="双重密钥"><a class="header" href="#双重密钥">双重密钥</a></h3>
+<p>需要一个关键字</p>
+<pre><code>fgaargaamnlunesuneoa
+</code></pre>
+<h3 id="vigenere"><a class="header" href="#vigenere">Vigenere</a></h3>
+<p>需要一个关键词</p>
+<pre><code>wodsyoidrods
+</code></pre>
+<ul>
+<li><a href="https://www.guballa.de/vigenere-solver">https://www.guballa.de/vigenere-solver</a></li>
+<li><a href="https://www.dcode.fr/vigenere-cipher">https://www.dcode.fr/vigenere-cipher</a></li>
+<li><a href="https://www.mygeocachingprofile.com/codebreaker.vigenerecipher.aspx">https://www.mygeocachingprofile.com/codebreaker.vigenerecipher.aspx</a></li>
+</ul>
+<h2 id="强加密"><a class="header" href="#强加密">强加密</a></h2>
+<h3 id="fernet"><a class="header" href="#fernet">Fernet</a></h3>
+<p>2 个 base64 字符串（令牌和密钥）</p>
+<pre><code>Token:
+gAAAAABWC9P7-9RsxTz_dwxh9-O2VUB7Ih8UCQL1_Zk4suxnkCvb26Ie4i8HSUJ4caHZuiNtjLl3qfmCv_fS3_VpjL7HxCz7_Q==
+
+Key:
+-s6eI5hyNh8liH7Gq0urPC-vzPgNnxauKvRO4g03oYI=
+</code></pre>
+<ul>
+<li><a href="https://asecuritysite.com/encryption/ferdecode">https://asecuritysite.com/encryption/ferdecode</a></li>
+</ul>
+<h3 id="samir-秘密共享"><a class="header" href="#samir-秘密共享">Samir 秘密共享</a></h3>
+<p>一个秘密被分成 X 部分，要恢复它需要 Y 部分 (<em>Y &lt;=X</em>)。</p>
+<pre><code>8019f8fa5879aa3e07858d08308dc1a8b45
+80223035713295bddf0b0bd1b10a5340b89
+803bc8cf294b3f83d88e86d9818792e80cd
+</code></pre>
+<p><a href="http://christian.gen.co/secrets/">http://christian.gen.co/secrets/</a></p>
+<h3 id="openssl-暴力破解"><a class="header" href="#openssl-暴力破解">OpenSSL 暴力破解</a></h3>
+<ul>
+<li><a href="https://github.com/glv2/bruteforce-salted-openssl">https://github.com/glv2/bruteforce-salted-openssl</a></li>
+<li><a href="https://github.com/carlospolop/easy_BFopensslCTF">https://github.com/carlospolop/easy_BFopensslCTF</a></li>
+</ul>
+<h2 id="工具"><a class="header" href="#工具">工具</a></h2>
+<ul>
+<li><a href="https://github.com/Ganapati/RsaCtfTool">https://github.com/Ganapati/RsaCtfTool</a></li>
+<li><a href="https://github.com/lockedbyte/cryptovenom">https://github.com/lockedbyte/cryptovenom</a></li>
+<li><a href="https://github.com/nccgroup/featherduster">https://github.com/nccgroup/featherduster</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../crypto-and-stego/cipher-block-chaining-cbc-mac-priv.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../crypto-and-stego/electronic-code-book-ecb.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../crypto-and-stego/cipher-block-chaining-cbc-mac-priv.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../crypto-and-stego/electronic-code-book-ecb.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

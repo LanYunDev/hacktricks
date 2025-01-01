@@ -1,0 +1,462 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Checklist - Linux Privilege Escalation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="检查清单---linux-权限提升"><a class="header" href="#检查清单---linux-权限提升">检查清单 - Linux 权限提升</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过提交 PR 分享黑客技巧到</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<p>加入 <a href="https://discord.com/invite/N3FrSbmwdy"><strong>HackenProof Discord</strong></a> 服务器，与经验丰富的黑客和漏洞赏金猎人交流！</p>
+<p><strong>黑客见解</strong><br />
+参与深入探讨黑客的刺激与挑战的内容</p>
+<p><strong>实时黑客新闻</strong><br />
+通过实时新闻和见解，跟上快速变化的黑客世界</p>
+<p><strong>最新公告</strong><br />
+了解最新的漏洞赏金计划和重要平台更新</p>
+<p><strong>加入我们</strong> <a href="https://discord.com/invite/N3FrSbmwdy"><strong>Discord</strong></a>，今天就开始与顶级黑客合作吧！</p>
+<h3 id="查找-linux-本地权限提升向量的最佳工具-linpeas"><a class="header" href="#查找-linux-本地权限提升向量的最佳工具-linpeas"><strong>查找 Linux 本地权限提升向量的最佳工具：</strong> <a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/linPEAS"><strong>LinPEAS</strong></a></a></h3>
+<h3 id="系统信息"><a class="header" href="#系统信息"><a href="privilege-escalation/#system-information">系统信息</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+获取 <strong>操作系统信息</strong></li>
+<li><input disabled="" type="checkbox"/>
+检查 <a href="privilege-escalation/#path"><strong>PATH</strong></a>，是否有 <strong>可写文件夹</strong>？</li>
+<li><input disabled="" type="checkbox"/>
+检查 <a href="privilege-escalation/#env-info"><strong>环境变量</strong></a>，是否有敏感信息？</li>
+<li><input disabled="" type="checkbox"/>
+使用脚本搜索 <a href="privilege-escalation/#kernel-exploits"><strong>内核漏洞</strong></a>（DirtyCow？）</li>
+<li><input disabled="" type="checkbox"/>
+<strong>检查</strong> <a href="privilege-escalation/#sudo-version"><strong>sudo 版本是否存在漏洞</strong></a></li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#dmesg-signature-verification-failed"><strong>Dmesg</strong> 签名验证失败</a></li>
+<li><input disabled="" type="checkbox"/>
+更多系统枚举（<a href="privilege-escalation/#more-system-enumeration">日期，系统统计，CPU 信息，打印机</a>）</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#enumerate-possible-defenses">枚举更多防御措施</a></li>
+</ul>
+<h3 id="驱动器"><a class="header" href="#驱动器"><a href="privilege-escalation/#drives">驱动器</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>列出已挂载</strong> 驱动器</li>
+<li><input disabled="" type="checkbox"/>
+<strong>有未挂载的驱动器吗？</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>fstab 中有任何凭据吗？</strong></li>
+</ul>
+<h3 id="已安装软件"><a class="header" href="#已安装软件"><a href="privilege-escalation/#installed-software"><strong>已安装软件</strong></a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>检查是否有</strong> <a href="privilege-escalation/#useful-software"><strong>有用的软件</strong></a> <strong>已安装</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>检查是否有</strong> <a href="privilege-escalation/#vulnerable-software-installed"><strong>易受攻击的软件</strong></a> <strong>已安装</strong></li>
+</ul>
+<h3 id="进程"><a class="header" href="#进程"><a href="privilege-escalation/#processes">进程</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+是否有 <strong>未知软件在运行</strong>？</li>
+<li><input disabled="" type="checkbox"/>
+是否有软件以 <strong>超出其应有的权限</strong> 运行？</li>
+<li><input disabled="" type="checkbox"/>
+搜索 <strong>正在运行进程的漏洞</strong>（特别是正在运行的版本）。</li>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>修改任何正在运行进程的二进制文件</strong> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>监控进程</strong>，检查是否有任何有趣的进程频繁运行。</li>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>读取</strong> 一些有趣的 <strong>进程内存</strong>（可能保存密码的地方）吗？</li>
+</ul>
+<h3 id="计划任务cron-任务"><a class="header" href="#计划任务cron-任务"><a href="privilege-escalation/#scheduled-jobs">计划任务/Cron 任务？</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#cron-path"><strong>PATH</strong></a> 是否被某些 cron 修改，你能 <strong>写入</strong> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+cron 任务中有任何 <a href="privilege-escalation/#cron-using-a-script-with-a-wildcard-wildcard-injection"><strong>通配符</strong></a> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+是否有某个 <a href="privilege-escalation/#cron-script-overwriting-and-symlink"><strong>可修改的脚本</strong></a> 被 <strong>执行</strong> 或在 <strong>可修改文件夹</strong> 中？</li>
+<li><input disabled="" type="checkbox"/>
+你是否检测到某个 <strong>脚本</strong> 可能或正在被 <a href="privilege-escalation/#frequent-cron-jobs"><strong>频繁执行</strong></a>？（每 1、2 或 5 分钟）</li>
+</ul>
+<h3 id="服务"><a class="header" href="#服务"><a href="privilege-escalation/#services">服务</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+有任何 <strong>可写的 .service</strong> 文件吗？</li>
+<li><input disabled="" type="checkbox"/>
+有任何 <strong>可写的二进制文件</strong> 被 <strong>服务</strong> 执行吗？</li>
+<li><input disabled="" type="checkbox"/>
+在 systemd PATH 中有任何 <strong>可写文件夹</strong> 吗？</li>
+</ul>
+<h3 id="定时器"><a class="header" href="#定时器"><a href="privilege-escalation/#timers">定时器</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+有任何 <strong>可写的定时器</strong> 吗？</li>
+</ul>
+<h3 id="套接字"><a class="header" href="#套接字"><a href="privilege-escalation/#sockets">套接字</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+有任何 <strong>可写的 .socket</strong> 文件吗？</li>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>与任何套接字通信</strong> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>HTTP 套接字</strong> 中有有趣的信息吗？</li>
+</ul>
+<h3 id="d-bus"><a class="header" href="#d-bus"><a href="privilege-escalation/#d-bus">D-Bus</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>与任何 D-Bus 通信</strong> 吗？</li>
+</ul>
+<h3 id="网络"><a class="header" href="#网络"><a href="privilege-escalation/#network">网络</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+枚举网络以了解你的位置</li>
+<li><input disabled="" type="checkbox"/>
+<strong>打开的端口你之前无法访问</strong>，现在可以在机器内部访问吗？</li>
+<li><input disabled="" type="checkbox"/>
+你能使用 <code>tcpdump</code> <strong>嗅探流量</strong> 吗？</li>
+</ul>
+<h3 id="用户"><a class="header" href="#用户"><a href="privilege-escalation/#users">用户</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+通用用户/组 <strong>枚举</strong></li>
+<li><input disabled="" type="checkbox"/>
+你有一个 <strong>非常大的 UID</strong> 吗？机器 <strong>是否存在漏洞</strong>？</li>
+<li><input disabled="" type="checkbox"/>
+你能 <a href="privilege-escalation/interesting-groups-linux-pe/"><strong>通过你所属的组提升权限</strong></a> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>剪贴板</strong> 数据？</li>
+<li><input disabled="" type="checkbox"/>
+密码策略？</li>
+<li><input disabled="" type="checkbox"/>
+尝试 <strong>使用</strong> 你之前发现的每个 <strong>已知密码</strong> 登录 <strong>每个</strong> 可能的 <strong>用户</strong>。尝试不带密码登录。</li>
+</ul>
+<h3 id="可写-path"><a class="header" href="#可写-path"><a href="privilege-escalation/#writable-path-abuses">可写 PATH</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+如果你对 <strong>PATH 中的某个文件夹有写权限</strong>，你可能能够提升权限</li>
+</ul>
+<h3 id="sudo-和-suid-命令"><a class="header" href="#sudo-和-suid-命令"><a href="privilege-escalation/#sudo-and-suid">SUDO 和 SUID 命令</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+你能执行 <strong>任何带 sudo 的命令</strong> 吗？你能用它来读取、写入或以 root 身份执行任何东西吗？（<a href="https://gtfobins.github.io"><strong>GTFOBins</strong></a>）</li>
+<li><input disabled="" type="checkbox"/>
+是否有任何 <strong>可利用的 SUID 二进制文件</strong>？（<a href="https://gtfobins.github.io"><strong>GTFOBins</strong></a>）</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#sudo-execution-bypassing-paths"><strong>sudo</strong> 命令是否 <strong>受限于路径</strong>？你能 <strong>绕过</strong> 限制吗</a>？</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#sudo-command-suid-binary-without-command-path"><strong>没有指定路径的 Sudo/SUID 二进制文件</strong></a>？</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#suid-binary-with-command-path"><strong>指定路径的 SUID 二进制文件</strong></a>？绕过</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#ld_preload"><strong>LD_PRELOAD 漏洞</strong></a></li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#suid-binary-so-injection"><strong>SUID 二进制文件中缺少 .so 库</strong></a> 来自可写文件夹？</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#reusing-sudo-tokens"><strong>可用的 SUDO 令牌</strong></a>？<a href="privilege-escalation/#var-run-sudo-ts-less-than-username-greater-than"><strong>你能创建 SUDO 令牌吗</strong></a>？</li>
+<li><input disabled="" type="checkbox"/>
+你能 <a href="privilege-escalation/#etc-sudoers-etc-sudoers-d"><strong>读取或修改 sudoers 文件</strong></a> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+你能 <a href="privilege-escalation/#etc-ld-so-conf-d"><strong>修改 /etc/ld.so.conf.d/</strong></a> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#doas"><strong>OpenBSD DOAS</strong></a> 命令</li>
+</ul>
+<h3 id="能力"><a class="header" href="#能力"><a href="privilege-escalation/#capabilities">能力</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+是否有任何二进制文件具有 <strong>意外的能力</strong>？</li>
+</ul>
+<h3 id="acls"><a class="header" href="#acls"><a href="privilege-escalation/#acls">ACLs</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+是否有任何文件具有 <strong>意外的 ACL</strong>？</li>
+</ul>
+<h3 id="开放的-shell-会话"><a class="header" href="#开放的-shell-会话"><a href="privilege-escalation/#open-shell-sessions">开放的 Shell 会话</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>screen</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>tmux</strong></li>
+</ul>
+<h3 id="ssh"><a class="header" href="#ssh"><a href="privilege-escalation/#ssh">SSH</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>Debian</strong> <a href="privilege-escalation/#debian-openssl-predictable-prng-cve-2008-0166"><strong>OpenSSL 可预测 PRNG - CVE-2008-0166</strong></a></li>
+<li><input disabled="" type="checkbox"/>
+<a href="privilege-escalation/#ssh-interesting-configuration-values"><strong>SSH 有趣的配置值</strong></a></li>
+</ul>
+<h3 id="有趣的文件"><a class="header" href="#有趣的文件"><a href="privilege-escalation/#interesting-files">有趣的文件</a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>配置文件</strong> - 读取敏感数据？写入权限提升？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>passwd/shadow 文件</strong> - 读取敏感数据？写入权限提升？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>检查常见的有趣文件夹</strong> 是否有敏感数据</li>
+<li><input disabled="" type="checkbox"/>
+<strong>奇怪的位置/拥有的文件，</strong> 你可能有权限访问或更改可执行文件</li>
+<li><input disabled="" type="checkbox"/>
+<strong>在最近几分钟内修改</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>Sqlite 数据库文件</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>隐藏文件</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>PATH 中的脚本/二进制文件</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>Web 文件</strong>（密码？）</li>
+<li><input disabled="" type="checkbox"/>
+<strong>备份</strong>？</li>
+<li><input disabled="" type="checkbox"/>
+<strong>已知包含密码的文件</strong>：使用 <strong>Linpeas</strong> 和 <strong>LaZagne</strong></li>
+<li><input disabled="" type="checkbox"/>
+<strong>通用搜索</strong></li>
+</ul>
+<h3 id="可写文件"><a class="header" href="#可写文件"><a href="privilege-escalation/#writable-files"><strong>可写文件</strong></a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+<strong>修改 Python 库</strong> 以执行任意命令？</li>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>修改日志文件</strong> 吗？<strong>Logtotten</strong> 漏洞</li>
+<li><input disabled="" type="checkbox"/>
+你能 <strong>修改 /etc/sysconfig/network-scripts/</strong> 吗？Centos/Redhat 漏洞</li>
+<li><input disabled="" type="checkbox"/>
+你能 <a href="privilege-escalation/#init-init-d-systemd-and-rc-d"><strong>写入 ini、int.d、systemd 或 rc.d 文件</strong></a> 吗？</li>
+</ul>
+<h3 id="其他技巧"><a class="header" href="#其他技巧"><a href="privilege-escalation/#other-tricks"><strong>其他技巧</strong></a></a></h3>
+<ul>
+<li><input disabled="" type="checkbox"/>
+你能 <a href="privilege-escalation/#nfs-privilege-escalation"><strong>利用 NFS 提升权限</strong></a> 吗？</li>
+<li><input disabled="" type="checkbox"/>
+你需要 <a href="privilege-escalation/#escaping-from-restricted-shells"><strong>逃离限制性 shell</strong></a> 吗？</li>
+</ul>
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<p>加入 <a href="https://discord.com/invite/N3FrSbmwdy"><strong>HackenProof Discord</strong></a> 服务器，与经验丰富的黑客和漏洞赏金猎人交流！</p>
+<p><strong>黑客见解</strong><br />
+参与深入探讨黑客的刺激与挑战的内容</p>
+<p><strong>实时黑客新闻</strong><br />
+通过实时新闻和见解，跟上快速变化的黑客世界</p>
+<p><strong>最新公告</strong><br />
+了解最新的漏洞赏金计划和重要平台更新</p>
+<p><strong>加入我们</strong> <a href="https://discord.com/invite/N3FrSbmwdy"><strong>Discord</strong></a>，今天就开始与顶级黑客合作吧！</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过提交 PR 分享黑客技巧到</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../generic-hacking/tunneling-and-port-forwarding.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../linux-hardening/privilege-escalation/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../generic-hacking/tunneling-and-port-forwarding.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../linux-hardening/privilege-escalation/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

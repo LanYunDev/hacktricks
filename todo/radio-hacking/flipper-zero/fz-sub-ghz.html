@@ -1,0 +1,304 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>FZ - Sub-GHz</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="fz---sub-ghz"><a class="header" href="#fz---sub-ghz">FZ - Sub-GHz</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="介绍"><a class="header" href="#介绍">介绍 <a href="#kfpn7" id="kfpn7"></a></a></h2>
+<p>Flipper Zero 可以 <strong>接收和发送 300-928 MHz 范围内的无线电频率</strong>，其内置模块可以读取、保存和模拟遥控器。这些遥控器用于与门、障碍物、无线电锁、遥控开关、无线门铃、智能灯等进行交互。Flipper Zero 可以帮助您了解您的安全性是否受到威胁。</p>
+<figure><img src="../../../.gitbook/assets/image (714).png" alt=""><figcaption></figcaption></figure>
+<h2 id="sub-ghz-硬件"><a class="header" href="#sub-ghz-硬件">Sub-GHz 硬件 <a href="#kfpn7" id="kfpn7"></a></a></h2>
+<p>Flipper Zero 具有基于 <a href="https://www.st.com/en/nfc/st25r3916.html#overview">﻿</a>﻿<a href="https://www.ti.com/lit/ds/symlink/cc1101.pdf">CC1101 芯片</a> 的内置 sub-1 GHz 模块和一根无线电天线（最大范围为 50 米）。CC1101 芯片和天线均设计用于在 300-348 MHz、387-464 MHz 和 779-928 MHz 频段内工作。</p>
+<figure><img src="../../../.gitbook/assets/image (923).png" alt=""><figcaption></figcaption></figure>
+<h2 id="操作"><a class="header" href="#操作">操作</a></h2>
+<h3 id="频率分析仪"><a class="header" href="#频率分析仪">频率分析仪</a></h3>
+<p>{% hint style="info" %}
+如何找到遥控器使用的频率
+{% endhint %}</p>
+<p>在分析时，Flipper Zero 正在扫描频率配置中所有可用频率的信号强度 (RSSI)。Flipper Zero 显示 RSSI 值最高的频率，信号强度高于 -90 <a href="https://en.wikipedia.org/wiki/DBm">dBm</a>。</p>
+<p>要确定遥控器的频率，请执行以下操作：</p>
+<ol>
+<li>将遥控器放置在 Flipper Zero 左侧非常靠近的位置。</li>
+<li>转到 <strong>主菜单</strong> <strong>→ Sub-GHz</strong>。</li>
+<li>选择 <strong>频率分析仪</strong>，然后按住您想要分析的遥控器上的按钮。</li>
+<li>查看屏幕上的频率值。</li>
+</ol>
+<h3 id="读取"><a class="header" href="#读取">读取</a></h3>
+<p>{% hint style="info" %}
+查找使用的频率信息（也是查找使用的频率的另一种方法）
+{% endhint %}</p>
+<p><strong>读取</strong> 选项 <strong>在指定调制下监听配置频率</strong>：默认情况下为 433.92 AM。如果在读取时 <strong>找到某些内容</strong>，则 <strong>屏幕上会显示信息</strong>。这些信息可以用于将来复制信号。</p>
+<p>在使用读取时，可以按 <strong>左按钮</strong> 并 <strong>进行配置</strong>。<br />
+此时它有 <strong>4 种调制</strong>（AM270、AM650、FM328 和 FM476），以及 <strong>存储的几个相关频率</strong>：</p>
+<figure><img src="../../../.gitbook/assets/image (947).png" alt=""><figcaption></figcaption></figure>
+<p>您可以设置 <strong>任何您感兴趣的频率</strong>，但是，如果您 <strong>不确定遥控器使用的频率</strong>，请 <strong>将跳频设置为开启</strong>（默认关闭），并多次按下按钮，直到 Flipper 捕获到它并提供您设置频率所需的信息。</p>
+<p>{% hint style="danger" %}
+在频率之间切换需要一些时间，因此在切换时传输的信号可能会丢失。为了更好的信号接收，请设置由频率分析仪确定的固定频率。
+{% endhint %}</p>
+<h3 id="读取原始信号"><a class="header" href="#读取原始信号"><strong>读取原始信号</strong></a></h3>
+<p>{% hint style="info" %}
+窃取（并重放）配置频率上的信号
+{% endhint %}</p>
+<p><strong>读取原始信号</strong> 选项 <strong>记录在监听频率上发送的信号</strong>。这可以用于 <strong>窃取</strong> 信号并 <strong>重复</strong> 它。</p>
+<p>默认情况下 <strong>读取原始信号也在 433.92 AM650</strong>，但如果通过读取选项发现您感兴趣的信号在 <strong>不同的频率/调制下，您也可以通过按左键进行修改</strong>（在读取原始信号选项内）。</p>
+<h3 id="暴力破解"><a class="header" href="#暴力破解">暴力破解</a></h3>
+<p>如果您知道例如车库门使用的协议，可以 <strong>生成所有代码并使用 Flipper Zero 发送它们。</strong> 这是一个支持一般常见类型车库的示例：<a href="https://github.com/tobiabocchi/flipperzero-bruteforce"><strong>https://github.com/tobiabocchi/flipperzero-bruteforce</strong></a></p>
+<h3 id="手动添加"><a class="header" href="#手动添加">手动添加</a></h3>
+<p>{% hint style="info" %}
+从配置的协议列表中添加信号
+{% endhint %}</p>
+<h4 id="支持的协议列表"><a class="header" href="#支持的协议列表"><a href="https://docs.flipperzero.one/sub-ghz/add-new-remote">支持的协议列表</a> <a href="#id-3iglu" id="id-3iglu"></a></a></h4>
+<div class="table-wrapper"><table><thead><tr><th>Princeton_433（适用于大多数静态代码系统）</th><th>433.92</th><th>静态</th></tr></thead><tbody>
+<tr><td>Nice Flo 12bit_433</td><td>433.92</td><td>静态</td></tr>
+<tr><td>Nice Flo 24bit_433</td><td>433.92</td><td>静态</td></tr>
+<tr><td>CAME 12bit_433</td><td>433.92</td><td>静态</td></tr>
+<tr><td>CAME 24bit_433</td><td>433.92</td><td>静态</td></tr>
+<tr><td>Linear_300</td><td>300.00</td><td>静态</td></tr>
+<tr><td>CAME TWEE</td><td>433.92</td><td>静态</td></tr>
+<tr><td>Gate TX_433</td><td>433.92</td><td>静态</td></tr>
+<tr><td>DoorHan_315</td><td>315.00</td><td>动态</td></tr>
+<tr><td>DoorHan_433</td><td>433.92</td><td>动态</td></tr>
+<tr><td>LiftMaster_315</td><td>315.00</td><td>动态</td></tr>
+<tr><td>LiftMaster_390</td><td>390.00</td><td>动态</td></tr>
+<tr><td>Security+2.0_310</td><td>310.00</td><td>动态</td></tr>
+<tr><td>Security+2.0_315</td><td>315.00</td><td>动态</td></tr>
+<tr><td>Security+2.0_390</td><td>390.00</td><td>动态</td></tr>
+</tbody></table>
+</div>
+<h3 id="支持的-sub-ghz-供应商"><a class="header" href="#支持的-sub-ghz-供应商">支持的 Sub-GHz 供应商</a></h3>
+<p>查看 <a href="https://docs.flipperzero.one/sub-ghz/supported-vendors">https://docs.flipperzero.one/sub-ghz/supported-vendors</a> 中的列表</p>
+<h3 id="按地区支持的频率"><a class="header" href="#按地区支持的频率">按地区支持的频率</a></h3>
+<p>查看 <a href="https://docs.flipperzero.one/sub-ghz/frequencies">https://docs.flipperzero.one/sub-ghz/frequencies</a> 中的列表</p>
+<h3 id="测试"><a class="header" href="#测试">测试</a></h3>
+<p>{% hint style="info" %}
+获取保存频率的 dBms
+{% endhint %}</p>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://docs.flipperzero.one/sub-ghz">https://docs.flipperzero.one/sub-ghz</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../todo/radio-hacking/flipper-zero/fz-nfc.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../todo/radio-hacking/flipper-zero/fz-infrared.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../todo/radio-hacking/flipper-zero/fz-nfc.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../todo/radio-hacking/flipper-zero/fz-infrared.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

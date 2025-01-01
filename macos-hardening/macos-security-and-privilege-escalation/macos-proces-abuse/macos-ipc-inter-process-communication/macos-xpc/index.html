@@ -1,0 +1,631 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS XPC</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-xpc"><a class="header" href="#macos-xpc">macOS XPC</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h2>
+<p>XPC，即 XNU（macOS 使用的内核）进程间通信，是一个用于 macOS 和 iOS 上的<strong>进程间通信</strong>的框架。XPC 提供了一种机制，用于在系统上不同进程之间进行<strong>安全的异步方法调用</strong>。它是苹果安全范式的一部分，允许<strong>创建特权分离的应用程序</strong>，每个<strong>组件</strong>仅以<strong>执行其工作所需的权限</strong>运行，从而限制被攻陷进程可能造成的损害。</p>
+<p>XPC 使用一种进程间通信（IPC）的形式，这是一组方法，允许在同一系统上运行的不同程序相互发送数据。</p>
+<p>XPC 的主要优点包括：</p>
+<ol>
+<li><strong>安全性</strong>：通过将工作分离到不同的进程中，每个进程只能被授予其所需的权限。这意味着即使一个进程被攻陷，它的危害能力也有限。</li>
+<li><strong>稳定性</strong>：XPC 有助于将崩溃隔离到发生崩溃的组件。如果一个进程崩溃，可以在不影响系统其余部分的情况下重新启动。</li>
+<li><strong>性能</strong>：XPC 允许轻松并发，因为不同的任务可以在不同的进程中同时运行。</li>
+</ol>
+<p>唯一的<strong>缺点</strong>是<strong>将应用程序分离为多个进程</strong>并通过 XPC 进行通信是<strong>效率较低</strong>的。但在今天的系统中，这几乎是不可察觉的，且其好处更为明显。</p>
+<h2 id="应用特定的-xpc-服务"><a class="header" href="#应用特定的-xpc-服务">应用特定的 XPC 服务</a></h2>
+<p>应用程序的 XPC 组件<strong>位于应用程序内部</strong>。例如，在 Safari 中，您可以在 <strong><code>/Applications/Safari.app/Contents/XPCServices</code></strong> 中找到它们。它们的扩展名为 <strong><code>.xpc</code></strong>（如 <strong><code>com.apple.Safari.SandboxBroker.xpc</code></strong>），并且<strong>与主二进制文件一起打包</strong>在其中：<code>/Applications/Safari.app/Contents/XPCServices/com.apple.Safari.SandboxBroker.xpc/Contents/MacOS/com.apple.Safari.SandboxBroker</code> 和 <code>Info.plist: /Applications/Safari.app/Contents/XPCServices/com.apple.Safari.SandboxBroker.xpc/Contents/Info.plist</code></p>
+<p>正如您可能想到的，<strong>XPC 组件将具有不同的权限和特权</strong>，与其他 XPC 组件或主应用程序二进制文件不同。除非 XPC 服务在其 <strong>Info.plist</strong> 文件中配置了 <a href="https://developer.apple.com/documentation/bundleresources/information_property_list/xpcservice/joinexistingsession"><strong>JoinExistingSession</strong></a> 设置为“True”。在这种情况下，XPC 服务将在<strong>与调用它的应用程序相同的安全会话中运行</strong>。</p>
+<p>XPC 服务由 <strong>launchd</strong> 在需要时<strong>启动</strong>，并在所有任务<strong>完成</strong>后<strong>关闭</strong>以释放系统资源。<strong>应用程序特定的 XPC 组件只能由该应用程序使用</strong>，从而降低与潜在漏洞相关的风险。</p>
+<h2 id="系统范围的-xpc-服务"><a class="header" href="#系统范围的-xpc-服务">系统范围的 XPC 服务</a></h2>
+<p>系统范围的 XPC 服务对所有用户可用。这些服务，无论是 launchd 还是 Mach 类型，都需要在位于指定目录中的 plist 文件中<strong>定义</strong>，例如 <strong><code>/System/Library/LaunchDaemons</code></strong>、<strong><code>/Library/LaunchDaemons</code></strong>、<strong><code>/System/Library/LaunchAgents</code></strong> 或 <strong><code>/Library/LaunchAgents</code></strong>。</p>
+<p>这些 plist 文件将具有一个名为 <strong><code>MachServices</code></strong> 的键，包含服务的名称，以及一个名为 <strong><code>Program</code></strong> 的键，包含二进制文件的路径：</p>
+<pre><code class="language-xml">cat /Library/LaunchDaemons/com.jamf.management.daemon.plist
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
+&lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;Program&lt;/key&gt;
+&lt;string&gt;/Library/Application Support/JAMF/Jamf.app/Contents/MacOS/JamfDaemon.app/Contents/MacOS/JamfDaemon&lt;/string&gt;
+&lt;key&gt;AbandonProcessGroup&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;KeepAlive&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;Label&lt;/key&gt;
+&lt;string&gt;com.jamf.management.daemon&lt;/string&gt;
+&lt;key&gt;MachServices&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;com.jamf.management.daemon.aad&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;com.jamf.management.daemon.agent&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;com.jamf.management.daemon.binary&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;com.jamf.management.daemon.selfservice&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;com.jamf.management.daemon.service&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;key&gt;RunAtLoad&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>The ones in <strong><code>LaunchDameons</code></strong> 是由 root 运行的。因此，如果一个无权限的进程可以与其中一个进行通信，它可能能够提升权限。</p>
+<h2 id="xpc-对象"><a class="header" href="#xpc-对象">XPC 对象</a></h2>
+<ul>
+<li><strong><code>xpc_object_t</code></strong></li>
+</ul>
+<p>每个 XPC 消息都是一个字典对象，简化了序列化和反序列化。此外，<code>libxpc.dylib</code> 声明了大多数数据类型，因此可以确保接收到的数据是预期的类型。在 C API 中，每个对象都是 <code>xpc_object_t</code>（其类型可以使用 <code>xpc_get_type(object)</code> 检查）。<br />
+此外，函数 <code>xpc_copy_description(object)</code> 可用于获取对象的字符串表示，这对于调试目的非常有用。<br />
+这些对象还有一些可以调用的方法，如 <code>xpc_&lt;object&gt;_copy</code>、<code>xpc_&lt;object&gt;_equal</code>、<code>xpc_&lt;object&gt;_hash</code>、<code>xpc_&lt;object&gt;_serialize</code>、<code>xpc_&lt;object&gt;_deserialize</code>...</p>
+<p><code>xpc_object_t</code> 是通过调用 <code>xpc_&lt;objetType&gt;_create</code> 函数创建的，该函数内部调用 <code>_xpc_base_create(Class, Size)</code>，其中指明了对象的类类型（<code>XPC_TYPE_*</code> 之一）和大小（额外的 40B 将被添加到大小以用于元数据）。这意味着对象的数据将从偏移量 40B 开始。<br />
+因此，<code>xpc_&lt;objectType&gt;_t</code> 是 <code>xpc_object_t</code> 的一种子类，后者又是 <code>os_object_t*</code> 的子类。</p>
+<p>{% hint style="warning" %}
+请注意，应该由开发者使用 <code>xpc_dictionary_[get/set]_&lt;objectType&gt;</code> 来获取或设置键的类型和实际值。
+{% endhint %}</p>
+<ul>
+<li><strong><code>xpc_pipe</code></strong></li>
+</ul>
+<p><strong><code>xpc_pipe</code></strong> 是一个 FIFO 管道，进程可以用来进行通信（通信使用 Mach 消息）。<br />
+可以通过调用 <code>xpc_pipe_create()</code> 或 <code>xpc_pipe_create_from_port()</code> 创建 XPC 服务器，后者使用特定的 Mach 端口。然后，要接收消息，可以调用 <code>xpc_pipe_receive</code> 和 <code>xpc_pipe_try_receive</code>。</p>
+<p>请注意，<strong><code>xpc_pipe</code></strong> 对象是一个 <strong><code>xpc_object_t</code></strong>，其结构中包含有关使用的两个 Mach 端口和名称（如果有）的信息。例如，守护进程 <code>secinitd</code> 在其 plist <code>/System/Library/LaunchDaemons/com.apple.secinitd.plist</code> 中配置了名为 <code>com.apple.secinitd</code> 的管道。</p>
+<p><strong><code>xpc_pipe</code></strong> 的一个示例是 <strong><code>launchd</code></strong> 创建的 <strong>bootstrap pipe</strong>，使得共享 Mach 端口成为可能。</p>
+<ul>
+<li><strong><code>NSXPC*</code></strong></li>
+</ul>
+<p>这些是 Objective-C 高级对象，允许对 XPC 连接进行抽象。<br />
+此外，使用 DTrace 调试这些对象比前面的对象更容易。</p>
+<ul>
+<li><strong><code>GCD 队列</code></strong></li>
+</ul>
+<p>XPC 使用 GCD 传递消息，此外它生成某些调度队列，如 <code>xpc.transactionq</code>、<code>xpc.io</code>、<code>xpc-events.add-listenerq</code>、<code>xpc.service-instance</code>...</p>
+<h2 id="xpc-服务"><a class="header" href="#xpc-服务">XPC 服务</a></h2>
+<p>这些是位于其他项目的 <strong><code>XPCServices</code></strong> 文件夹中的 <strong><code>.xpc</code></strong> 扩展包，并且在 <code>Info.plist</code> 中将 <code>CFBundlePackageType</code> 设置为 <strong><code>XPC!</code></strong>。<br />
+该文件还有其他配置键，如 <code>ServiceType</code>，可以是 Application、User、System 或 <code>_SandboxProfile</code>，可以定义沙箱或 <code>_AllowedClients</code>，可能指示与服务联系所需的权限或 ID。这些和其他配置选项在服务启动时将有助于配置服务。</p>
+<h3 id="启动服务"><a class="header" href="#启动服务">启动服务</a></h3>
+<p>应用程序尝试使用 <code>xpc_connection_create_mach_service</code> <strong>连接</strong> 到 XPC 服务，然后 launchd 定位守护进程并启动 <strong><code>xpcproxy</code></strong>。<strong><code>xpcproxy</code></strong> 强制执行配置的限制，并使用提供的 FDs 和 Mach 端口生成服务。</p>
+<p>为了提高 XPC 服务搜索的速度，使用了缓存。</p>
+<p>可以使用以下方式跟踪 <code>xpcproxy</code> 的操作：</p>
+<pre><code class="language-bash">supraudit S -C -o /tmp/output /dev/auditpipe
+</code></pre>
+<p>The XPC library 使用 <code>kdebug</code> 来记录调用 <code>xpc_ktrace_pid0</code> 和 <code>xpc_ktrace_pid1</code> 的操作。它使用的代码是未记录的，因此需要将其添加到 <code>/usr/share/misc/trace.codes</code> 中。它们的前缀是 <code>0x29</code>，例如其中一个是 <code>0x29000004</code>: <code>XPC_serializer_pack</code>。<br />
+实用程序 <code>xpcproxy</code> 使用前缀 <code>0x22</code>，例如：<code>0x2200001c: xpcproxy:will_do_preexec</code>。</p>
+<h2 id="xpc-事件消息"><a class="header" href="#xpc-事件消息">XPC 事件消息</a></h2>
+<p>应用程序可以 <strong>订阅</strong> 不同的事件 <strong>消息</strong>，使其能够在发生此类事件时 <strong>按需启动</strong>。这些服务的 <strong>设置</strong> 在 <strong>launchd plist 文件</strong> 中完成，位于 <strong>与之前相同的目录</strong> 中，并包含一个额外的 <strong><code>LaunchEvent</code></strong> 键。</p>
+<h3 id="xpc-连接进程检查"><a class="header" href="#xpc-连接进程检查">XPC 连接进程检查</a></h3>
+<p>当一个进程尝试通过 XPC 连接调用一个方法时，<strong>XPC 服务应该检查该进程是否被允许连接</strong>。以下是检查的常见方法和常见陷阱：</p>
+<p>{% content-ref url="macos-xpc-connecting-process-check/" %}
+<a href="macos-xpc-connecting-process-check/">macos-xpc-connecting-process-check</a>
+{% endcontent-ref %}</p>
+<h2 id="xpc-授权"><a class="header" href="#xpc-授权">XPC 授权</a></h2>
+<p>苹果还允许应用程序 <strong>配置一些权限以及如何获取它们</strong>，因此如果调用进程拥有这些权限，它将 <strong>被允许调用</strong> XPC 服务中的一个方法：</p>
+<p>{% content-ref url="macos-xpc-authorization.md" %}
+<a href="macos-xpc-authorization.html">macos-xpc-authorization.md</a>
+{% endcontent-ref %}</p>
+<h2 id="xpc-嗅探器"><a class="header" href="#xpc-嗅探器">XPC 嗅探器</a></h2>
+<p>要嗅探 XPC 消息，可以使用 <a href="https://github.com/hot3eed/xpcspy"><strong>xpcspy</strong></a>，它使用 <strong>Frida</strong>。</p>
+<pre><code class="language-bash"># Install
+pip3 install xpcspy
+pip3 install xpcspy --no-deps # To not make xpcspy install Frida 15 and downgrade your Frida installation
+
+# Start sniffing
+xpcspy -U -r -W &lt;bundle-id&gt;
+## Using filters (i: for input, o: for output)
+xpcspy -U &lt;prog-name&gt; -t 'i:com.apple.*' -t 'o:com.apple.*' -r
+</code></pre>
+<p>另一个可能使用的工具是 <a href="https://newosxbook.com/tools/XPoCe2.html"><strong>XPoCe2</strong></a>。</p>
+<h2 id="xpc-通信-c-代码示例"><a class="header" href="#xpc-通信-c-代码示例">XPC 通信 C 代码示例</a></h2>
+<p>{% tabs %}
+{% tab title="xpc_server.c" %}</p>
+<pre><code class="language-c">// gcc xpc_server.c -o xpc_server
+
+#include &lt;xpc/xpc.h&gt;
+
+static void handle_event(xpc_object_t event) {
+if (xpc_get_type(event) == XPC_TYPE_DICTIONARY) {
+// Print received message
+const char* received_message = xpc_dictionary_get_string(event, "message");
+printf("Received message: %s\n", received_message);
+
+// Create a response dictionary
+xpc_object_t response = xpc_dictionary_create(NULL, NULL, 0);
+xpc_dictionary_set_string(response, "received", "received");
+
+// Send response
+xpc_connection_t remote = xpc_dictionary_get_remote_connection(event);
+xpc_connection_send_message(remote, response);
+
+// Clean up
+xpc_release(response);
+}
+}
+
+static void handle_connection(xpc_connection_t connection) {
+xpc_connection_set_event_handler(connection, ^(xpc_object_t event) {
+handle_event(event);
+});
+xpc_connection_resume(connection);
+}
+
+int main(int argc, const char *argv[]) {
+xpc_connection_t service = xpc_connection_create_mach_service("xyz.hacktricks.service",
+dispatch_get_main_queue(),
+XPC_CONNECTION_MACH_SERVICE_LISTENER);
+if (!service) {
+fprintf(stderr, "Failed to create service.\n");
+exit(EXIT_FAILURE);
+}
+
+xpc_connection_set_event_handler(service, ^(xpc_object_t event) {
+xpc_type_t type = xpc_get_type(event);
+if (type == XPC_TYPE_CONNECTION) {
+handle_connection(event);
+}
+});
+
+xpc_connection_resume(service);
+dispatch_main();
+
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="xpc_client.c" %}</p>
+<pre><code class="language-c">// gcc xpc_client.c -o xpc_client
+
+#include &lt;xpc/xpc.h&gt;
+
+int main(int argc, const char *argv[]) {
+xpc_connection_t connection = xpc_connection_create_mach_service("xyz.hacktricks.service", NULL, XPC_CONNECTION_MACH_SERVICE_PRIVILEGED);
+
+xpc_connection_set_event_handler(connection, ^(xpc_object_t event) {
+if (xpc_get_type(event) == XPC_TYPE_DICTIONARY) {
+// Print received message
+const char* received_message = xpc_dictionary_get_string(event, "received");
+printf("Received message: %s\n", received_message);
+}
+});
+
+xpc_connection_resume(connection);
+
+xpc_object_t message = xpc_dictionary_create(NULL, NULL, 0);
+xpc_dictionary_set_string(message, "message", "Hello, Server!");
+
+xpc_connection_send_message(connection, message);
+
+dispatch_main();
+
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="xyz.hacktricks.service.plist" %}</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt; &lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;Label&lt;/key&gt;
+&lt;string&gt;xyz.hacktricks.service&lt;/string&gt;
+&lt;key&gt;MachServices&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;xyz.hacktricks.service&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;key&gt;Program&lt;/key&gt;
+&lt;string&gt;/tmp/xpc_server&lt;/string&gt;
+&lt;key&gt;ProgramArguments&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;/tmp/xpc_server&lt;/string&gt;
+&lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<pre><code class="language-bash"># Compile the server &amp; client
+gcc xpc_server.c -o xpc_server
+gcc xpc_client.c -o xpc_client
+
+# Save server on it's location
+cp xpc_server /tmp
+
+# Load daemon
+sudo cp xyz.hacktricks.service.plist /Library/LaunchDaemons
+sudo launchctl load /Library/LaunchDaemons/xyz.hacktricks.service.plist
+
+# Call client
+./xpc_client
+
+# Clean
+sudo launchctl unload /Library/LaunchDaemons/xyz.hacktricks.service.plist
+sudo rm /Library/LaunchDaemons/xyz.hacktricks.service.plist /tmp/xpc_server
+</code></pre>
+<h2 id="xpc-通信-objective-c-代码示例"><a class="header" href="#xpc-通信-objective-c-代码示例">XPC 通信 Objective-C 代码示例</a></h2>
+<p>{% tabs %}
+{% tab title="oc_xpc_server.m" %}</p>
+<pre><code class="language-objectivec">// gcc -framework Foundation oc_xpc_server.m -o oc_xpc_server
+#include &lt;Foundation/Foundation.h&gt;
+
+@protocol MyXPCProtocol
+- (void)sayHello:(NSString *)some_string withReply:(void (^)(NSString *))reply;
+@end
+
+@interface MyXPCObject : NSObject &lt;MyXPCProtocol&gt;
+@end
+
+
+@implementation MyXPCObject
+- (void)sayHello:(NSString *)some_string withReply:(void (^)(NSString *))reply {
+NSLog(@"Received message: %@", some_string);
+NSString *response = @"Received";
+reply(response);
+}
+@end
+
+@interface MyDelegate : NSObject &lt;NSXPCListenerDelegate&gt;
+@end
+
+
+@implementation MyDelegate
+
+- (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)newConnection {
+newConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(MyXPCProtocol)];
+
+MyXPCObject *my_object = [MyXPCObject new];
+
+newConnection.exportedObject = my_object;
+
+[newConnection resume];
+return YES;
+}
+@end
+
+int main(void) {
+
+NSXPCListener *listener = [[NSXPCListener alloc] initWithMachServiceName:@"xyz.hacktricks.svcoc"];
+
+id &lt;NSXPCListenerDelegate&gt; delegate = [MyDelegate new];
+listener.delegate = delegate;
+[listener resume];
+
+sleep(10); // Fake something is done and then it ends
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="oc_xpc_client.m" %}</p>
+<pre><code class="language-objectivec">// gcc -framework Foundation oc_xpc_client.m -o oc_xpc_client
+#include &lt;Foundation/Foundation.h&gt;
+
+@protocol MyXPCProtocol
+- (void)sayHello:(NSString *)some_string withReply:(void (^)(NSString *))reply;
+@end
+
+int main(void) {
+NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:@"xyz.hacktricks.svcoc" options:NSXPCConnectionPrivileged];
+connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(MyXPCProtocol)];
+[connection resume];
+
+[[connection remoteObjectProxy] sayHello:@"Hello, Server!" withReply:^(NSString *response) {
+NSLog(@"Received response: %@", response);
+}];
+
+[[NSRunLoop currentRunLoop] run];
+
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="xyz.hacktricks.svcoc.plist" %}</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt; &lt;plist version="1.0"&gt;
+&lt;dict&gt;
+&lt;key&gt;Label&lt;/key&gt;
+&lt;string&gt;xyz.hacktricks.svcoc&lt;/string&gt;
+&lt;key&gt;MachServices&lt;/key&gt;
+&lt;dict&gt;
+&lt;key&gt;xyz.hacktricks.svcoc&lt;/key&gt;
+&lt;true/&gt;
+&lt;/dict&gt;
+&lt;key&gt;Program&lt;/key&gt;
+&lt;string&gt;/tmp/oc_xpc_server&lt;/string&gt;
+&lt;key&gt;ProgramArguments&lt;/key&gt;
+&lt;array&gt;
+&lt;string&gt;/tmp/oc_xpc_server&lt;/string&gt;
+&lt;/array&gt;
+&lt;/dict&gt;
+&lt;/plist&gt;
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<pre><code class="language-bash"># Compile the server &amp; client
+gcc -framework Foundation oc_xpc_server.m -o oc_xpc_server
+gcc -framework Foundation oc_xpc_client.m -o oc_xpc_client
+
+# Save server on it's location
+cp oc_xpc_server /tmp
+
+# Load daemon
+sudo cp xyz.hacktricks.svcoc.plist /Library/LaunchDaemons
+sudo launchctl load /Library/LaunchDaemons/xyz.hacktricks.svcoc.plist
+
+# Call client
+./oc_xpc_client
+
+# Clean
+sudo launchctl unload /Library/LaunchDaemons/xyz.hacktricks.svcoc.plist
+sudo rm /Library/LaunchDaemons/xyz.hacktricks.svcoc.plist /tmp/oc_xpc_server
+</code></pre>
+<h2 id="客户端在-dylb-代码中"><a class="header" href="#客户端在-dylb-代码中">客户端在 Dylb 代码中</a></h2>
+<pre><code class="language-objectivec">// gcc -dynamiclib -framework Foundation oc_xpc_client.m -o oc_xpc_client.dylib
+// gcc injection example:
+// DYLD_INSERT_LIBRARIES=oc_xpc_client.dylib /path/to/vuln/bin
+
+#import &lt;Foundation/Foundation.h&gt;
+
+@protocol MyXPCProtocol
+- (void)sayHello:(NSString *)some_string withReply:(void (^)(NSString *))reply;
+@end
+
+__attribute__((constructor))
+static void customConstructor(int argc, const char **argv)
+{
+NSString*  _serviceName = @"xyz.hacktricks.svcoc";
+
+NSXPCConnection* _agentConnection = [[NSXPCConnection alloc] initWithMachServiceName:_serviceName options:4096];
+
+[_agentConnection setRemoteObjectInterface:[NSXPCInterface interfaceWithProtocol:@protocol(MyXPCProtocol)]];
+
+[_agentConnection resume];
+
+[[_agentConnection remoteObjectProxyWithErrorHandler:^(NSError* error) {
+(void)error;
+NSLog(@"Connection Failure");
+}] sayHello:@"Hello, Server!" withReply:^(NSString *response) {
+NSLog(@"Received response: %@", response);
+}    ];
+NSLog(@"Done!");
+
+return;
+}
+</code></pre>
+<h2 id="remote-xpc"><a class="header" href="#remote-xpc">Remote XPC</a></h2>
+<p>此功能由 <code>RemoteXPC.framework</code>（来自 <code>libxpc</code>）提供，允许通过不同主机进行 XPC 通信。<br />
+支持远程 XPC 的服务将在其 plist 中具有键 UsesRemoteXPC，就像 <code>/System/Library/LaunchDaemons/com.apple.SubmitDiagInfo.plist</code> 的情况一样。然而，尽管该服务将与 <code>launchd</code> 注册，但提供该功能的是 <code>UserEventAgent</code>，其插件为 <code>com.apple.remoted.plugin</code> 和 <code>com.apple.remoteservicediscovery.events.plugin</code>。</p>
+<p>此外，<code>RemoteServiceDiscovery.framework</code> 允许从 <code>com.apple.remoted.plugin</code> 获取信息，暴露的函数包括 <code>get_device</code>、<code>get_unique_device</code>、<code>connect</code>...</p>
+<p>一旦使用 connect 并收集到服务的 socket <code>fd</code>，就可以使用 <code>remote_xpc_connection_*</code> 类。</p>
+<p>可以使用 CLI 工具 <code>/usr/libexec/remotectl</code> 获取有关远程服务的信息，使用的参数包括：</p>
+<pre><code class="language-bash">/usr/libexec/remotectl list # Get bridge devices
+/usr/libexec/remotectl show ...# Get device properties and services
+/usr/libexec/remotectl dumpstate # Like dump withuot indicateing a servie
+/usr/libexec/remotectl [netcat|relay] ... # Expose a service in a port
+...
+</code></pre>
+<p>BridgeOS与主机之间的通信通过专用的IPv6接口进行。<code>MultiverseSupport.framework</code>允许建立套接字，其<code>fd</code>将用于通信。<br />
+可以使用<code>netstat</code>、<code>nettop</code>或开源选项<code>netbottom</code>找到这些通信。</p>
+<p>{% hint style="success" %}
+学习与实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>关注</strong>我们的<strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-mig-mach-interface-generator.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-authorization.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-mig-mach-interface-generator.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../../macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-ipc-inter-process-communication/macos-xpc/macos-xpc-authorization.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../../elasticlunr.min.js"></script>
+        <script src="../../../../../mark.min.js"></script>
+        <script src="../../../../../searcher.js"></script>
+
+        <script src="../../../../../clipboard.min.js"></script>
+        <script src="../../../../../highlight.js"></script>
+        <script src="../../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

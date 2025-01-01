@@ -1,0 +1,406 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Partitions/File Systems/Carving</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="partitionsfile-systemscarving"><a class="header" href="#partitionsfile-systemscarving">Partitions/File Systems/Carving</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="partitions"><a class="header" href="#partitions">Partitions</a></h2>
+<p>硬盘或 <strong>SSD 磁盘可以包含不同的分区</strong>，目的是物理上分隔数据。<br />
+磁盘的 <strong>最小</strong> 单位是 <strong>扇区</strong>（通常由 512B 组成）。因此，每个分区的大小需要是该大小的倍数。</p>
+<h3 id="mbr-主引导记录"><a class="header" href="#mbr-主引导记录">MBR (主引导记录)</a></h3>
+<p>它分配在 <strong>磁盘的第一个扇区，位于 446B 的引导代码之后</strong>。这个扇区对于指示 PC 应该从哪里挂载分区至关重要。<br />
+它最多允许 <strong>4 个分区</strong>（最多 <strong>只有 1 个</strong> 可以是活动的/<strong>可引导</strong>）。但是，如果需要更多分区，可以使用 <strong>扩展分区</strong>。这个第一个扇区的 <strong>最后一个字节</strong> 是引导记录签名 <strong>0x55AA</strong>。只能标记一个分区为活动。<br />
+MBR 允许 <strong>最大 2.2TB</strong>。</p>
+<p><img src="../../../.gitbook/assets/image%20(350).png" alt="" /></p>
+<p><img src="../../../.gitbook/assets/image%20(304).png" alt="" /></p>
+<p>从 MBR 的 <strong>440 到 443 字节</strong> 可以找到 <strong>Windows 磁盘签名</strong>（如果使用 Windows）。硬盘的逻辑驱动器字母取决于 Windows 磁盘签名。更改此签名可能会导致 Windows 无法启动（工具：<a href="https://www.disk-editor.org/index.html"><strong>Active Disk Editor</strong></a><strong>)</strong>。</p>
+<p><img src="../../../.gitbook/assets/image%20(310).png" alt="" /></p>
+<p><strong>格式</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>偏移</th><th>长度</th><th>项目</th></tr></thead><tbody>
+<tr><td>0 (0x00)</td><td>446(0x1BE)</td><td>引导代码</td></tr>
+<tr><td>446 (0x1BE)</td><td>16 (0x10)</td><td>第一个分区</td></tr>
+<tr><td>462 (0x1CE)</td><td>16 (0x10)</td><td>第二个分区</td></tr>
+<tr><td>478 (0x1DE)</td><td>16 (0x10)</td><td>第三个分区</td></tr>
+<tr><td>494 (0x1EE)</td><td>16 (0x10)</td><td>第四个分区</td></tr>
+<tr><td>510 (0x1FE)</td><td>2 (0x2)</td><td>签名 0x55 0xAA</td></tr>
+</tbody></table>
+</div>
+<p><strong>分区记录格式</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>偏移</th><th>长度</th><th>项目</th></tr></thead><tbody>
+<tr><td>0 (0x00)</td><td>1 (0x01)</td><td>活动标志 (0x80 = 可引导)</td></tr>
+<tr><td>1 (0x01)</td><td>1 (0x01)</td><td>起始磁头</td></tr>
+<tr><td>2 (0x02)</td><td>1 (0x01)</td><td>起始扇区（位 0-5）；气缸的高位（6-7）</td></tr>
+<tr><td>3 (0x03)</td><td>1 (0x01)</td><td>起始气缸最低 8 位</td></tr>
+<tr><td>4 (0x04)</td><td>1 (0x01)</td><td>分区类型代码 (0x83 = Linux)</td></tr>
+<tr><td>5 (0x05)</td><td>1 (0x01)</td><td>结束磁头</td></tr>
+<tr><td>6 (0x06)</td><td>1 (0x01)</td><td>结束扇区（位 0-5）；气缸的高位（6-7）</td></tr>
+<tr><td>7 (0x07)</td><td>1 (0x01)</td><td>结束气缸最低 8 位</td></tr>
+<tr><td>8 (0x08)</td><td>4 (0x04)</td><td>分区前的扇区（小端）</td></tr>
+<tr><td>12 (0x0C)</td><td>4 (0x04)</td><td>分区中的扇区</td></tr>
+</tbody></table>
+</div>
+<p>为了在 Linux 中挂载 MBR，您首先需要获取起始偏移（可以使用 <code>fdisk</code> 和 <code>p</code> 命令）</p>
+<p><img src="../../../.gitbook/assets/image%20(413)%20(3)%20(3)%20(3)%20(2)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1)%20(1).png" alt="" /></p>
+<p>然后使用以下代码</p>
+<pre><code class="language-bash">#Mount MBR in Linux
+mount -o ro,loop,offset=&lt;Bytes&gt;
+#63x512 = 32256Bytes
+mount -o ro,loop,offset=32256,noatime /path/to/image.dd /media/part/
+</code></pre>
+<p><strong>LBA (逻辑块寻址)</strong></p>
+<p><strong>逻辑块寻址</strong> (<strong>LBA</strong>) 是一种常用的方案，用于<strong>指定存储在计算机存储设备上的数据块的位置</strong>，通常是硬盘驱动器等二级存储系统。LBA 是一种特别简单的线性寻址方案；<strong>块通过整数索引定位</strong>，第一个块为 LBA 0，第二个为 LBA 1，依此类推。</p>
+<h3 id="gpt-guid-分区表"><a class="header" href="#gpt-guid-分区表">GPT (GUID 分区表)</a></h3>
+<p>GUID 分区表，称为 GPT，因其相较于 MBR（主引导记录）具有增强的功能而受到青睐。GPT 以其<strong>全局唯一标识符</strong>为分区而独树一帜，具体体现在以下几个方面：</p>
+<ul>
+<li><strong>位置和大小</strong>：GPT 和 MBR 都从<strong>扇区 0</strong> 开始。然而，GPT 采用<strong>64位</strong>，而 MBR 则是 32位。</li>
+<li><strong>分区限制</strong>：GPT 在 Windows 系统上支持最多<strong>128个分区</strong>，并可容纳高达<strong>9.4ZB</strong>的数据。</li>
+<li><strong>分区名称</strong>：提供最多 36 个 Unicode 字符的分区命名能力。</li>
+</ul>
+<p><strong>数据弹性和恢复</strong>：</p>
+<ul>
+<li><strong>冗余</strong>：与 MBR 不同，GPT 不将分区和引导数据限制在一个地方。它在整个磁盘上复制这些数据，从而增强数据完整性和弹性。</li>
+<li><strong>循环冗余校验 (CRC)</strong>：GPT 使用 CRC 来确保数据完整性。它主动监控数据损坏，并在检测到时，尝试从另一个磁盘位置恢复损坏的数据。</li>
+</ul>
+<p><strong>保护性 MBR (LBA0)</strong>：</p>
+<ul>
+<li>GPT 通过保护性 MBR 维持向后兼容性。此功能位于传统 MBR 空间中，但旨在防止较旧的基于 MBR 的工具错误地覆盖 GPT 磁盘，从而保护 GPT 格式磁盘上的数据完整性。</li>
+</ul>
+<p><img src="../../../.gitbook/assets/image%20(1062).png" alt="https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/GUID_Partition_Table_Scheme.svg/800px-GUID_Partition_Table_Scheme.svg.png" /></p>
+<p><strong>混合 MBR (LBA 0 + GPT)</strong></p>
+<p><a href="https://en.wikipedia.org/wiki/GUID_Partition_Table">来自维基百科</a></p>
+<p>在支持<strong>通过 BIOS</strong> 服务而非 EFI 的<strong>GPT 启动</strong>的操作系统中，第一个扇区也可能仍用于存储<strong>引导加载程序</strong>代码的第一阶段，但<strong>经过修改</strong>以识别<strong>GPT</strong> <strong>分区</strong>。MBR 中的引导加载程序不得假设扇区大小为 512 字节。</p>
+<p><strong>分区表头 (LBA 1)</strong></p>
+<p><a href="https://en.wikipedia.org/wiki/GUID_Partition_Table">来自维基百科</a></p>
+<p>分区表头定义了磁盘上可用的块。它还定义了构成分区表的分区条目的数量和大小（表中的偏移量 80 和 84）。</p>
+<div class="table-wrapper"><table><thead><tr><th>偏移量</th><th>长度</th><th>内容</th></tr></thead><tbody>
+<tr><td>0 (0x00)</td><td>8 字节</td><td>签名 ("EFI PART", 45h 46h 49h 20h 50h 41h 52h 54h 或 0x5452415020494645ULL<a href="https://en.wikipedia.org/wiki/GUID_Partition_Table#cite_note-8"> </a> 在小端机器上)</td></tr>
+<tr><td>8 (0x08)</td><td>4 字节</td><td>版本 1.0 (00h 00h 01h 00h) 适用于 UEFI 2.8</td></tr>
+<tr><td>12 (0x0C)</td><td>4 字节</td><td>小端的头部大小（以字节为单位，通常为 5Ch 00h 00h 00h 或 92 字节）</td></tr>
+<tr><td>16 (0x10)</td><td>4 字节</td><td><a href="https://en.wikipedia.org/wiki/CRC32">CRC32</a> 头部的 CRC（偏移量 +0 直到头部大小）的小端，计算时此字段为零</td></tr>
+<tr><td>20 (0x14)</td><td>4 字节</td><td>保留；必须为零</td></tr>
+<tr><td>24 (0x18)</td><td>8 字节</td><td>当前 LBA（此头部副本的位置）</td></tr>
+<tr><td>32 (0x20)</td><td>8 字节</td><td>备份 LBA（另一个头部副本的位置）</td></tr>
+<tr><td>40 (0x28)</td><td>8 字节</td><td>分区的第一个可用 LBA（主分区表最后 LBA + 1）</td></tr>
+<tr><td>48 (0x30)</td><td>8 字节</td><td>最后可用 LBA（次分区表第一个 LBA − 1）</td></tr>
+<tr><td>56 (0x38)</td><td>16 字节</td><td>磁盘 GUID 的混合字节序</td></tr>
+<tr><td>72 (0x48)</td><td>8 字节</td><td>分区条目数组的起始 LBA（主副本中始终为 2）</td></tr>
+<tr><td>80 (0x50)</td><td>4 字节</td><td>数组中分区条目的数量</td></tr>
+<tr><td>84 (0x54)</td><td>4 字节</td><td>单个分区条目的大小（通常为 80h 或 128）</td></tr>
+<tr><td>88 (0x58)</td><td>4 字节</td><td>分区条目数组的 CRC32 小端</td></tr>
+<tr><td>92 (0x5C)</td><td>*</td><td>保留；对于块的其余部分必须为零（对于 512 字节的扇区大小为 420 字节；但对于更大的扇区大小可以更多）</td></tr>
+</tbody></table>
+</div>
+<p><strong>分区条目 (LBA 2–33)</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>GUID 分区条目格式</th><th></th><th></th></tr></thead><tbody>
+<tr><td>偏移量</td><td>长度</td><td>内容</td></tr>
+<tr><td>0 (0x00)</td><td>16 字节</td><td><a href="https://en.wikipedia.org/wiki/GUID_Partition_Table#Partition_type_GUIDs">分区类型 GUID</a>（混合字节序）</td></tr>
+<tr><td>16 (0x10)</td><td>16 字节</td><td>唯一分区 GUID（混合字节序）</td></tr>
+<tr><td>32 (0x20)</td><td>8 字节</td><td>第一个 LBA（<a href="https://en.wikipedia.org/wiki/Little_endian">小端</a>）</td></tr>
+<tr><td>40 (0x28)</td><td>8 字节</td><td>最后 LBA（包含，通常为奇数）</td></tr>
+<tr><td>48 (0x30)</td><td>8 字节</td><td>属性标志（例如，位 60 表示只读）</td></tr>
+<tr><td>56 (0x38)</td><td>72 字节</td><td>分区名称（36 <a href="https://en.wikipedia.org/wiki/UTF-16">UTF-16</a>LE 代码单元）</td></tr>
+</tbody></table>
+</div>
+<p><strong>分区类型</strong></p>
+<p><img src="../../../.gitbook/assets/image%20(83).png" alt="" /></p>
+<p>更多分区类型请见 <a href="https://en.wikipedia.org/wiki/GUID_Partition_Table">https://en.wikipedia.org/wiki/GUID_Partition_Table</a></p>
+<h3 id="检查"><a class="header" href="#检查">检查</a></h3>
+<p>在使用 <a href="https://arsenalrecon.com/downloads/"><strong>ArsenalImageMounter</strong></a> 挂载取证镜像后，您可以使用 Windows 工具 <a href="https://www.disk-editor.org/index.html"><strong>Active Disk Editor</strong></a>** 检查第一个扇区**。在下图中，在<strong>扇区 0</strong> 检测到一个 <strong>MBR</strong> 并进行了解释：</p>
+<p><img src="../../../.gitbook/assets/image%20(354).png" alt="" /></p>
+<p>如果是<strong>GPT 表而不是 MBR</strong>，则应在<strong>扇区 1</strong> 中出现签名 <em>EFI PART</em>（在前面的图像中是空的）。</p>
+<h2 id="文件系统"><a class="header" href="#文件系统">文件系统</a></h2>
+<h3 id="windows-文件系统列表"><a class="header" href="#windows-文件系统列表">Windows 文件系统列表</a></h3>
+<ul>
+<li><strong>FAT12/16</strong>: MSDOS, WIN95/98/NT/200</li>
+<li><strong>FAT32</strong>: 95/2000/XP/2003/VISTA/7/8/10</li>
+<li><strong>ExFAT</strong>: 2008/2012/2016/VISTA/7/8/10</li>
+<li><strong>NTFS</strong>: XP/2003/2008/2012/VISTA/7/8/10</li>
+<li><strong>ReFS</strong>: 2012/2016</li>
+</ul>
+<h3 id="fat"><a class="header" href="#fat">FAT</a></h3>
+<p><strong>FAT (文件分配表)</strong> 文件系统围绕其核心组件——文件分配表设计，该表位于卷的开始。该系统通过维护<strong>两个副本</strong>的表来保护数据，确保即使一个损坏也能保持数据完整性。该表及根文件夹必须位于<strong>固定位置</strong>，这对系统的启动过程至关重要。</p>
+<p>文件系统的基本存储单位是<strong>簇，通常为 512B</strong>，由多个扇区组成。FAT 经过多个版本的演变：</p>
+<ul>
+<li><strong>FAT12</strong>，支持 12 位簇地址，处理最多 4078 个簇（与 UNIX 一起为 4084）。</li>
+<li><strong>FAT16</strong>，增强为 16 位地址，从而容纳最多 65,517 个簇。</li>
+<li><strong>FAT32</strong>，进一步发展为 32 位地址，允许每个卷高达 268,435,456 个簇。</li>
+</ul>
+<p>所有 FAT 版本的一个显著限制是<strong>最大文件大小为 4GB</strong>，这是由于用于文件大小存储的 32 位字段所致。</p>
+<p>根目录的关键组件，特别是对于 FAT12 和 FAT16，包括：</p>
+<ul>
+<li><strong>文件/文件夹名称</strong>（最多 8 个字符）</li>
+<li><strong>属性</strong></li>
+<li><strong>创建、修改和最后访问日期</strong></li>
+<li><strong>FAT 表地址</strong>（指示文件的起始簇）</li>
+<li><strong>文件大小</strong></li>
+</ul>
+<h3 id="ext"><a class="header" href="#ext">EXT</a></h3>
+<p><strong>Ext2</strong> 是最常见的<strong>非日志</strong>分区（<strong>不经常更改的分区</strong>）的文件系统，如引导分区。<strong>Ext3/4</strong> 是<strong>日志</strong>文件系统，通常用于<strong>其余分区</strong>。</p>
+<h2 id="元数据"><a class="header" href="#元数据"><strong>元数据</strong></a></h2>
+<p>某些文件包含元数据。这些信息是关于文件内容的，有时可能对分析师很有趣，因为根据文件类型，它可能包含如下信息：</p>
+<ul>
+<li>标题</li>
+<li>使用的 MS Office 版本</li>
+<li>作者</li>
+<li>创建和最后修改日期</li>
+<li>相机型号</li>
+<li>GPS 坐标</li>
+<li>图像信息</li>
+</ul>
+<p>您可以使用像 <a href="https://exiftool.org"><strong>exiftool</strong></a> 和 <a href="https://www.easymetadata.com/metadiver-2/"><strong>Metadiver</strong></a> 这样的工具来获取文件的元数据。</p>
+<h2 id="已删除文件恢复"><a class="header" href="#已删除文件恢复"><strong>已删除文件恢复</strong></a></h2>
+<h3 id="记录的已删除文件"><a class="header" href="#记录的已删除文件">记录的已删除文件</a></h3>
+<p>如前所述，有几个地方在文件被“删除”后仍然保存着文件。这是因为通常从文件系统中删除文件只是将其标记为已删除，但数据并未被触及。因此，可以检查文件的注册表（如 MFT）并找到已删除的文件。</p>
+<p>此外，操作系统通常会保存大量关于文件系统更改和备份的信息，因此可以尝试使用它们来恢复文件或尽可能多的信息。</p>
+<p>{% content-ref url="file-data-carving-recovery-tools.md" %}
+<a href="file-data-carving-recovery-tools.html">file-data-carving-recovery-tools.md</a>
+{% endcontent-ref %}</p>
+<h3 id="文件雕刻"><a class="header" href="#文件雕刻"><strong>文件雕刻</strong></a></h3>
+<p><strong>文件雕刻</strong>是一种尝试在大量数据中<strong>查找文件</strong>的技术。此类工具的主要工作方式有三种：<strong>基于文件类型的头部和尾部</strong>、基于文件类型的<strong>结构</strong>和基于<strong>内容</strong>本身。</p>
+<p>请注意，这种技术<strong>无法检索碎片化的文件</strong>。如果文件<strong>未存储在连续的扇区中</strong>，则此技术将无法找到它，或至少无法找到其部分。</p>
+<p>您可以使用多种工具进行文件雕刻，指明您要搜索的文件类型。</p>
+<p>{% content-ref url="file-data-carving-recovery-tools.md" %}
+<a href="file-data-carving-recovery-tools.html">file-data-carving-recovery-tools.md</a>
+{% endcontent-ref %}</p>
+<h3 id="数据流-carving"><a class="header" href="#数据流-carving">数据流 <strong>C</strong>arving</a></h3>
+<p>数据流雕刻类似于文件雕刻，但<strong>不是查找完整文件，而是查找有趣的信息片段</strong>。<br />
+例如，代替查找包含记录的 URL 的完整文件，此技术将搜索 URL。</p>
+<p>{% content-ref url="file-data-carving-recovery-tools.md" %}
+<a href="file-data-carving-recovery-tools.html">file-data-carving-recovery-tools.md</a>
+{% endcontent-ref %}</p>
+<h3 id="安全删除"><a class="header" href="#安全删除">安全删除</a></h3>
+<p>显然，有一些方法可以**“安全”删除文件及其部分日志**。例如，可以<strong>多次用垃圾数据覆盖</strong>文件的内容，然后<strong>删除</strong>关于该文件的**$MFT** 和 <strong>$LOGFILE</strong> 中的<strong>日志</strong>，并<strong>删除卷影副本</strong>。<br />
+您可能会注意到，即使执行该操作，仍可能有<strong>其他部分记录了文件的存在</strong>，这确实是事实，取证专业人员的工作之一就是找到它们。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/GUID_Partition_Table">https://en.wikipedia.org/wiki/GUID_Partition_Table</a></li>
+<li><a href="http://ntfs.com/ntfs-permissions.htm">http://ntfs.com/ntfs-permissions.htm</a></li>
+<li><a href="https://www.osforensics.com/faqs-and-tutorials/how-to-scan-ntfs-i30-entries-deleted-files.html">https://www.osforensics.com/faqs-and-tutorials/how-to-scan-ntfs-i30-entries-deleted-files.html</a></li>
+<li><a href="https://docs.microsoft.com/en-us/windows-server/storage/file-server/volume-shadow-copy-service">https://docs.microsoft.com/en-us/windows-server/storage/file-server/volume-shadow-copy-service</a></li>
+<li><strong>iHackLabs 认证数字取证 Windows</strong></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/memory-dump-analysis/volatility-cheatsheet.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/file-data-carving-recovery-tools.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/memory-dump-analysis/volatility-cheatsheet.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/partitions-file-systems-carving/file-data-carving-recovery-tools.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

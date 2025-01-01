@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Writable Sys Path +Dll Hijacking Privesc</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="writable-sys-path-dll-hijacking-privesc"><a class="header" href="#writable-sys-path-dll-hijacking-privesc">Writable Sys Path +Dll Hijacking Privesc</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="介绍"><a class="header" href="#介绍">介绍</a></h2>
+<p>如果你发现你可以<strong>在系统路径文件夹中写入</strong>（注意，如果你只能在用户路径文件夹中写入，这将无效），那么你可能可以<strong>提升权限</strong>。</p>
+<p>为了做到这一点，你可以利用<strong>Dll劫持</strong>，你将<strong>劫持一个被服务或进程加载的库</strong>，该服务或进程的<strong>权限高于你的</strong>，而且因为该服务正在加载一个可能在整个系统中根本不存在的Dll，它将尝试从你可以写入的系统路径加载它。</p>
+<p>有关<strong>什么是Dll劫持</strong>的更多信息，请查看：</p>
+<p>{% content-ref url="./" %}
+<a href="./">.</a>
+{% endcontent-ref %}</p>
+<h2 id="使用dll劫持进行权限提升"><a class="header" href="#使用dll劫持进行权限提升">使用Dll劫持进行权限提升</a></h2>
+<h3 id="查找缺失的dll"><a class="header" href="#查找缺失的dll">查找缺失的Dll</a></h3>
+<p>你需要做的第一件事是<strong>识别一个运行权限高于你的进程</strong>，该进程正在尝试<strong>从你可以写入的系统路径加载Dll</strong>。</p>
+<p>在这种情况下的问题是，这些进程可能已经在运行。要找出哪些Dll缺失，你需要尽快启动procmon（在进程加载之前）。因此，要查找缺失的.dll，请执行：</p>
+<ul>
+<li><strong>创建</strong>文件夹<code>C:\privesc_hijacking</code>并将路径<code>C:\privesc_hijacking</code>添加到<strong>系统路径环境变量</strong>。你可以<strong>手动</strong>完成此操作或使用<strong>PS</strong>：</li>
+</ul>
+<pre><code class="language-powershell"># Set the folder path to create and check events for
+$folderPath = "C:\privesc_hijacking"
+
+# Create the folder if it does not exist
+if (!(Test-Path $folderPath -PathType Container)) {
+New-Item -ItemType Directory -Path $folderPath | Out-Null
+}
+
+# Set the folder path in the System environment variable PATH
+$envPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
+if ($envPath -notlike "*$folderPath*") {
+$newPath = "$envPath;$folderPath"
+[Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+}
+</code></pre>
+<ul>
+<li>启动 <strong><code>procmon</code></strong>，然后转到 <strong><code>Options</code></strong> --&gt; <strong><code>Enable boot logging</code></strong>，在提示中按 <strong><code>OK</code></strong>。</li>
+<li>然后，<strong>重启</strong>。当计算机重新启动时，<strong><code>procmon</code></strong> 将尽快开始 <strong>记录</strong> 事件。</li>
+<li>一旦 <strong>Windows</strong> 启动，再次执行 <strong><code>procmon</code></strong>，它会告诉你它已经在运行，并会 <strong>询问你是否想将</strong> 事件存储在文件中。选择 <strong>是</strong> 并 <strong>将事件存储在文件中</strong>。</li>
+<li><strong>在</strong> <strong>文件</strong> 生成后，<strong>关闭</strong> 打开的 <strong><code>procmon</code></strong> 窗口并 <strong>打开事件文件</strong>。</li>
+<li>添加这些 <strong>过滤器</strong>，你将找到一些 <strong>进程尝试从可写的系统路径文件夹加载的所有Dll</strong>：</li>
+</ul>
+<figure><img src="../../../.gitbook/assets/image (945).png" alt=""><figcaption></figcaption></figure>
+<h3 id="漏掉的-dlls"><a class="header" href="#漏掉的-dlls">漏掉的 Dlls</a></h3>
+<p>在一台免费的 <strong>虚拟 (vmware) Windows 11 机器</strong> 上运行此命令，我得到了以下结果：</p>
+<figure><img src="../../../.gitbook/assets/image (607).png" alt=""><figcaption></figcaption></figure>
+<p>在这种情况下，.exe 是无用的，所以忽略它们，漏掉的 DLL 来自：</p>
+<div class="table-wrapper"><table><thead><tr><th>服务</th><th>Dll</th><th>CMD 行</th></tr></thead><tbody>
+<tr><td>任务调度程序 (Schedule)</td><td>WptsExtensions.dll</td><td><code>C:\Windows\system32\svchost.exe -k netsvcs -p -s Schedule</code></td></tr>
+<tr><td>诊断策略服务 (DPS)</td><td>Unknown.DLL</td><td><code>C:\Windows\System32\svchost.exe -k LocalServiceNoNetwork -p -s DPS</code></td></tr>
+<tr><td>???</td><td>SharedRes.dll</td><td><code>C:\Windows\system32\svchost.exe -k UnistackSvcGroup</code></td></tr>
+</tbody></table>
+</div>
+<p>找到这个之后，我发现了一篇有趣的博客文章，它也解释了如何 <a href="https://juggernaut-sec.com/dll-hijacking/#Windows_10_Phantom_DLL_Hijacking_-_WptsExtensionsdll"><strong>滥用 WptsExtensions.dll 进行权限提升</strong></a>。这正是我们 <strong>现在要做的</strong>。</p>
+<h3 id="利用"><a class="header" href="#利用">利用</a></h3>
+<p>因此，为了 <strong>提升权限</strong>，我们将劫持库 <strong>WptsExtensions.dll</strong>。拥有 <strong>路径</strong> 和 <strong>名称</strong> 后，我们只需 <strong>生成恶意 dll</strong>。</p>
+<p>你可以 <a href="./#creating-and-compiling-dlls"><strong>尝试使用这些示例中的任何一个</strong></a>。你可以运行有效载荷，例如：获取反向 shell，添加用户，执行信标...</p>
+<p>{% hint style="warning" %}
+请注意 <strong>并非所有服务都以</strong> <strong><code>NT AUTHORITY\SYSTEM</code></strong> 运行，有些服务也以 <strong><code>NT AUTHORITY\LOCAL SERVICE</code></strong> 运行，该服务具有 <strong>较少的权限</strong>，你 <strong>将无法创建新用户</strong> 来滥用其权限。<br />
+然而，该用户具有 <strong><code>seImpersonate</code></strong> 权限，因此你可以使用<a href="../roguepotato-and-printspoofer.html"> <strong>potato suite 来提升权限</strong></a>。因此，在这种情况下，反向 shell 是比尝试创建用户更好的选择。
+{% endhint %}</p>
+<p>在撰写时，<strong>任务调度程序</strong> 服务以 <strong>Nt AUTHORITY\SYSTEM</strong> 运行。</p>
+<p>在 <strong>生成恶意 Dll</strong> 后（<em>在我的情况下，我使用了 x64 反向 shell，并得到了一个 shell，但防御者杀死了它，因为它来自 msfvenom</em>），将其保存到可写的系统路径中，命名为 <strong>WptsExtensions.dll</strong>，然后 <strong>重启</strong> 计算机（或重启服务，或做任何需要的事情以重新运行受影响的服务/程序）。</p>
+<p>当服务重新启动时，<strong>dll 应该被加载和执行</strong>（你可以 <strong>重用</strong> <strong>procmon</strong> 技巧来检查 <strong>库是否按预期加载</strong>）。</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../windows-hardening/windows-local-privilege-escalation/dll-hijacking/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../windows-hardening/windows-local-privilege-escalation/dpapi-extracting-passwords.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../windows-hardening/windows-local-privilege-escalation/dll-hijacking/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../windows-hardening/windows-local-privilege-escalation/dpapi-extracting-passwords.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

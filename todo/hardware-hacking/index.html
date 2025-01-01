@@ -1,0 +1,252 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Hardware Hacking</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="硬件黑客"><a class="header" href="#硬件黑客">硬件黑客</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="jtag"><a class="header" href="#jtag">JTAG</a></h2>
+<p>JTAG 允许执行边界扫描。边界扫描分析某些电路，包括每个引脚的嵌入式边界扫描单元和寄存器。</p>
+<p>JTAG 标准定义了 <strong>进行边界扫描的特定命令</strong>，包括以下内容：</p>
+<ul>
+<li><strong>BYPASS</strong> 允许您测试特定芯片，而无需通过其他芯片的开销。</li>
+<li><strong>SAMPLE/PRELOAD</strong> 在设备正常工作模式下获取进入和离开设备的数据样本。</li>
+<li><strong>EXTEST</strong> 设置和读取引脚状态。</li>
+</ul>
+<p>它还可以支持其他命令，例如：</p>
+<ul>
+<li><strong>IDCODE</strong> 用于识别设备</li>
+<li><strong>INTEST</strong> 用于设备的内部测试</li>
+</ul>
+<p>当您使用像 JTAGulator 这样的工具时，可能会遇到这些指令。</p>
+<h3 id="测试访问端口"><a class="header" href="#测试访问端口">测试访问端口</a></h3>
+<p>边界扫描包括四线 <strong>测试访问端口 (TAP)</strong> 的测试，这是一个通用端口，提供 <strong>访问 JTAG 测试支持</strong> 功能。TAP 使用以下五个信号：</p>
+<ul>
+<li>测试时钟输入 (<strong>TCK</strong>) TCK 是定义 TAP 控制器将执行单个操作的频率的 <strong>时钟</strong>（换句话说，跳转到状态机中的下一个状态）。</li>
+<li>测试模式选择 (<strong>TMS</strong>) 输入 TMS 控制 <strong>有限状态机</strong>。在每个时钟周期，设备的 JTAG TAP 控制器检查 TMS 引脚上的电压。如果电压低于某个阈值，则信号被视为低并解释为 0，而如果电压高于某个阈值，则信号被视为高并解释为 1。</li>
+<li>测试数据输入 (<strong>TDI</strong>) TDI 是通过扫描单元将 <strong>数据发送到芯片</strong> 的引脚。每个供应商负责定义通过此引脚的通信协议，因为 JTAG 并未定义此内容。</li>
+<li>测试数据输出 (<strong>TDO</strong>) TDO 是将 <strong>数据从芯片发送出去</strong> 的引脚。</li>
+<li>测试复位 (<strong>TRST</strong>) 输入 可选的 TRST 将有限状态机 <strong>重置为已知良好状态</strong>。或者，如果 TMS 在连续五个时钟周期内保持为 1，则会调用复位，方式与 TRST 引脚相同，这就是 TRST 是可选的原因。</li>
+</ul>
+<p>有时您可以在 PCB 上找到标记的引脚。在其他情况下，您可能需要 <strong>找到它们</strong>。</p>
+<h3 id="识别-jtag-引脚"><a class="header" href="#识别-jtag-引脚">识别 JTAG 引脚</a></h3>
+<p>检测 JTAG 端口的最快但最昂贵的方法是使用 <strong>JTAGulator</strong>，这是一种专门为此目的创建的设备（尽管它也可以 <strong>检测 UART 引脚</strong>）。</p>
+<p>它有 <strong>24 个通道</strong>，您可以将其连接到电路板引脚。然后，它执行所有可能组合的 <strong>BF 攻击</strong>，发送 <strong>IDCODE</strong> 和 <strong>BYPASS</strong> 边界扫描命令。如果收到响应，它会显示每个 JTAG 信号对应的通道。</p>
+<p>识别 JTAG 引脚的更便宜但速度较慢的方法是使用 <a href="https://github.com/cyphunk/JTAGenum/"><strong>JTAGenum</strong></a> 加载在 Arduino 兼容的微控制器上。</p>
+<p>使用 <strong>JTAGenum</strong>，您首先需要 <strong>定义您将用于枚举的探测设备的引脚</strong>。您需要参考设备的引脚图，然后将这些引脚与目标设备上的测试点连接。</p>
+<p>识别 JTAG 引脚的 <strong>第三种方法</strong> 是通过 <strong>检查 PCB</strong> 中的引脚图。在某些情况下，PCB 可能方便地提供 <strong>Tag-Connect 接口</strong>，这清楚地表明该电路板也具有 JTAG 连接器。您可以在 <a href="https://www.tag-connect.com/info/">https://www.tag-connect.com/info/</a> 查看该接口的外观。此外，检查 PCB 上芯片组的 <strong>数据手册</strong> 可能会揭示指向 JTAG 接口的引脚图。</p>
+<h2 id="sdw"><a class="header" href="#sdw">SDW</a></h2>
+<p>SWD 是一种专为调试设计的 ARM 特定协议。</p>
+<p>SWD 接口需要 <strong>两个引脚</strong>：一个双向的 <strong>SWDIO</strong> 信号，相当于 JTAG 的 <strong>TDI 和 TDO 引脚</strong>，以及一个时钟 <strong>SWCLK</strong>，相当于 JTAG 中的 <strong>TCK</strong>。许多设备支持 <strong>串行线或 JTAG 调试端口 (SWJ-DP)</strong>，这是一个结合了 JTAG 和 SWD 接口的接口，使您能够将 SWD 或 JTAG 探头连接到目标。</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../todo/pentesting-dns.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../todo/hardware-hacking/i2c.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../todo/pentesting-dns.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../todo/hardware-hacking/i2c.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

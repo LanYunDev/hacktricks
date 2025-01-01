@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Linux Environment Variables</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="linux-环境变量"><a class="header" href="#linux-环境变量">Linux 环境变量</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="全局变量"><a class="header" href="#全局变量">全局变量</a></h2>
+<p>全局变量 <strong>将被</strong> 子进程 <strong>继承</strong>。</p>
+<p>您可以通过以下方式为当前会话创建全局变量：</p>
+<pre><code class="language-bash">export MYGLOBAL="hello world"
+echo $MYGLOBAL #Prints: hello world
+</code></pre>
+<p>这个变量将可以被您当前的会话及其子进程访问。</p>
+<p>您可以通过以下方式<strong>删除</strong>一个变量：</p>
+<pre><code class="language-bash">unset MYGLOBAL
+</code></pre>
+<h2 id="local-variables"><a class="header" href="#local-variables">Local variables</a></h2>
+<p><strong>局部变量</strong>只能被<strong>当前的 shell/script</strong> <strong>访问</strong>。</p>
+<pre><code class="language-bash">LOCAL="my local"
+echo $LOCAL
+unset LOCAL
+</code></pre>
+<h2 id="列出当前变量"><a class="header" href="#列出当前变量">列出当前变量</a></h2>
+<pre><code class="language-bash">set
+env
+printenv
+cat /proc/$$/environ
+cat /proc/`python -c "import os; print(os.getppid())"`/environ
+</code></pre>
+<h2 id="common-variables"><a class="header" href="#common-variables">Common variables</a></h2>
+<p>From: <a href="https://geek-university.com/linux/common-environment-variables/">https://geek-university.com/linux/common-environment-variables/</a></p>
+<ul>
+<li><strong>DISPLAY</strong> – <strong>X</strong> 使用的显示器。此变量通常设置为 <strong>:0.0</strong>，这意味着当前计算机上的第一个显示器。</li>
+<li><strong>EDITOR</strong> – 用户首选的文本编辑器。</li>
+<li><strong>HISTFILESIZE</strong> – 历史文件中包含的最大行数。</li>
+<li><strong>HISTSIZE</strong> – 用户完成会话时添加到历史文件的行数。</li>
+<li><strong>HOME</strong> – 你的主目录。</li>
+<li><strong>HOSTNAME</strong> – 计算机的主机名。</li>
+<li><strong>LANG</strong> – 你当前的语言。</li>
+<li><strong>MAIL</strong> – 用户邮件存储的位置。通常是 <strong>/var/spool/mail/USER</strong>。</li>
+<li><strong>MANPATH</strong> – 搜索手册页的目录列表。</li>
+<li><strong>OSTYPE</strong> – 操作系统的类型。</li>
+<li><strong>PS1</strong> – bash 中的默认提示符。</li>
+<li><strong>PATH</strong> – 存储所有目录的路径，这些目录包含你想通过指定文件名而不是相对或绝对路径执行的二进制文件。</li>
+<li><strong>PWD</strong> – 当前工作目录。</li>
+<li><strong>SHELL</strong> – 当前命令 shell 的路径（例如，<strong>/bin/bash</strong>）。</li>
+<li><strong>TERM</strong> – 当前终端类型（例如，<strong>xterm</strong>）。</li>
+<li><strong>TZ</strong> – 你的时区。</li>
+<li><strong>USER</strong> – 你当前的用户名。</li>
+</ul>
+<h2 id="interesting-variables-for-hacking"><a class="header" href="#interesting-variables-for-hacking">Interesting variables for hacking</a></h2>
+<h3 id="histfilesize"><a class="header" href="#histfilesize"><strong>HISTFILESIZE</strong></a></h3>
+<p>将 <strong>此变量的值更改为 0</strong>，这样当你 <strong>结束会话</strong> 时，<strong>历史文件</strong> (~/.bash_history) <strong>将被删除</strong>。</p>
+<pre><code class="language-bash">export HISTFILESIZE=0
+</code></pre>
+<h3 id="histsize"><a class="header" href="#histsize"><strong>HISTSIZE</strong></a></h3>
+<p>将此变量的<strong>值更改为 0</strong>，这样当您<strong>结束会话</strong>时，任何命令都将被添加到<strong>历史文件</strong>（~/.bash_history）中。</p>
+<pre><code class="language-bash">export HISTSIZE=0
+</code></pre>
+<h3 id="http_proxy--https_proxy"><a class="header" href="#http_proxy--https_proxy">http_proxy &amp; https_proxy</a></h3>
+<p>进程将使用此处声明的 <strong>proxy</strong> 通过 <strong>http 或 https</strong> 连接到互联网。</p>
+<pre><code class="language-bash">export http_proxy="http://10.10.10.10:8080"
+export https_proxy="http://10.10.10.10:8080"
+</code></pre>
+<h3 id="ssl_cert_file--ssl_cert_dir"><a class="header" href="#ssl_cert_file--ssl_cert_dir">SSL_CERT_FILE &amp; SSL_CERT_DIR</a></h3>
+<p>进程将信任<strong>这些环境变量</strong>中指示的证书。</p>
+<pre><code class="language-bash">export SSL_CERT_FILE=/path/to/ca-bundle.pem
+export SSL_CERT_DIR=/path/to/ca-certificates
+</code></pre>
+<h3 id="ps1"><a class="header" href="#ps1">PS1</a></h3>
+<p>更改提示的外观。</p>
+<p><a href="https://gist.github.com/carlospolop/43f7cd50f3deea972439af3222b68808"><strong>这是一个例子</strong></a></p>
+<p>Root:</p>
+<p><img src="../.gitbook/assets/image%20(897).png" alt="" /></p>
+<p>普通用户:</p>
+<p><img src="../.gitbook/assets/image%20(740).png" alt="" /></p>
+<p>一个、两个和三个后台作业:</p>
+<p><img src="../.gitbook/assets/image%20(145).png" alt="" /></p>
+<p>一个后台作业，一个已停止，最后一个命令未正确完成:</p>
+<p><img src="../.gitbook/assets/image%20(715).png" alt="" /></p>
+<p>{% hint style="success" %}
+学习和实践 AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/ddexec.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../linux-hardening/linux-post-exploitation/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/ddexec.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../linux-hardening/linux-post-exploitation/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

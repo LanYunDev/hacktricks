@@ -1,0 +1,388 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Docker --privileged</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="docker---privileged"><a class="header" href="#docker---privileged">Docker --privileged</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="what-affects"><a class="header" href="#what-affects">What Affects</a></h2>
+<p>当你以特权模式运行容器时，你正在禁用以下保护：</p>
+<h3 id="mount-dev"><a class="header" href="#mount-dev">Mount /dev</a></h3>
+<p>在特权容器中，所有的 <strong>设备可以在 <code>/dev/</code> 中访问</strong>。因此，你可以通过 <strong>挂载</strong> 主机的磁盘来 <strong>逃逸</strong>。</p>
+<p>{% tabs %}
+{% tab title="Inside default container" %}</p>
+<pre><code class="language-bash"># docker run --rm -it alpine sh
+ls /dev
+console  fd       mqueue   ptmx     random   stderr   stdout   urandom
+core     full     null     pts      shm      stdin    tty      zero
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="特权容器内部" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+ls /dev
+cachefiles       mapper           port             shm              tty24            tty44            tty7
+console          mem              psaux            stderr           tty25            tty45            tty8
+core             mqueue           ptmx             stdin            tty26            tty46            tty9
+cpu              nbd0             pts              stdout           tty27            tty47            ttyS0
+[...]
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="只读内核文件系统"><a class="header" href="#只读内核文件系统">只读内核文件系统</a></h3>
+<p>内核文件系统为进程提供了一种修改内核行为的机制。然而，对于容器进程，我们希望防止它们对内核进行任何更改。因此，我们在容器内将内核文件系统挂载为<strong>只读</strong>，确保容器进程无法修改内核。</p>
+<p>{% tabs %}
+{% tab title="默认容器内部" %}</p>
+<pre><code class="language-bash"># docker run --rm -it alpine sh
+mount | grep '(ro'
+sysfs on /sys type sysfs (ro,nosuid,nodev,noexec,relatime)
+cpuset on /sys/fs/cgroup/cpuset type cgroup (ro,nosuid,nodev,noexec,relatime,cpuset)
+cpu on /sys/fs/cgroup/cpu type cgroup (ro,nosuid,nodev,noexec,relatime,cpu)
+cpuacct on /sys/fs/cgroup/cpuacct type cgroup (ro,nosuid,nodev,noexec,relatime,cpuacct)
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="内部特权容器" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+mount  | grep '(ro'
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="遮蔽内核文件系统"><a class="header" href="#遮蔽内核文件系统">遮蔽内核文件系统</a></h3>
+<p><strong>/proc</strong> 文件系统是选择性可写的，但出于安全考虑，某些部分通过用 <strong>tmpfs</strong> 进行覆盖而屏蔽了写入和读取访问，确保容器进程无法访问敏感区域。</p>
+<p>{% hint style="info" %}
+<strong>tmpfs</strong> 是一种将所有文件存储在虚拟内存中的文件系统。tmpfs 不会在你的硬盘上创建任何文件。因此，如果你卸载一个 tmpfs 文件系统，里面的所有文件将永远丢失。
+{% endhint %}</p>
+<p>{% tabs %}
+{% tab title="默认容器内部" %}</p>
+<pre><code class="language-bash"># docker run --rm -it alpine sh
+mount  | grep /proc.*tmpfs
+tmpfs on /proc/acpi type tmpfs (ro,relatime)
+tmpfs on /proc/kcore type tmpfs (rw,nosuid,size=65536k,mode=755)
+tmpfs on /proc/keys type tmpfs (rw,nosuid,size=65536k,mode=755)
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="特权容器内部" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+mount  | grep /proc.*tmpfs
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="linux-能力"><a class="header" href="#linux-能力">Linux 能力</a></h3>
+<p>容器引擎以 <strong>有限数量的能力</strong> 启动容器，以控制容器内部的操作。<strong>特权</strong> 容器具有 <strong>所有</strong> 的 <strong>能力</strong> 可用。要了解能力，请阅读：</p>
+<p>{% content-ref url="../linux-capabilities.md" %}
+<a href="../linux-capabilities.html">linux-capabilities.md</a>
+{% endcontent-ref %}</p>
+<p>{% tabs %}
+{% tab title="默认容器内部" %}</p>
+<pre><code class="language-bash"># docker run --rm -it alpine sh
+apk add -U libcap; capsh --print
+[...]
+Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=eip
+Bounding set =cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap
+[...]
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="内部特权容器" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+apk add -U libcap; capsh --print
+[...]
+Current: =eip cap_perfmon,cap_bpf,cap_checkpoint_restore-eip
+Bounding set =cap_chown,cap_dac_override,cap_dac_read_search,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_linux_immutable,cap_net_bind_service,cap_net_broadcast,cap_net_admin,cap_net_raw,cap_ipc_lock,cap_ipc_owner,cap_sys_module,cap_sys_rawio,cap_sys_chroot,cap_sys_ptrace,cap_sys_pacct,cap_sys_admin,cap_sys_boot,cap_sys_nice,cap_sys_resource,cap_sys_time,cap_sys_tty_config,cap_mknod,cap_lease,cap_audit_write,cap_audit_control,cap_setfcap,cap_mac_override,cap_mac_admin,cap_syslog,cap_wake_alarm,cap_block_suspend,cap_audit_read
+[...]
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>您可以通过使用 <code>--cap-add</code> 和 <code>--cap-drop</code> 标志来操纵容器可用的能力，而无需以 <code>--privileged</code> 模式运行。</p>
+<h3 id="seccomp"><a class="header" href="#seccomp">Seccomp</a></h3>
+<p><strong>Seccomp</strong> 对于 <strong>限制</strong> 容器可以调用的 <strong>syscalls</strong> 非常有用。默认情况下，在运行 docker 容器时启用默认的 seccomp 配置文件，但在特权模式下它是禁用的。有关 Seccomp 的更多信息，请在这里查看：</p>
+<p>{% content-ref url="seccomp.md" %}
+<a href="seccomp.html">seccomp.md</a>
+{% endcontent-ref %}</p>
+<p>{% tabs %}
+{% tab title="Inside default container" %}</p>
+<pre><code class="language-bash"># docker run --rm -it alpine sh
+grep Seccomp /proc/1/status
+Seccomp:	2
+Seccomp_filters:	1
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="内部特权容器" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+grep Seccomp /proc/1/status
+Seccomp:	0
+Seccomp_filters:	0
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<pre><code class="language-bash"># You can manually disable seccomp in docker with
+--security-opt seccomp=unconfined
+</code></pre>
+<p>另外，请注意，当在 <strong>Kubernetes</strong> 集群中使用 Docker（或其他 CRI）时，<strong>seccomp 过滤器默认是禁用的</strong>。</p>
+<h3 id="apparmor"><a class="header" href="#apparmor">AppArmor</a></h3>
+<p><strong>AppArmor</strong> 是一种内核增强，用于将 <strong>容器</strong> 限制在 <strong>有限</strong> 的 <strong>资源</strong> 集合中，具有 <strong>每个程序的配置文件</strong>。当您使用 <code>--privileged</code> 标志运行时，此保护将被禁用。</p>
+<p>{% content-ref url="apparmor.md" %}
+<a href="apparmor.html">apparmor.md</a>
+{% endcontent-ref %}</p>
+<pre><code class="language-bash"># You can manually disable seccomp in docker with
+--security-opt apparmor=unconfined
+</code></pre>
+<h3 id="selinux"><a class="header" href="#selinux">SELinux</a></h3>
+<p>使用 <code>--privileged</code> 标志运行容器会禁用 <strong>SELinux 标签</strong>，导致其继承容器引擎的标签，通常为 <code>unconfined</code>，赋予与容器引擎相似的完全访问权限。在无根模式下，它使用 <code>container_runtime_t</code>，而在根模式下，应用 <code>spc_t</code>。</p>
+<p>{% content-ref url="../selinux.md" %}
+<a href="../selinux.html">selinux.md</a>
+{% endcontent-ref %}</p>
+<pre><code class="language-bash"># You can manually disable selinux in docker with
+--security-opt label:disable
+</code></pre>
+<h2 id="什么不受影响"><a class="header" href="#什么不受影响">什么不受影响</a></h2>
+<h3 id="命名空间"><a class="header" href="#命名空间">命名空间</a></h3>
+<p>命名空间<strong>不受</strong><code>--privileged</code>标志的影响。尽管它们没有启用安全约束，但它们<strong>并不能看到系统或主机网络上的所有进程，例如</strong>。用户可以通过使用**<code>--pid=host</code>、<code>--net=host</code>、<code>--ipc=host</code>、<code>--uts=host</code>**容器引擎标志来禁用单个命名空间。</p>
+<p>{% tabs %}
+{% tab title="在默认特权容器内" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged -it alpine sh
+ps -ef
+PID   USER     TIME  COMMAND
+1 root      0:00 sh
+18 root      0:00 ps -ef
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="内部 --pid=host 容器" %}</p>
+<pre><code class="language-bash"># docker run --rm --privileged --pid=host -it alpine sh
+ps -ef
+PID   USER     TIME  COMMAND
+1 root      0:03 /sbin/init
+2 root      0:00 [kthreadd]
+3 root      0:00 [rcu_gp]ount | grep /proc.*tmpfs
+[...]
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="用户命名空间"><a class="header" href="#用户命名空间">用户命名空间</a></h3>
+<p><strong>默认情况下，容器引擎不使用用户命名空间，除了无根容器</strong>，无根容器需要它们进行文件系统挂载和使用多个 UID。用户命名空间是无根容器的核心，无法禁用，并通过限制特权显著增强安全性。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.redhat.com/sysadmin/privileged-flag-container-engines">https://www.redhat.com/sysadmin/privileged-flag-container-engines</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/privilege-escalation/docker-security/cgroups.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/privilege-escalation/docker-security/cgroups.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

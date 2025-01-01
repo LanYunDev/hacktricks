@@ -1,0 +1,834 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>5. LLM Architecture</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="5-llm架构"><a class="header" href="#5-llm架构">5. LLM架构</a></h1>
+<h2 id="llm架构"><a class="header" href="#llm架构">LLM架构</a></h2>
+<p>{% hint style="success" %}
+第五阶段的目标非常简单：<strong>开发完整LLM的架构</strong>。将所有内容整合在一起，应用所有层并创建所有功能以生成文本或将文本转换为ID及其反向操作。</p>
+<p>该架构将用于训练和训练后的文本预测。
+{% endhint %}</p>
+<p>LLM架构示例来自 <a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/01_main-chapter-code/ch04.ipynb">https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/01_main-chapter-code/ch04.ipynb</a>:</p>
+<p>可以观察到高层次的表示：</p>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1).png" alt="" width="563"><figcaption><p><a href="https://camo.githubusercontent.com/6c8c392f72d5b9e86c94aeb9470beab435b888d24135926f1746eb88e0cc18fb/68747470733a2f2f73656261737469616e72617363686b612e636f6d2f696d616765732f4c4c4d732d66726f6d2d736372617463682d696d616765732f636830345f636f6d707265737365642f31332e776562703f31">https://camo.githubusercontent.com/6c8c392f72d5b9e86c94aeb9470beab435b888d24135926f1746eb88e0cc18fb/68747470733a2f2f73656261737469616e72617363686b612e636f6d2f696d616765732f4c4c4d732d66726f6d2d736372617463682d696d616765732f636830345f636f6d707265737365642f31332e776562703f31</a></p></figcaption></figure>
+<ol>
+<li><strong>输入（标记化文本）</strong>：该过程以标记化文本开始，该文本被转换为数值表示。</li>
+<li><strong>标记嵌入和位置嵌入层</strong>：标记化文本通过<strong>标记嵌入</strong>层和<strong>位置嵌入层</strong>，后者捕捉序列中标记的位置，这对理解单词顺序至关重要。</li>
+<li><strong>变换器块</strong>：模型包含<strong>12个变换器块</strong>，每个块有多个层。这些块重复以下序列：</li>
+</ol>
+<ul>
+<li><strong>掩蔽多头注意力</strong>：允许模型同时关注输入文本的不同部分。</li>
+<li><strong>层归一化</strong>：一个归一化步骤，以稳定和改善训练。</li>
+<li><strong>前馈层</strong>：负责处理来自注意力层的信息并对下一个标记进行预测。</li>
+<li><strong>丢弃层</strong>：这些层通过在训练期间随机丢弃单元来防止过拟合。</li>
+</ul>
+<ol start="4">
+<li><strong>最终输出层</strong>：模型输出一个<strong>4x50,257维的张量</strong>，其中<strong>50,257</strong>表示词汇表的大小。该张量中的每一行对应于模型用于预测序列中下一个单词的向量。</li>
+<li><strong>目标</strong>：目标是将这些嵌入转换回文本。具体来说，输出的最后一行用于生成下一个单词，在该图中表示为“前进”。</li>
+</ol>
+<h3 id="代码表示"><a class="header" href="#代码表示">代码表示</a></h3>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+import tiktoken
+
+class GELU(nn.Module):
+def __init__(self):
+super().__init__()
+
+def forward(self, x):
+return 0.5 * x * (1 + torch.tanh(
+torch.sqrt(torch.tensor(2.0 / torch.pi)) *
+(x + 0.044715 * torch.pow(x, 3))
+))
+
+class FeedForward(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.layers = nn.Sequential(
+nn.Linear(cfg["emb_dim"], 4 * cfg["emb_dim"]),
+GELU(),
+nn.Linear(4 * cfg["emb_dim"], cfg["emb_dim"]),
+)
+
+def forward(self, x):
+return self.layers(x)
+
+class MultiHeadAttention(nn.Module):
+def __init__(self, d_in, d_out, context_length, dropout, num_heads, qkv_bias=False):
+super().__init__()
+assert d_out % num_heads == 0, "d_out must be divisible by num_heads"
+
+self.d_out = d_out
+self.num_heads = num_heads
+self.head_dim = d_out // num_heads # Reduce the projection dim to match desired output dim
+
+self.W_query = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_key = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.W_value = nn.Linear(d_in, d_out, bias=qkv_bias)
+self.out_proj = nn.Linear(d_out, d_out)  # Linear layer to combine head outputs
+self.dropout = nn.Dropout(dropout)
+self.register_buffer('mask', torch.triu(torch.ones(context_length, context_length), diagonal=1))
+
+def forward(self, x):
+b, num_tokens, d_in = x.shape
+
+keys = self.W_key(x) # Shape: (b, num_tokens, d_out)
+queries = self.W_query(x)
+values = self.W_value(x)
+
+# We implicitly split the matrix by adding a `num_heads` dimension
+# Unroll last dim: (b, num_tokens, d_out) -&gt; (b, num_tokens, num_heads, head_dim)
+keys = keys.view(b, num_tokens, self.num_heads, self.head_dim)
+values = values.view(b, num_tokens, self.num_heads, self.head_dim)
+queries = queries.view(b, num_tokens, self.num_heads, self.head_dim)
+
+# Transpose: (b, num_tokens, num_heads, head_dim) -&gt; (b, num_heads, num_tokens, head_dim)
+keys = keys.transpose(1, 2)
+queries = queries.transpose(1, 2)
+values = values.transpose(1, 2)
+
+# Compute scaled dot-product attention (aka self-attention) with a causal mask
+attn_scores = queries @ keys.transpose(2, 3)  # Dot product for each head
+
+# Original mask truncated to the number of tokens and converted to boolean
+mask_bool = self.mask.bool()[:num_tokens, :num_tokens]
+
+# Use the mask to fill attention scores
+attn_scores.masked_fill_(mask_bool, -torch.inf)
+
+attn_weights = torch.softmax(attn_scores / keys.shape[-1]**0.5, dim=-1)
+attn_weights = self.dropout(attn_weights)
+
+# Shape: (b, num_tokens, num_heads, head_dim)
+context_vec = (attn_weights @ values).transpose(1, 2)
+
+# Combine heads, where self.d_out = self.num_heads * self.head_dim
+context_vec = context_vec.contiguous().view(b, num_tokens, self.d_out)
+context_vec = self.out_proj(context_vec) # optional projection
+
+return context_vec
+
+class LayerNorm(nn.Module):
+def __init__(self, emb_dim):
+super().__init__()
+self.eps = 1e-5
+self.scale = nn.Parameter(torch.ones(emb_dim))
+self.shift = nn.Parameter(torch.zeros(emb_dim))
+
+def forward(self, x):
+mean = x.mean(dim=-1, keepdim=True)
+var = x.var(dim=-1, keepdim=True, unbiased=False)
+norm_x = (x - mean) / torch.sqrt(var + self.eps)
+return self.scale * norm_x + self.shift
+
+class TransformerBlock(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.att = MultiHeadAttention(
+d_in=cfg["emb_dim"],
+d_out=cfg["emb_dim"],
+context_length=cfg["context_length"],
+num_heads=cfg["n_heads"],
+dropout=cfg["drop_rate"],
+qkv_bias=cfg["qkv_bias"])
+self.ff = FeedForward(cfg)
+self.norm1 = LayerNorm(cfg["emb_dim"])
+self.norm2 = LayerNorm(cfg["emb_dim"])
+self.drop_shortcut = nn.Dropout(cfg["drop_rate"])
+
+def forward(self, x):
+# Shortcut connection for attention block
+shortcut = x
+x = self.norm1(x)
+x = self.att(x)  # Shape [batch_size, num_tokens, emb_size]
+x = self.drop_shortcut(x)
+x = x + shortcut  # Add the original input back
+
+# Shortcut connection for feed forward block
+shortcut = x
+x = self.norm2(x)
+x = self.ff(x)
+x = self.drop_shortcut(x)
+x = x + shortcut  # Add the original input back
+
+return x
+
+
+class GPTModel(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.tok_emb = nn.Embedding(cfg["vocab_size"], cfg["emb_dim"])
+self.pos_emb = nn.Embedding(cfg["context_length"], cfg["emb_dim"])
+self.drop_emb = nn.Dropout(cfg["drop_rate"])
+
+self.trf_blocks = nn.Sequential(
+*[TransformerBlock(cfg) for _ in range(cfg["n_layers"])])
+
+self.final_norm = LayerNorm(cfg["emb_dim"])
+self.out_head = nn.Linear(
+cfg["emb_dim"], cfg["vocab_size"], bias=False
+)
+
+def forward(self, in_idx):
+batch_size, seq_len = in_idx.shape
+tok_embeds = self.tok_emb(in_idx)
+pos_embeds = self.pos_emb(torch.arange(seq_len, device=in_idx.device))
+x = tok_embeds + pos_embeds  # Shape [batch_size, num_tokens, emb_size]
+x = self.drop_emb(x)
+x = self.trf_blocks(x)
+x = self.final_norm(x)
+logits = self.out_head(x)
+return logits
+
+GPT_CONFIG_124M = {
+"vocab_size": 50257,    # Vocabulary size
+"context_length": 1024, # Context length
+"emb_dim": 768,         # Embedding dimension
+"n_heads": 12,          # Number of attention heads
+"n_layers": 12,         # Number of layers
+"drop_rate": 0.1,       # Dropout rate
+"qkv_bias": False       # Query-Key-Value bias
+}
+
+torch.manual_seed(123)
+model = GPTModel(GPT_CONFIG_124M)
+out = model(batch)
+print("Input batch:\n", batch)
+print("\nOutput shape:", out.shape)
+print(out)
+</code></pre>
+<h3 id="gelu-激活函数"><a class="header" href="#gelu-激活函数"><strong>GELU 激活函数</strong></a></h3>
+<pre><code class="language-python"># From https://github.com/rasbt/LLMs-from-scratch/tree/main/ch04
+class GELU(nn.Module):
+def __init__(self):
+super().__init__()
+
+def forward(self, x):
+return 0.5 * x * (1 + torch.tanh(
+torch.sqrt(torch.tensor(2.0 / torch.pi)) *
+(x + 0.044715 * torch.pow(x, 3))
+))
+</code></pre>
+<h4 id="目的和功能"><a class="header" href="#目的和功能"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>GELU (高斯误差线性单元):</strong> 一种激活函数，向模型引入非线性。</li>
+<li><strong>平滑激活:</strong> 与ReLU不同，ReLU将负输入归零，GELU平滑地将输入映射到输出，允许负输入的小非零值。</li>
+<li><strong>数学定义:</strong></li>
+</ul>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<p>{% hint style="info" %}
+在FeedForward层内部的线性层之后使用此函数的目的是将线性数据转换为非线性，以便模型能够学习复杂的非线性关系。
+{% endhint %}</p>
+<h3 id="前馈神经网络"><a class="header" href="#前馈神经网络"><strong>前馈神经网络</strong></a></h3>
+<p><em>已添加形状作为注释，以更好地理解矩阵的形状:</em></p>
+<pre><code class="language-python"># From https://github.com/rasbt/LLMs-from-scratch/tree/main/ch04
+class FeedForward(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.layers = nn.Sequential(
+nn.Linear(cfg["emb_dim"], 4 * cfg["emb_dim"]),
+GELU(),
+nn.Linear(4 * cfg["emb_dim"], cfg["emb_dim"]),
+)
+
+def forward(self, x):
+# x shape: (batch_size, seq_len, emb_dim)
+
+x = self.layers[0](x)# x shape: (batch_size, seq_len, 4 * emb_dim)
+x = self.layers[1](x) # x shape remains: (batch_size, seq_len, 4 * emb_dim)
+x = self.layers[2](x) # x shape: (batch_size, seq_len, emb_dim)
+return x  # Output shape: (batch_size, seq_len, emb_dim)
+</code></pre>
+<h4 id="目的和功能-1"><a class="header" href="#目的和功能-1"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>位置-wise 前馈网络：</strong> 对每个位置分别且相同地应用一个两层全连接网络。</li>
+<li><strong>层详细信息：</strong></li>
+<li><strong>第一线性层：</strong> 将维度从 <code>emb_dim</code> 扩展到 <code>4 * emb_dim</code>。</li>
+<li><strong>GELU 激活：</strong> 应用非线性。</li>
+<li><strong>第二线性层：</strong> 将维度减少回 <code>emb_dim</code>。</li>
+</ul>
+<p>{% hint style="info" %}
+如您所见，前馈网络使用了 3 层。第一层是一个线性层，它将维度乘以 4，使用线性权重（模型内部训练的参数）。然后，在所有这些维度中使用 GELU 函数应用非线性变化，以捕捉更丰富的表示，最后再使用另一个线性层返回到原始维度大小。
+{% endhint %}</p>
+<h3 id="多头注意力机制"><a class="header" href="#多头注意力机制"><strong>多头注意力机制</strong></a></h3>
+<p>这在前面的部分已经解释过。</p>
+<h4 id="目的和功能-2"><a class="header" href="#目的和功能-2"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>多头自注意力：</strong> 允许模型在编码一个标记时关注输入序列中的不同位置。</li>
+<li><strong>关键组件：</strong></li>
+<li><strong>查询、键、值：</strong> 输入的线性投影，用于计算注意力分数。</li>
+<li><strong>头：</strong> 多个并行运行的注意力机制（<code>num_heads</code>），每个具有减少的维度（<code>head_dim</code>）。</li>
+<li><strong>注意力分数：</strong> 作为查询和键的点积计算，经过缩放和掩蔽。</li>
+<li><strong>掩蔽：</strong> 应用因果掩蔽，以防止模型关注未来的标记（对像 GPT 这样的自回归模型很重要）。</li>
+<li><strong>注意力权重：</strong> 掩蔽和缩放后的注意力分数的 Softmax。</li>
+<li><strong>上下文向量：</strong> 根据注意力权重的值的加权和。</li>
+<li><strong>输出投影：</strong> 线性层以组合所有头的输出。</li>
+</ul>
+<p>{% hint style="info" %}
+该网络的目标是找到同一上下文中标记之间的关系。此外，标记被分配到不同的头中，以防止过拟合，尽管每个头找到的最终关系在该网络的末尾被组合在一起。</p>
+<p>此外，在训练期间应用 <strong>因果掩蔽</strong>，以便在查看特定标记的关系时不考虑后来的标记，并且还应用了一些 <strong>dropout</strong> 以 <strong>防止过拟合</strong>。
+{% endhint %}</p>
+<h3 id="层-归一化"><a class="header" href="#层-归一化"><strong>层</strong> 归一化</a></h3>
+<pre><code class="language-python"># From https://github.com/rasbt/LLMs-from-scratch/tree/main/ch04
+class LayerNorm(nn.Module):
+def __init__(self, emb_dim):
+super().__init__()
+self.eps = 1e-5 # Prevent division by zero during normalization.
+self.scale = nn.Parameter(torch.ones(emb_dim))
+self.shift = nn.Parameter(torch.zeros(emb_dim))
+
+def forward(self, x):
+mean = x.mean(dim=-1, keepdim=True)
+var = x.var(dim=-1, keepdim=True, unbiased=False)
+norm_x = (x - mean) / torch.sqrt(var + self.eps)
+return self.scale * norm_x + self.shift
+</code></pre>
+<h4 id="目的和功能-3"><a class="header" href="#目的和功能-3"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>层归一化：</strong> 一种用于对每个批次中单个示例的特征（嵌入维度）进行归一化的技术。</li>
+<li><strong>组件：</strong></li>
+<li><strong><code>eps</code>：</strong> 一个小常数（<code>1e-5</code>），在归一化过程中添加到方差中以防止除以零。</li>
+<li><strong><code>scale</code> 和 <code>shift</code>：</strong> 可学习参数（<code>nn.Parameter</code>），允许模型对归一化输出进行缩放和偏移。它们分别初始化为1和0。</li>
+<li><strong>归一化过程：</strong></li>
+<li><strong>计算均值（<code>mean</code>）：</strong> 计算输入 <code>x</code> 在嵌入维度（<code>dim=-1</code>）上的均值，同时保持维度以便广播（<code>keepdim=True</code>）。</li>
+<li><strong>计算方差（<code>var</code>）：</strong> 计算 <code>x</code> 在嵌入维度上的方差，同样保持维度。<code>unbiased=False</code> 参数确保方差使用有偏估计量计算（除以 <code>N</code> 而不是 <code>N-1</code>），这在对特征而非样本进行归一化时是合适的。</li>
+<li><strong>归一化（<code>norm_x</code>）：</strong> 从 <code>x</code> 中减去均值，并除以方差加 <code>eps</code> 的平方根。</li>
+<li><strong>缩放和偏移：</strong> 将可学习的 <code>scale</code> 和 <code>shift</code> 参数应用于归一化输出。</li>
+</ul>
+<p>{% hint style="info" %}
+目标是确保同一标记的所有维度的均值为0，方差为1。这样做的目的是<strong>通过减少内部协变量偏移来稳定深度神经网络的训练</strong>，内部协变量偏移是指由于训练过程中参数更新而导致的网络激活分布的变化。
+{% endhint %}</p>
+<h3 id="transformer-块"><a class="header" href="#transformer-块"><strong>Transformer 块</strong></a></h3>
+<p><em>已添加形状作为注释，以更好地理解矩阵的形状：</em></p>
+<pre><code class="language-python"># From https://github.com/rasbt/LLMs-from-scratch/tree/main/ch04
+
+class TransformerBlock(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.att = MultiHeadAttention(
+d_in=cfg["emb_dim"],
+d_out=cfg["emb_dim"],
+context_length=cfg["context_length"],
+num_heads=cfg["n_heads"],
+dropout=cfg["drop_rate"],
+qkv_bias=cfg["qkv_bias"]
+)
+self.ff = FeedForward(cfg)
+self.norm1 = LayerNorm(cfg["emb_dim"])
+self.norm2 = LayerNorm(cfg["emb_dim"])
+self.drop_shortcut = nn.Dropout(cfg["drop_rate"])
+
+def forward(self, x):
+# x shape: (batch_size, seq_len, emb_dim)
+
+# Shortcut connection for attention block
+shortcut = x  # shape: (batch_size, seq_len, emb_dim)
+x = self.norm1(x)  # shape remains (batch_size, seq_len, emb_dim)
+x = self.att(x)    # shape: (batch_size, seq_len, emb_dim)
+x = self.drop_shortcut(x)  # shape remains (batch_size, seq_len, emb_dim)
+x = x + shortcut   # shape: (batch_size, seq_len, emb_dim)
+
+# Shortcut connection for feedforward block
+shortcut = x       # shape: (batch_size, seq_len, emb_dim)
+x = self.norm2(x)  # shape remains (batch_size, seq_len, emb_dim)
+x = self.ff(x)     # shape: (batch_size, seq_len, emb_dim)
+x = self.drop_shortcut(x)  # shape remains (batch_size, seq_len, emb_dim)
+x = x + shortcut   # shape: (batch_size, seq_len, emb_dim)
+
+return x  # Output shape: (batch_size, seq_len, emb_dim)
+
+</code></pre>
+<h4 id="目的和功能-4"><a class="header" href="#目的和功能-4"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>层的组成：</strong> 结合多头注意力、前馈网络、层归一化和残差连接。</li>
+<li><strong>层归一化：</strong> 在注意力和前馈层之前应用，以确保稳定的训练。</li>
+<li><strong>残差连接（快捷方式）：</strong> 将层的输入添加到其输出，以改善梯度流并使深层网络的训练成为可能。</li>
+<li><strong>丢弃法：</strong> 在注意力和前馈层之后应用，以进行正则化。</li>
+</ul>
+<h4 id="逐步功能"><a class="header" href="#逐步功能"><strong>逐步功能</strong></a></h4>
+<ol>
+<li><strong>第一个残差路径（自注意力）：</strong></li>
+</ol>
+<ul>
+<li><strong>输入（<code>shortcut</code>）：</strong> 保存原始输入以用于残差连接。</li>
+<li><strong>层归一化（<code>norm1</code>）：</strong> 归一化输入。</li>
+<li><strong>多头注意力（<code>att</code>）：</strong> 应用自注意力。</li>
+<li><strong>丢弃法（<code>drop_shortcut</code>）：</strong> 应用丢弃法以进行正则化。</li>
+<li><strong>添加残差（<code>x + shortcut</code>）：</strong> 与原始输入结合。</li>
+</ul>
+<ol start="2">
+<li><strong>第二个残差路径（前馈）：</strong></li>
+</ol>
+<ul>
+<li><strong>输入（<code>shortcut</code>）：</strong> 保存更新后的输入以用于下一个残差连接。</li>
+<li><strong>层归一化（<code>norm2</code>）：</strong> 归一化输入。</li>
+<li><strong>前馈网络（<code>ff</code>）：</strong> 应用前馈变换。</li>
+<li><strong>丢弃法（<code>drop_shortcut</code>）：</strong> 应用丢弃法。</li>
+<li><strong>添加残差（<code>x + shortcut</code>）：</strong> 与第一个残差路径的输入结合。</li>
+</ul>
+<p>{% hint style="info" %}
+变换器块将所有网络组合在一起，并应用一些<strong>归一化</strong>和<strong>丢弃法</strong>以改善训练的稳定性和结果。<br />
+注意丢弃法是在每个网络使用后进行的，而归一化是在之前应用的。</p>
+<p>此外，它还使用快捷方式，即<strong>将网络的输出与其输入相加</strong>。这有助于防止消失梯度问题，确保初始层的贡献与最后一层“相同”。
+{% endhint %}</p>
+<h3 id="gptmodel"><a class="header" href="#gptmodel"><strong>GPTModel</strong></a></h3>
+<p><em>形状已作为注释添加，以更好地理解矩阵的形状：</em></p>
+<pre><code class="language-python"># From https://github.com/rasbt/LLMs-from-scratch/tree/main/ch04
+class GPTModel(nn.Module):
+def __init__(self, cfg):
+super().__init__()
+self.tok_emb = nn.Embedding(cfg["vocab_size"], cfg["emb_dim"])
+# shape: (vocab_size, emb_dim)
+
+self.pos_emb = nn.Embedding(cfg["context_length"], cfg["emb_dim"])
+# shape: (context_length, emb_dim)
+
+self.drop_emb = nn.Dropout(cfg["drop_rate"])
+
+self.trf_blocks = nn.Sequential(
+*[TransformerBlock(cfg) for _ in range(cfg["n_layers"])]
+)
+# Stack of TransformerBlocks
+
+self.final_norm = LayerNorm(cfg["emb_dim"])
+self.out_head = nn.Linear(cfg["emb_dim"], cfg["vocab_size"], bias=False)
+# shape: (emb_dim, vocab_size)
+
+def forward(self, in_idx):
+# in_idx shape: (batch_size, seq_len)
+batch_size, seq_len = in_idx.shape
+
+# Token embeddings
+tok_embeds = self.tok_emb(in_idx)
+# shape: (batch_size, seq_len, emb_dim)
+
+# Positional embeddings
+pos_indices = torch.arange(seq_len, device=in_idx.device)
+# shape: (seq_len,)
+pos_embeds = self.pos_emb(pos_indices)
+# shape: (seq_len, emb_dim)
+
+# Add token and positional embeddings
+x = tok_embeds + pos_embeds  # Broadcasting over batch dimension
+# x shape: (batch_size, seq_len, emb_dim)
+
+x = self.drop_emb(x)  # Dropout applied
+# x shape remains: (batch_size, seq_len, emb_dim)
+
+x = self.trf_blocks(x)  # Pass through Transformer blocks
+# x shape remains: (batch_size, seq_len, emb_dim)
+
+x = self.final_norm(x)  # Final LayerNorm
+# x shape remains: (batch_size, seq_len, emb_dim)
+
+logits = self.out_head(x)  # Project to vocabulary size
+# logits shape: (batch_size, seq_len, vocab_size)
+
+return logits  # Output shape: (batch_size, seq_len, vocab_size)
+</code></pre>
+<h4 id="目的和功能-5"><a class="header" href="#目的和功能-5"><strong>目的和功能</strong></a></h4>
+<ul>
+<li><strong>嵌入层:</strong></li>
+<li><strong>令牌嵌入 (<code>tok_emb</code>):</strong> 将令牌索引转换为嵌入。作为提醒，这些是赋予词汇中每个令牌每个维度的权重。</li>
+<li><strong>位置嵌入 (<code>pos_emb</code>):</strong> 向嵌入添加位置信息，以捕捉令牌的顺序。作为提醒，这些是根据令牌在文本中的位置赋予的权重。</li>
+<li><strong>丢弃 (<code>drop_emb</code>):</strong> 应用于嵌入以进行正则化。</li>
+<li><strong>变换器块 (<code>trf_blocks</code>):</strong> 一组 <code>n_layers</code> 变换器块，用于处理嵌入。</li>
+<li><strong>最终归一化 (<code>final_norm</code>):</strong> 在输出层之前进行层归一化。</li>
+<li><strong>输出层 (<code>out_head</code>):</strong> 将最终隐藏状态投影到词汇大小，以生成预测的 logits。</li>
+</ul>
+<p>{% hint style="info" %}
+该类的目标是使用所有其他提到的网络来<strong>预测序列中的下一个令牌</strong>，这对于文本生成等任务至关重要。</p>
+<p>注意它将<strong>使用尽可能多的变换器块</strong>，并且每个变换器块使用一个多头注意力网络、一个前馈网络和几个归一化。因此，如果使用12个变换器块，则将其乘以12。</p>
+<p>此外，在<strong>输出</strong>之前添加了一个<strong>归一化</strong>层，并在最后应用一个最终线性层以获得适当维度的结果。注意每个最终向量的大小与使用的词汇相同。这是因为它试图为词汇中的每个可能令牌获取一个概率。
+{% endhint %}</p>
+<h2 id="训练的参数数量"><a class="header" href="#训练的参数数量">训练的参数数量</a></h2>
+<p>定义了GPT结构后，可以找出要训练的参数数量：</p>
+<pre><code class="language-python">GPT_CONFIG_124M = {
+"vocab_size": 50257,    # Vocabulary size
+"context_length": 1024, # Context length
+"emb_dim": 768,         # Embedding dimension
+"n_heads": 12,          # Number of attention heads
+"n_layers": 12,         # Number of layers
+"drop_rate": 0.1,       # Dropout rate
+"qkv_bias": False       # Query-Key-Value bias
+}
+
+model = GPTModel(GPT_CONFIG_124M)
+total_params = sum(p.numel() for p in model.parameters())
+print(f"Total number of parameters: {total_params:,}")
+# Total number of parameters: 163,009,536
+</code></pre>
+<h3 id="逐步计算"><a class="header" href="#逐步计算"><strong>逐步计算</strong></a></h3>
+<h4 id="1-嵌入层标记嵌入和位置嵌入"><a class="header" href="#1-嵌入层标记嵌入和位置嵌入"><strong>1. 嵌入层：标记嵌入和位置嵌入</strong></a></h4>
+<ul>
+<li><strong>层：</strong> <code>nn.Embedding(vocab_size, emb_dim)</code></li>
+<li><strong>参数：</strong> <code>vocab_size * emb_dim</code></li>
+</ul>
+<pre><code class="language-python">token_embedding_params = 50257 * 768 = 38,597,376
+</code></pre>
+<ul>
+<li><strong>层:</strong> <code>nn.Embedding(context_length, emb_dim)</code></li>
+<li><strong>参数:</strong> <code>context_length * emb_dim</code></li>
+</ul>
+<pre><code class="language-python">position_embedding_params = 1024 * 768 = 786,432
+</code></pre>
+<p><strong>总嵌入参数</strong></p>
+<pre><code class="language-python">embedding_params = token_embedding_params + position_embedding_params
+embedding_params = 38,597,376 + 786,432 = 39,383,808
+</code></pre>
+<h4 id="2-transformer-blocks"><a class="header" href="#2-transformer-blocks"><strong>2. Transformer Blocks</strong></a></h4>
+<p>有12个变换器块，因此我们将计算一个块的参数，然后乘以12。</p>
+<p><strong>每个变换器块的参数</strong></p>
+<p><strong>a. 多头注意力</strong></p>
+<ul>
+<li><strong>组件：</strong></li>
+<li><strong>查询线性层 (<code>W_query</code>):</strong> <code>nn.Linear(emb_dim, emb_dim, bias=False)</code></li>
+<li><strong>键线性层 (<code>W_key</code>):</strong> <code>nn.Linear(emb_dim, emb_dim, bias=False)</code></li>
+<li><strong>值线性层 (<code>W_value</code>):</strong> <code>nn.Linear(emb_dim, emb_dim, bias=False)</code></li>
+<li><strong>输出投影 (<code>out_proj</code>):</strong> <code>nn.Linear(emb_dim, emb_dim)</code></li>
+<li><strong>计算：</strong></li>
+<li><strong>每个 <code>W_query</code>、<code>W_key</code>、<code>W_value</code>:</strong></li>
+</ul>
+<pre><code class="language-python">qkv_params = emb_dim * emb_dim = 768 * 768 = 589,824
+</code></pre>
+<p>由于有三个这样的层：</p>
+<pre><code class="language-python">total_qkv_params = 3 * qkv_params = 3 * 589,824 = 1,769,472
+</code></pre>
+<ul>
+<li><strong>输出投影 (<code>out_proj</code>):</strong></li>
+</ul>
+<pre><code class="language-python">out_proj_params = (emb_dim * emb_dim) + emb_dim = (768 * 768) + 768 = 589,824 + 768 = 590,592
+</code></pre>
+<ul>
+<li><strong>总多头注意力参数：</strong></li>
+</ul>
+<pre><code class="language-python">mha_params = total_qkv_params + out_proj_params
+mha_params = 1,769,472 + 590,592 = 2,360,064
+</code></pre>
+<p><strong>b. 前馈网络</strong></p>
+<ul>
+<li><strong>组件：</strong></li>
+<li><strong>第一线性层:</strong> <code>nn.Linear(emb_dim, 4 * emb_dim)</code></li>
+<li><strong>第二线性层:</strong> <code>nn.Linear(4 * emb_dim, emb_dim)</code></li>
+<li><strong>计算：</strong></li>
+<li><strong>第一线性层：</strong></li>
+</ul>
+<pre><code class="language-python">ff_first_layer_params = (emb_dim * 4 * emb_dim) + (4 * emb_dim)
+ff_first_layer_params = (768 * 3072) + 3072 = 2,359,296 + 3,072 = 2,362,368
+</code></pre>
+<ul>
+<li><strong>第二线性层：</strong></li>
+</ul>
+<pre><code class="language-python">ff_second_layer_params = (4 * emb_dim * emb_dim) + emb_dim
+ff_second_layer_params = (3072 * 768) + 768 = 2,359,296 + 768 = 2,360,064
+</code></pre>
+<ul>
+<li><strong>总前馈参数：</strong></li>
+</ul>
+<pre><code class="language-python">ff_params = ff_first_layer_params + ff_second_layer_params
+ff_params = 2,362,368 + 2,360,064 = 4,722,432
+</code></pre>
+<p><strong>c. 层归一化</strong></p>
+<ul>
+<li><strong>组件：</strong></li>
+<li>每个块有两个 <code>LayerNorm</code> 实例。</li>
+<li>每个 <code>LayerNorm</code> 有 <code>2 * emb_dim</code> 参数（缩放和偏移）。</li>
+<li><strong>计算：</strong></li>
+</ul>
+<pre><code class="language-python">layer_norm_params_per_block = 2 * (2 * emb_dim) = 2 * 768 * 2 = 3,072
+</code></pre>
+<p><strong>d. 每个变换器块的总参数</strong></p>
+<pre><code class="language-python">pythonCopy codeparams_per_block = mha_params + ff_params + layer_norm_params_per_block
+params_per_block = 2,360,064 + 4,722,432 + 3,072 = 7,085,568
+</code></pre>
+<p><strong>所有变换器块的总参数</strong></p>
+<pre><code class="language-python">pythonCopy codetotal_transformer_blocks_params = params_per_block * n_layers
+total_transformer_blocks_params = 7,085,568 * 12 = 85,026,816
+</code></pre>
+<h4 id="3-最终层"><a class="header" href="#3-最终层"><strong>3. 最终层</strong></a></h4>
+<p><strong>a. 最终层归一化</strong></p>
+<ul>
+<li><strong>参数：</strong> <code>2 * emb_dim</code>（缩放和偏移）</li>
+</ul>
+<pre><code class="language-python">pythonCopy codefinal_layer_norm_params = 2 * 768 = 1,536
+</code></pre>
+<p><strong>b. 输出投影层 (<code>out_head</code>)</strong></p>
+<ul>
+<li><strong>层:</strong> <code>nn.Linear(emb_dim, vocab_size, bias=False)</code></li>
+<li><strong>参数:</strong> <code>emb_dim * vocab_size</code></li>
+</ul>
+<pre><code class="language-python">pythonCopy codeoutput_projection_params = 768 * 50257 = 38,597,376
+</code></pre>
+<h4 id="4-汇总所有参数"><a class="header" href="#4-汇总所有参数"><strong>4. 汇总所有参数</strong></a></h4>
+<pre><code class="language-python">pythonCopy codetotal_params = (
+embedding_params +
+total_transformer_blocks_params +
+final_layer_norm_params +
+output_projection_params
+)
+total_params = (
+39,383,808 +
+85,026,816 +
+1,536 +
+38,597,376
+)
+total_params = 163,009,536
+</code></pre>
+<h2 id="生成文本"><a class="header" href="#生成文本">生成文本</a></h2>
+<p>拥有一个像之前那样预测下一个标记的模型，只需从输出中获取最后一个标记的值（因为它们将是预测标记的值），这将是<strong>词汇表中每个条目的值</strong>，然后使用<code>softmax</code>函数将维度归一化为总和为1的概率，然后获取最大条目的索引，这将是词汇表中单词的索引。</p>
+<p>来自 <a href="https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/01_main-chapter-code/ch04.ipynb">https://github.com/rasbt/LLMs-from-scratch/blob/main/ch04/01_main-chapter-code/ch04.ipynb</a>:</p>
+<pre><code class="language-python">def generate_text_simple(model, idx, max_new_tokens, context_size):
+# idx is (batch, n_tokens) array of indices in the current context
+for _ in range(max_new_tokens):
+
+# Crop current context if it exceeds the supported context size
+# E.g., if LLM supports only 5 tokens, and the context size is 10
+# then only the last 5 tokens are used as context
+idx_cond = idx[:, -context_size:]
+
+# Get the predictions
+with torch.no_grad():
+logits = model(idx_cond)
+
+# Focus only on the last time step
+# (batch, n_tokens, vocab_size) becomes (batch, vocab_size)
+logits = logits[:, -1, :]
+
+# Apply softmax to get probabilities
+probas = torch.softmax(logits, dim=-1)  # (batch, vocab_size)
+
+# Get the idx of the vocab entry with the highest probability value
+idx_next = torch.argmax(probas, dim=-1, keepdim=True)  # (batch, 1)
+
+# Append sampled index to the running sequence
+idx = torch.cat((idx, idx_next), dim=1)  # (batch, n_tokens+1)
+
+return idx
+
+
+start_context = "Hello, I am"
+
+encoded = tokenizer.encode(start_context)
+print("encoded:", encoded)
+
+encoded_tensor = torch.tensor(encoded).unsqueeze(0)
+print("encoded_tensor.shape:", encoded_tensor.shape)
+
+model.eval() # disable dropout
+
+out = generate_text_simple(
+model=model,
+idx=encoded_tensor,
+max_new_tokens=6,
+context_size=GPT_CONFIG_124M["context_length"]
+)
+
+print("Output:", out)
+print("Output length:", len(out[0]))
+</code></pre>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://www.manning.com/books/build-a-large-language-model-from-scratch">https://www.manning.com/books/build-a-large-language-model-from-scratch</a></li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../todo/llm-training-data-preparation/4.-attention-mechanisms.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../todo/llm-training-data-preparation/6.-pre-training-and-loading-models.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../todo/llm-training-data-preparation/4.-attention-mechanisms.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../todo/llm-training-data-preparation/6.-pre-training-and-loading-models.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>More Tools</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<h1 id="蓝队"><a class="header" href="#蓝队">蓝队</a></h1>
+<ul>
+<li><a href="https://github.com/yarox24/attack_monitor">https://github.com/yarox24/attack_monitor</a></li>
+<li><a href="https://capsule8.com/blog/dont-get-kicked-out-a-tale-of-rootkits-and-other-backdoors/">https://capsule8.com/blog/dont-get-kicked-out-a-tale-of-rootkits-and-other-backdoors/</a></li>
+<li><a href="https://github.com/ION28/BLUESPAWN">https://github.com/ION28/BLUESPAWN</a></li>
+<li><a href="https://github.com/PaperMtn/lil-pwny">https://github.com/PaperMtn/lil-pwny</a> : 检查泄露的账户</li>
+<li><a href="https://github.com/rabobank-cdc/DeTTECT">https://github.com/rabobank-cdc/DeTTECT</a></li>
+</ul>
+<h1 id="osint"><a class="header" href="#osint">OSINT</a></h1>
+<ul>
+<li><a href="https://github.com/3vangel1st/kamerka">https://github.com/3vangel1st/kamerka</a></li>
+<li><a href="https://github.com/BullsEye0/google_dork_list">https://github.com/BullsEye0/google_dork_list</a></li>
+<li><a href="https://github.com/highmeh/lure">https://github.com/highmeh/lure</a></li>
+<li><a href="https://www.shodan.io">https://www.shodan.io/</a></li>
+<li><a href="https://censys.io">https://censys.io/</a></li>
+<li><a href="https://viz.greynoise.io/table">https://viz.greynoise.io/table</a></li>
+<li><a href="https://www.zoomeye.org">https://www.zoomeye.org</a></li>
+<li><a href="https://fofa.so">https://fofa.so</a></li>
+<li><a href="https://www.onyphe.io">https://www.onyphe.io</a></li>
+<li><a href="https://app.binaryedge.io">https://app.binaryedge.io</a></li>
+<li><a href="https://hunter.io">https://hunter.io</a></li>
+<li><a href="https://wigle.net">https://wigle.net</a></li>
+<li><a href="https://ghostproject.fr">https://ghostproject.fr</a></li>
+<li><a href="https://www.oshadan.com">https://www.oshadan.com/</a></li>
+<li><a href="https://builtwith.com">https://builtwith.com/</a></li>
+<li><a href="https://www.spiderfoot.net">https://www.spiderfoot.net/</a></li>
+<li><a href="https://github.com/zricethezav/gitleaks">https://github.com/zricethezav/gitleaks</a></li>
+<li><a href="https://www.nmmapper.com/sys/tools/subdomainfinder/">https://www.nmmapper.com/sys/tools/subdomainfinder/</a> : 8 个子域名查找工具，sublist3r，amass 等</li>
+</ul>
+<h1 id="web"><a class="header" href="#web"><strong>WEB</strong></a></h1>
+<ul>
+<li><a href="https://github.com/AlisamTechnology/ATSCAN">https://github.com/AlisamTechnology/ATSCAN</a></li>
+<li><a href="https://github.com/momenbasel/KeyFinder">https://github.com/momenbasel/KeyFinder</a></li>
+<li><a href="https://github.com/hahwul/XSpear">https://github.com/hahwul/XSpear</a></li>
+<li><a href="https://github.com/BitTheByte/Monitorizer/">https://github.com/BitTheByte/Monitorizer/</a></li>
+<li><a href="https://github.com/spinkham/skipfish">https://github.com/spinkham/skipfish</a></li>
+<li><a href="https://github.com/blark/aiodnsbrute">https://github.com/blark/aiodnsbrute</a> : 异步暴力破解域名</li>
+<li><a href="https://crt.sh/?q=%.yahoo.com">https://crt.sh/?q=%.yahoo.com</a> : 子域名暴力破解</li>
+<li><a href="https://github.com/tomnomnom/httprobe">https://github.com/tomnomnom/httprobe</a>: 检查域中的网络服务器是否可访问</li>
+<li><a href="https://github.com/aboul3la/Sublist3r">https://github.com/aboul3la/Sublist3r</a> : 子域名发现</li>
+<li><a href="https://github.com/gwen001/github-search/blob/master/github-subdomains.py">https://github.com/gwen001/github-search/blob/master/github-subdomains.py</a> : GitHub 中的子域名发现</li>
+<li><a href="https://github.com/robertdavidgraham/masscan">https://github.com/robertdavidgraham/masscan</a> : 快速端口扫描</li>
+<li><a href="https://github.com/Threezh1/JSFinder">https://github.com/Threezh1/JSFinder</a> : 从网页中的 JS 文件获取子域名和 URL</li>
+<li><a href="https://github.com/C1h2e1/MyFuzzingDict">https://github.com/C1h2e1/MyFuzzingDict</a> : 网络文件字典</li>
+<li><a href="https://github.com/TypeError/Bookmarks/blob/master/README.md">https://github.com/TypeError/Bookmarks/blob/master/README.md</a> : BurpExtension 避免多个重复标签</li>
+<li><a href="https://github.com/hakluke/hakrawler">https://github.com/hakluke/hakrawler</a> : 获取资产</li>
+<li><a href="https://github.com/izo30/google-dorker">https://github.com/izo30/google-dorker</a> : Google dorks</li>
+<li><a href="https://github.com/sehno/Bug-bounty/blob/master/bugbounty_checklist.md">https://github.com/sehno/Bug-bounty/blob/master/bugbounty_checklist.md</a> : 网络 BugBounty 清单</li>
+<li><a href="https://github.com/Naategh/dom-red">https://github.com/Naategh/dom-red</a> : 检查域列表以防止开放重定向</li>
+<li><a href="https://github.com/prodigysml/Dr.-Watson">https://github.com/prodigysml/Dr.-Watson</a> : Burp 插件，离线分析以发现域、子域和 IP</li>
+<li><a href="https://github.com/hahwul/WebHackersWeapons">https://github.com/hahwul/WebHackersWeapons</a>: 不同工具的列表</li>
+<li><a href="https://github.com/gauravnarwani97/Trishul">https://github.com/gauravnarwani97/Trishul</a> : BurpSuite 插件查找漏洞 (SQLi, XSS, SSTI)</li>
+<li><a href="https://github.com/fransr/postMessage-tracker">https://github.com/fransr/postMessage-tracker</a> : 用于跟踪 post-messages 函数的 Chrome 扩展</li>
+<li><a href="https://github.com/Quitten/Autorize">https://github.com/Quitten/Autorize</a> : 自动身份验证测试（删除 cookies 并尝试发送请求）</li>
+<li><a href="https://github.com/pikpikcu/xrcross">https://github.com/pikpikcu/xrcross</a>: XRCross 是一个重建、扫描和渗透/ BugBounty 测试工具。该工具旨在测试 (XSS|SSRF|CORS|SSTI|IDOR|RCE|LFI|SQLI) 漏洞</li>
+</ul>
+<h1 id="windows"><a class="header" href="#windows">Windows</a></h1>
+<ul>
+<li><a href="https://github.com/Mr-Un1k0d3r/PoisonHandler">https://github.com/Mr-Un1k0d3r/PoisonHandler</a> : 横向移动</li>
+<li><a href="https://freddiebarrsmith.com/trix/trix.html">https://freddiebarrsmith.com/trix/trix.html</a> : LOL bins</li>
+<li><a href="https://gist.github.com/netbiosX/ee35fcd3722e401a38136cff7b751d79">https://gist.github.com/netbiosX/ee35fcd3722e401a38136cff7b751d79</a> (<a href="https://pentestlab.blog/2020/01/13/persistence-image-file-execution-options-injection/">https://pentestlab.blog/2020/01/13/persistence-image-file-execution-options-injection/</a>): 持久性</li>
+<li><a href="https://github.com/odzhan/injection">https://github.com/odzhan/injection</a> : Windows 进程注入技术</li>
+<li><a href="https://github.com/BankSecurity/Red_Team">https://github.com/BankSecurity/Red_Team</a> : 红队脚本</li>
+<li><a href="https://github.com/l0ss/Grouper2">https://github.com/l0ss/Grouper2</a> : 查找 Active Directory 组策略中的安全相关错误配置。</li>
+<li><a href="https://www.wietzebeukema.nl/blog/powershell-obfuscation-using-securestring">https://www.wietzebeukema.nl/blog/powershell-obfuscation-using-securestring</a> : Securestring 混淆</li>
+<li><a href="https://pentestlab.blog/2020/02/24/parent-pid-spoofing/">https://pentestlab.blog/2020/02/24/parent-pid-spoofing/</a> : 父 PID 欺骗</li>
+<li><a href="https://github.com/the-xentropy/xencrypt">https://github.com/the-xentropy/xencrypt</a> : 加密 Powershell 有效载荷</li>
+<li><a href="https://shells.systems/introducing-ninja-c2-the-c2-built-for-stealth-red-team-operations/">https://shells.systems/introducing-ninja-c2-the-c2-built-for-stealth-red-team-operations/</a> : 隐形 C2</li>
+<li><a href="https://windows-internals.com/faxing-your-way-to-system/">https://windows-internals.com/faxing-your-way-to-system/</a> : 关于 Windows 内部的日志系列</li>
+<li><a href="https://bestestredteam.com/2018/10/02/tracking-pixel-in-microsoft-office-document/">https://bestestredteam.com/2018/10/02/tracking-pixel-in-microsoft-office-document/</a> : 跟踪谁打开了文档</li>
+<li><a href="https://github.com/Integration-IT/Active-Directory-Exploitation-Cheat-Sheet">https://github.com/Integration-IT/Active-Directory-Exploitation-Cheat-Sheet</a> : Active Directory 备忘单</li>
+</ul>
+<h1 id="固件"><a class="header" href="#固件">固件</a></h1>
+<p>工具 q veo q pueden molar para analizar firmares (automaticas):</p>
+<ul>
+<li><a href="https://github.com/craigz28/firmwalker">https://github.com/craigz28/firmwalker</a></li>
+<li><a href="https://github.com/fkie-cad/FACT_core">https://github.com/fkie-cad/FACT_core</a></li>
+<li><a href="https://gitlab.com/bytesweep/bytesweep-go">https://gitlab.com/bytesweep/bytesweep-go</a></li>
+</ul>
+<p>Post-crema:</p>
+<ul>
+<li><a href="https://blog.mindedsecurity.com/2018/09/pentesting-iot-devices-part-1-static.html">https://blog.mindedsecurity.com/2018/09/pentesting-iot-devices-part-1-static.html</a></li>
+<li><a href="https://blog.mindedsecurity.com/2018/10/pentesting-iot-devices-part-2-dynamic.html">https://blog.mindedsecurity.com/2018/10/pentesting-iot-devices-part-2-dynamic.html</a></li>
+</ul>
+<p>如何提取固件如果我们在线找不到它：<a href="https://www.youtube.com/watch?v=Kxvpbu9STU4">https://www.youtube.com/watch?v=Kxvpbu9STU4</a></p>
+<p>这里有一个有漏洞的固件供分析：<a href="https://github.com/scriptingxss/IoTGoat">https://github.com/scriptingxss/IoTGoat</a></p>
+<p>还有这里的 OWASP 方法论用于分析固件：<a href="https://github.com/scriptingxss/owasp-fstm">https://github.com/scriptingxss/owasp-fstm</a></p>
+<p>固件仿真：FIRMADYNE (https://github.com/firmadyne/firmadyne/) 是一个用于自动化仿真和动态分析基于 Linux 的固件的平台。</p>
+<h1 id="其他"><a class="header" href="#其他">其他</a></h1>
+<ul>
+<li><a href="https://twitter.com/HackAndDo/status/1202695084543791117">https://twitter.com/HackAndDo/status/1202695084543791117</a></li>
+<li><a href="https://github.com/weev3/LKWA">https://github.com/weev3/LKWA</a></li>
+<li><a href="https://h0mbre.github.io/Learn-C-By-Creating-A-Rootkit/">https://h0mbre.github.io/Learn-C-By-Creating-A-Rootkit/</a></li>
+<li><a href="https://github.com/skelsec/jackdaw">https://github.com/skelsec/jackdaw</a></li>
+<li><a href="https://github.com/CoatiSoftware/Sourcetrail">https://github.com/CoatiSoftware/Sourcetrail</a> : 静态代码分析</li>
+<li><a href="https://www.hackerdecabecera.com/2019/12/blectf-capture-flag-en-formato-hardware.html">https://www.hackerdecabecera.com/2019/12/blectf-capture-flag-en-formato-hardware.html</a> : Bluetooth LE CTF</li>
+<li><a href="https://github.com/skeeto/endlessh">https://github.com/skeeto/endlessh</a> : SSH tarpit，缓慢发送无尽的横幅。</li>
+<li>AWS 和云工具：<a href="https://github.com/toniblyx/my-arsenal-of-aws-security-tools">https://github.com/toniblyx/my-arsenal-of-aws-security-tools</a></li>
+<li>IFS (Interplanetary File System) 用于钓鱼：<a href="https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/using-the-interplanetary-file-system-for-offensive-operations/">https://www.trustwave.com/en-us/resources/blogs/spiderlabs-blog/using-the-interplanetary-file-system-for-offensive-operations/</a></li>
+<li>IP 轮换服务：<a href="https://medium.com/@lokeshdlk77/how-to-rotate-ip-address-in-brute-force-attack-e66407259212">https://medium.com/@lokeshdlk77/how-to-rotate-ip-address-in-brute-force-attack-e66407259212</a></li>
+<li>Linux rootkit：<a href="https://github.com/aesophor/satanic-rootkit">https://github.com/aesophor/satanic-rootkit</a></li>
+<li><a href="https://theia-ide.org">https://theia-ide.org/</a> : 在线 IDE</li>
+<li><a href="https://github.com/nahamsec/Resources-for-Beginner-Bug-Bounty-Hunters/">https://github.com/nahamsec/Resources-for-Beginner-Bug-Bounty-Hunters/</a> : 开始 BugBounties 的资源</li>
+<li><a href="https://medium.com/macoclock/jailbreak-and-stuff-kickstart-tools-and-techniques-for-ios-application-pentesting-6fa53a3987ab">https://medium.com/macoclock/jailbreak-and-stuff-kickstart-tools-and-techniques-for-ios-application-pentesting-6fa53a3987ab</a> : IOS 渗透测试工具</li>
+<li><a href="https://github.com/random-robbie/keywords/blob/master/keywords.txt">https://github.com/random-robbie/keywords/blob/master/keywords.txt</a> : 关键词</li>
+<li><a href="https://github.com/ElevenPaths/HomePWN">https://github.com/ElevenPaths/HomePWN</a> : 黑客 IoT (Wifi, BLE, SSDP, MDNS)</li>
+<li><a href="https://github.com/rackerlabs/scantron">https://github.com/rackerlabs/scantron</a> : 自动化扫描</li>
+<li><a href="https://github.com/doyensec/awesome-electronjs-hacking">https://github.com/doyensec/awesome-electronjs-hacking</a> : 此列表旨在涵盖 Electron.js 安全相关主题。</li>
+<li><a href="https://github.com/serain/bbrecon">https://github.com/serain/bbrecon</a> : 有关 BB 程序的信息</li>
+</ul>
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../todo/rust-basics.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../todo/misc.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../todo/rust-basics.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../todo/misc.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

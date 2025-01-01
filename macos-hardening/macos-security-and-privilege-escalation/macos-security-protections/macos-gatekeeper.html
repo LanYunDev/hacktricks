@@ -1,0 +1,571 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Gatekeeper / Quarantine / XProtect</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-gatekeeper--quarantine--xprotect"><a class="header" href="#macos-gatekeeper--quarantine--xprotect">macOS Gatekeeper / Quarantine / XProtect</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<h2 id="gatekeeper"><a class="header" href="#gatekeeper">Gatekeeper</a></h2>
+<p><strong>Gatekeeper</strong> 是为 Mac 操作系统开发的安全功能，旨在确保用户 <strong>仅运行受信任的软件</strong>。它通过 <strong>验证用户下载并尝试从 App Store 以外的来源打开的软件</strong>（例如应用程序、插件或安装包）来实现。</p>
+<p>Gatekeeper 的关键机制在于其 <strong>验证</strong> 过程。它检查下载的软件是否 <strong>由认可的开发者签名</strong>，以确保软件的真实性。此外，它还确认该软件是否 <strong>经过 Apple 的公证</strong>，以确认其不含已知的恶意内容，并且在公证后未被篡改。</p>
+<p>此外，Gatekeeper 通过 <strong>提示用户首次批准打开下载的软件</strong> 来增强用户控制和安全性。此保护措施有助于防止用户无意中运行可能有害的可执行代码，而将其误认为无害的数据文件。</p>
+<h3 id="应用程序签名"><a class="header" href="#应用程序签名">应用程序签名</a></h3>
+<p>应用程序签名，也称为代码签名，是 Apple 安全基础设施的关键组成部分。它们用于 <strong>验证软件作者的身份</strong>（开发者），并确保自上次签名以来代码未被篡改。</p>
+<p>其工作原理如下：</p>
+<ol>
+<li><strong>签名应用程序：</strong> 当开发者准备分发其应用程序时，他们 <strong>使用私钥签名应用程序</strong>。此私钥与 <strong>Apple 在开发者注册 Apple Developer Program 时向开发者颁发的证书</strong> 相关联。签名过程涉及创建应用程序所有部分的加密哈希，并使用开发者的私钥加密该哈希。</li>
+<li><strong>分发应用程序：</strong> 签名的应用程序随后与开发者的证书一起分发，该证书包含相应的公钥。</li>
+<li><strong>验证应用程序：</strong> 当用户下载并尝试运行应用程序时，他们的 Mac 操作系统使用开发者证书中的公钥解密哈希。然后，它根据应用程序的当前状态重新计算哈希，并将其与解密后的哈希进行比较。如果它们匹配，则意味着 <strong>自开发者签名以来，应用程序未被修改</strong>，系统允许该应用程序运行。</li>
+</ol>
+<p>应用程序签名是 Apple Gatekeeper 技术的重要组成部分。当用户尝试 <strong>打开从互联网下载的应用程序</strong> 时，Gatekeeper 会验证应用程序签名。如果它是由 Apple 向已知开发者颁发的证书签名，并且代码未被篡改，Gatekeeper 允许该应用程序运行。否则，它会阻止该应用程序并提醒用户。</p>
+<p>从 macOS Catalina 开始，<strong>Gatekeeper 还检查应用程序是否经过 Apple 的公证</strong>，增加了一层额外的安全性。公证过程检查应用程序是否存在已知的安全问题和恶意代码，如果这些检查通过，Apple 会向应用程序添加一个 Gatekeeper 可以验证的票据。</p>
+<h4 id="检查签名"><a class="header" href="#检查签名">检查签名</a></h4>
+<p>在检查某些 <strong>恶意软件样本</strong> 时，您应始终 <strong>检查二进制文件的签名</strong>，因为 <strong>签名</strong> 的开发者可能已经 <strong>与恶意软件相关</strong>。</p>
+<pre><code class="language-bash"># Get signer
+codesign -vv -d /bin/ls 2&gt;&amp;1 | grep -E "Authority|TeamIdentifier"
+
+# Check if the app’s contents have been modified
+codesign --verify --verbose /Applications/Safari.app
+
+# Get entitlements from the binary
+codesign -d --entitlements :- /System/Applications/Automator.app # Check the TCC perms
+
+# Check if the signature is valid
+spctl --assess --verbose /Applications/Safari.app
+
+# Sign a binary
+codesign -s &lt;cert-name-keychain&gt; toolsdemo
+</code></pre>
+<h3 id="notarization"><a class="header" href="#notarization">Notarization</a></h3>
+<p>苹果的 notarization 过程作为额外的保护措施，旨在保护用户免受潜在有害软件的影响。它涉及 <strong>开发者提交他们的应用程序进行审查</strong>，由 <strong>苹果的 Notary Service</strong> 进行，这与应用审核不应混淆。该服务是一个 <strong>自动化系统</strong>，对提交的软件进行审查，以检查是否存在 <strong>恶意内容</strong> 和任何潜在的代码签名问题。</p>
+<p>如果软件 <strong>通过</strong> 了这次检查而没有引发任何问题，Notary Service 会生成一个 notarization 票据。开发者随后需要 <strong>将此票据附加到他们的软件上</strong>，这个过程称为“stapling”。此外，notarization 票据也会在线发布，Gatekeeper，苹果的安全技术，可以访问它。</p>
+<p>在用户首次安装或执行软件时，notarization 票据的存在 - 无论是附加在可执行文件上还是在线找到 - <strong>通知 Gatekeeper 该软件已由苹果进行 notarization</strong>。因此，Gatekeeper 在初始启动对话框中显示一条描述性消息，表明该软件已通过苹果的恶意内容检查。这个过程增强了用户对他们在系统上安装或运行的软件安全性的信心。</p>
+<h3 id="spctl--syspolicyd"><a class="header" href="#spctl--syspolicyd">spctl &amp; syspolicyd</a></h3>
+<p>{% hint style="danger" %}
+请注意，从 Sequoia 版本开始，<strong><code>spctl</code></strong> 不再允许修改 Gatekeeper 配置。
+{% endhint %}</p>
+<p><strong><code>spctl</code></strong> 是用于枚举和与 Gatekeeper 交互的 CLI 工具（通过 XPC 消息与 <code>syspolicyd</code> 守护进程交互）。例如，可以使用以下命令查看 GateKeeper 的 <strong>状态</strong>：</p>
+<pre><code class="language-bash"># Check the status
+spctl --status
+</code></pre>
+<p>{% hint style="danger" %}
+请注意，GateKeeper 签名检查仅对 <strong>具有隔离属性的文件</strong> 执行，而不是对每个文件。
+{% endhint %}</p>
+<p>GateKeeper 将根据 <strong>首选项和签名</strong> 检查二进制文件是否可以执行：</p>
+<figure><img src="../../../.gitbook/assets/image (1150).png" alt=""><figcaption></figcaption></figure>
+<p><strong><code>syspolicyd</code></strong> 是负责执行 Gatekeeper 的主要守护进程。它维护一个位于 <code>/var/db/SystemPolicy</code> 的数据库，可以在 <a href="https://opensource.apple.com/source/Security/Security-58286.240.4/OSX/libsecurity_codesigning/lib/policydb.cpp">这里找到支持该数据库的代码</a> 和 <a href="https://opensource.apple.com/source/Security/Security-58286.240.4/OSX/libsecurity_codesigning/lib/syspolicy.sql">这里找到 SQL 模板</a>。请注意，该数据库不受 SIP 限制，并且可以由 root 写入，数据库 <code>/var/db/.SystemPolicy-default</code> 用作原始备份，以防其他数据库损坏。</p>
+<p>此外，<strong><code>/var/db/gke.bundle</code></strong> 和 <strong><code>/var/db/gkopaque.bundle</code></strong> 包含插入数据库的规则文件。您可以使用 root 权限检查此数据库：</p>
+<pre><code class="language-bash"># Open database
+sqlite3 /var/db/SystemPolicy
+
+# Get allowed rules
+SELECT requirement,allow,disabled,label from authority where label != 'GKE' and disabled=0;
+requirement|allow|disabled|label
+anchor apple generic and certificate 1[subject.CN] = "Apple Software Update Certification Authority"|1|0|Apple Installer
+anchor apple|1|0|Apple System
+anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.9] exists|1|0|Mac App Store
+anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] exists and (certificate leaf[field.1.2.840.113635.100.6.1.14] or certificate leaf[field.1.2.840.113635.100.6.1.13]) and notarized|1|0|Notarized Developer ID
+[...]
+</code></pre>
+<p><strong><code>syspolicyd</code></strong> 还暴露了一个 XPC 服务器，具有不同的操作，如 <code>assess</code>、<code>update</code>、<code>record</code> 和 <code>cancel</code>，这些操作也可以通过 <strong><code>Security.framework</code> 的 <code>SecAssessment*</code></strong> API 访问，而 <strong><code>xpctl</code></strong> 实际上通过 XPC 与 <strong><code>syspolicyd</code></strong> 进行通信。</p>
+<p>注意第一个规则以 "<strong>App Store</strong>" 结束，第二个规则以 "<strong>Developer ID</strong>" 结束，并且在之前的图像中，它是 <strong>启用从 App Store 和已识别开发者执行应用程序</strong>。<br />
+如果您 <strong>修改</strong> 该设置为 App Store，"<strong>Notarized Developer ID" 规则将消失</strong>。</p>
+<p>还有成千上万的 <strong>类型 GKE</strong> 的规则：</p>
+<pre><code class="language-bash">SELECT requirement,allow,disabled,label from authority where label = 'GKE' limit 5;
+cdhash H"b40281d347dc574ae0850682f0fd1173aa2d0a39"|1|0|GKE
+cdhash H"5fd63f5342ac0c7c0774ebcbecaf8787367c480f"|1|0|GKE
+cdhash H"4317047eefac8125ce4d44cab0eb7b1dff29d19a"|1|0|GKE
+cdhash H"0a71962e7a32f0c2b41ddb1fb8403f3420e1d861"|1|0|GKE
+cdhash H"8d0d90ff23c3071211646c4c9c607cdb601cb18f"|1|0|GKE
+</code></pre>
+<p>这些是来自以下位置的哈希：</p>
+<ul>
+<li><code>/var/db/SystemPolicyConfiguration/gke.bundle/Contents/Resources/gke.auth</code></li>
+<li><code>/var/db/gke.bundle/Contents/Resources/gk.db</code></li>
+<li><code>/var/db/gkopaque.bundle/Contents/Resources/gkopaque.db</code></li>
+</ul>
+<p>或者你可以使用以下命令列出之前的信息：</p>
+<pre><code class="language-bash">sudo spctl --list
+</code></pre>
+<p>选项 <strong><code>--master-disable</code></strong> 和 <strong><code>--global-disable</code></strong> 的 <strong><code>spctl</code></strong> 将完全 <strong>禁用</strong> 这些签名检查：</p>
+<pre><code class="language-bash"># Disable GateKeeper
+spctl --global-disable
+spctl --master-disable
+
+# Enable it
+spctl --global-enable
+spctl --master-enable
+</code></pre>
+<p>当完全启用时，将出现一个新选项：</p>
+<figure><img src="../../../.gitbook/assets/image (1151).png" alt=""><figcaption></figcaption></figure>
+<p>可以通过以下方式<strong>检查一个应用是否会被GateKeeper允许</strong>：</p>
+<pre><code class="language-bash">spctl --assess -v /Applications/App.app
+</code></pre>
+<p>可以在GateKeeper中添加新规则，以允许某些应用程序的执行：</p>
+<pre><code class="language-bash"># Check if allowed - nop
+spctl --assess -v /Applications/App.app
+/Applications/App.app: rejected
+source=no usable signature
+
+# Add a label and allow this label in GateKeeper
+sudo spctl --add --label "whitelist" /Applications/App.app
+sudo spctl --enable --label "whitelist"
+
+# Check again - yep
+spctl --assess -v /Applications/App.app
+/Applications/App.app: accepted
+</code></pre>
+<p>关于 <strong>内核扩展</strong>，文件夹 <code>/var/db/SystemPolicyConfiguration</code> 包含允许加载的 kext 列表文件。此外，<code>spctl</code> 拥有 <code>com.apple.private.iokit.nvram-csr</code> 权限，因为它能够添加需要在 NVRAM 中以 <code>kext-allowed-teams</code> 键保存的新预先批准的内核扩展。</p>
+<h3 id="隔离文件"><a class="header" href="#隔离文件">隔离文件</a></h3>
+<p>在 <strong>下载</strong> 应用程序或文件时，特定的 macOS <strong>应用程序</strong>（如网页浏览器或电子邮件客户端）会将一个扩展文件属性，通常称为 "<strong>隔离标志</strong>"，附加到下载的文件上。此属性作为安全措施，<strong>标记文件</strong> 来自不受信任的来源（互联网），并可能带来风险。然而，并非所有应用程序都会附加此属性，例如，常见的 BitTorrent 客户端软件通常会绕过此过程。</p>
+<p><strong>隔离标志的存在在用户尝试执行文件时向 macOS 的 Gatekeeper 安全功能发出信号</strong>。</p>
+<p>在 <strong>隔离标志不存在</strong> 的情况下（例如通过某些 BitTorrent 客户端下载的文件），Gatekeeper 的 <strong>检查可能不会执行</strong>。因此，用户在打开来自不太安全或未知来源的文件时应谨慎。</p>
+<p>{% hint style="info" %}
+<strong>检查</strong> 代码签名的 <strong>有效性</strong> 是一个 <strong>资源密集型</strong> 过程，包括生成代码及其所有捆绑资源的加密 <strong>哈希</strong>。此外，检查证书有效性还涉及对 Apple 服务器进行 <strong>在线检查</strong>，以查看其在发放后是否被撤销。因此，完整的代码签名和公证检查在每次启动应用程序时都是 <strong>不切实际的</strong>。</p>
+<p>因此，这些检查 <strong>仅在执行具有隔离属性的应用程序时运行</strong>。
+{% endhint %}</p>
+<p>{% hint style="warning" %}
+此属性必须由 <strong>创建/下载</strong> 文件的应用程序 <strong>设置</strong>。</p>
+<p>然而，被沙盒化的文件将对它们创建的每个文件设置此属性。非沙盒应用程序可以自行设置，或在 <strong>Info.plist</strong> 中指定 <a href="https://developer.apple.com/documentation/bundleresources/information_property_list/lsfilequarantineenabled?language=objc"><strong>LSFileQuarantineEnabled</strong></a> 键，这将使系统在创建的文件上设置 <code>com.apple.quarantine</code> 扩展属性，
+{% endhint %}</p>
+<p>此外，所有调用 <strong><code>qtn_proc_apply_to_self</code></strong> 的进程创建的文件都将被隔离。或者 API <strong><code>qtn_file_apply_to_path</code></strong> 将隔离属性添加到指定的文件路径。</p>
+<p>可以使用以下命令 <strong>检查其状态并启用/禁用</strong>（需要 root 权限）：</p>
+<pre><code class="language-bash">spctl --status
+assessments enabled
+
+spctl --enable
+spctl --disable
+#You can also allow nee identifies to execute code using the binary "spctl"
+</code></pre>
+<p>您还可以使用以下命令<strong>查找文件是否具有隔离扩展属性</strong>：</p>
+<pre><code class="language-bash">xattr file.png
+com.apple.macl
+com.apple.quarantine
+</code></pre>
+<p>检查<strong>扩展</strong> <strong>属性</strong>的<strong>值</strong>，并找出写入隔离属性的应用程序：</p>
+<pre><code class="language-bash">xattr -l portada.png
+com.apple.macl:
+00000000  03 00 53 DA 55 1B AE 4C 4E 88 9D CA B7 5C 50 F3  |..S.U..LN.....P.|
+00000010  16 94 03 00 27 63 64 97 98 FB 4F 02 84 F3 D0 DB  |....'cd...O.....|
+00000020  89 53 C3 FC 03 00 27 63 64 97 98 FB 4F 02 84 F3  |.S....'cd...O...|
+00000030  D0 DB 89 53 C3 FC 00 00 00 00 00 00 00 00 00 00  |...S............|
+00000040  00 00 00 00 00 00 00 00                          |........|
+00000048
+com.apple.quarantine: 00C1;607842eb;Brave;F643CD5F-6071-46AB-83AB-390BA944DEC5
+# 00c1 -- It has been allowed to eexcute this file (QTN_FLAG_USER_APPROVED = 0x0040)
+# 607842eb -- Timestamp
+# Brave -- App
+# F643CD5F-6071-46AB-83AB-390BA944DEC5 -- UID assigned to the file downloaded
+</code></pre>
+<p>实际上，一个进程“可以为它创建的文件设置隔离标志”（我已经尝试在创建的文件中应用 USER_APPROVED 标志，但它不会应用）：</p>
+<details>
+<summary>源代码应用隔离标志</summary>
+```c
+#include <stdio.h>
+#include <stdlib.h>
+<p>enum qtn_flags {
+QTN_FLAG_DOWNLOAD = 0x0001,
+QTN_FLAG_SANDBOX = 0x0002,
+QTN_FLAG_HARD = 0x0004,
+QTN_FLAG_USER_APPROVED = 0x0040,
+};</p>
+<p>#define qtn_proc_alloc _qtn_proc_alloc
+#define qtn_proc_apply_to_self _qtn_proc_apply_to_self
+#define qtn_proc_free _qtn_proc_free
+#define qtn_proc_init _qtn_proc_init
+#define qtn_proc_init_with_self _qtn_proc_init_with_self
+#define qtn_proc_set_flags _qtn_proc_set_flags
+#define qtn_file_alloc _qtn_file_alloc
+#define qtn_file_init_with_path _qtn_file_init_with_path
+#define qtn_file_free _qtn_file_free
+#define qtn_file_apply_to_path _qtn_file_apply_to_path
+#define qtn_file_set_flags _qtn_file_set_flags
+#define qtn_file_get_flags _qtn_file_get_flags
+#define qtn_proc_set_identifier _qtn_proc_set_identifier</p>
+<p>typedef struct _qtn_proc *qtn_proc_t;
+typedef struct _qtn_file *qtn_file_t;</p>
+<p>int qtn_proc_apply_to_self(qtn_proc_t);
+void qtn_proc_init(qtn_proc_t);
+int qtn_proc_init_with_self(qtn_proc_t);
+int qtn_proc_set_flags(qtn_proc_t, uint32_t flags);
+qtn_proc_t qtn_proc_alloc();
+void qtn_proc_free(qtn_proc_t);
+qtn_file_t qtn_file_alloc(void);
+void qtn_file_free(qtn_file_t qf);
+int qtn_file_set_flags(qtn_file_t qf, uint32_t flags);
+uint32_t qtn_file_get_flags(qtn_file_t qf);
+int qtn_file_apply_to_path(qtn_file_t qf, const char *path);
+int qtn_file_init_with_path(qtn_file_t qf, const char <em>path);
+int qtn_proc_set_identifier(qtn_proc_t qp, const char</em> bundleid);</p>
+<p>int main() {</p>
+<p>qtn_proc_t qp = qtn_proc_alloc();
+qtn_proc_set_identifier(qp, "xyz.hacktricks.qa");
+qtn_proc_set_flags(qp, QTN_FLAG_DOWNLOAD | QTN_FLAG_USER_APPROVED);
+qtn_proc_apply_to_self(qp);
+qtn_proc_free(qp);</p>
+<p>FILE *fp;
+fp = fopen("thisisquarantined.txt", "w+");
+fprintf(fp, "Hello Quarantine\n");
+fclose(fp);</p>
+<p>return 0;</p>
+<p>}</p>
+<pre><code>&lt;/details&gt;
+
+并**移除**该属性：
+```bash
+xattr -d com.apple.quarantine portada.png
+#You can also remove this attribute from every file with
+find . -iname '*' -print0 | xargs -0 xattr -d com.apple.quarantine
+</code></pre>
+<p>并找到所有被隔离的文件：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">find / -exec ls -ld {} \; 2&gt;/dev/null | grep -E "[x\-]@ " | awk '{printf $9; printf "\n"}' | xargs -I {} xattr -lv {} | grep "com.apple.quarantine"
+</code></pre>
+<p>{% endcode %}</p>
+<p>隔离信息也存储在由LaunchServices管理的中央数据库中，位于**<code>~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV2</code>**，这允许GUI获取有关文件来源的数据。此外，这可以被可能希望隐藏其来源的应用程序覆盖。此外，这可以通过LaunchServices API完成。</p>
+<h4 id="libquarantinedylb"><a class="header" href="#libquarantinedylb"><strong>libquarantine.dylb</strong></a></h4>
+<p>该库导出多个函数，允许操作扩展属性字段。</p>
+<p><code>qtn_file_*</code> API处理文件隔离策略，<code>qtn_proc_*</code> API应用于进程（由进程创建的文件）。未导出的<code>__qtn_syscall_quarantine*</code>函数是应用策略的函数，它调用<code>mac_syscall</code>，第一个参数为"Quarantine"，将请求发送到<code>Quarantine.kext</code>。</p>
+<h4 id="quarantinekext"><a class="header" href="#quarantinekext"><strong>Quarantine.kext</strong></a></h4>
+<p>内核扩展仅通过<strong>系统上的内核缓存</strong>可用；然而，您_可以_从<a href="https://developer.apple.com/"><strong>https://developer.apple.com/</strong></a>下载<strong>内核调试工具包</strong>，其中将包含该扩展的符号化版本。</p>
+<p>该Kext将通过MACF钩住多个调用，以捕获所有文件生命周期事件：创建、打开、重命名、硬链接...甚至<code>setxattr</code>以防止其设置<code>com.apple.quarantine</code>扩展属性。</p>
+<p>它还使用了一些MIB：</p>
+<ul>
+<li><code>security.mac.qtn.sandbox_enforce</code>：在沙箱中强制执行隔离</li>
+<li><code>security.mac.qtn.user_approved_exec</code>：隔离的进程只能执行已批准的文件</li>
+</ul>
+<h3 id="xprotect"><a class="header" href="#xprotect">XProtect</a></h3>
+<p>XProtect是macOS内置的<strong>反恶意软件</strong>功能。XProtect<strong>在首次启动或修改应用程序时检查其与已知恶意软件和不安全文件类型的数据库</strong>。当您通过某些应用程序（如Safari、Mail或Messages）下载文件时，XProtect会自动扫描该文件。如果它与数据库中的任何已知恶意软件匹配，XProtect将<strong>阻止该文件运行</strong>并提醒您存在威胁。</p>
+<p>XProtect数据库由Apple<strong>定期更新</strong>新的恶意软件定义，这些更新会自动下载并安装在您的Mac上。这确保了XProtect始终与最新已知威胁保持最新。</p>
+<p>然而，值得注意的是，<strong>XProtect并不是一个功能齐全的杀毒解决方案</strong>。它仅检查特定已知威胁列表，并不像大多数杀毒软件那样执行按需扫描。</p>
+<p>您可以通过运行以下命令获取有关最新XProtect更新的信息：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">system_profiler SPInstallHistoryDataType 2&gt;/dev/null | grep -A 4 "XProtectPlistConfigData" | tail -n 5
+</code></pre>
+<p>{% endcode %}</p>
+<p>XProtect 位于 SIP 保护位置 <strong>/Library/Apple/System/Library/CoreServices/XProtect.bundle</strong>，在该包内可以找到 XProtect 使用的信息：</p>
+<ul>
+<li><strong><code>XProtect.bundle/Contents/Resources/LegacyEntitlementAllowlist.plist</code></strong>：允许具有这些 cdhash 的代码使用遗留权限。</li>
+<li><strong><code>XProtect.bundle/Contents/Resources/XProtect.meta.plist</code></strong>：不允许通过 BundleID 和 TeamID 加载的插件和扩展的列表，或指示最低版本。</li>
+<li><strong><code>XProtect.bundle/Contents/Resources/XProtect.yara</code></strong>：检测恶意软件的 Yara 规则。</li>
+<li><strong><code>XProtect.bundle/Contents/Resources/gk.db</code></strong>：包含被阻止应用程序和 TeamIDs 哈希的 SQLite3 数据库。</li>
+</ul>
+<p>请注意，<strong><code>/Library/Apple/System/Library/CoreServices/XProtect.app</code></strong> 中还有另一个与 XProtect 相关的应用程序，但它与 Gatekeeper 过程无关。</p>
+<h3 id="不是-gatekeeper"><a class="header" href="#不是-gatekeeper">不是 Gatekeeper</a></h3>
+<p>{% hint style="danger" %}
+请注意，Gatekeeper <strong>并不是每次</strong> 执行应用程序时都会执行，只有 <em><strong>AppleMobileFileIntegrity</strong></em> (AMFI) 会在执行已经由 Gatekeeper 执行和验证的应用程序时 <strong>验证可执行代码签名</strong>。
+{% endhint %}</p>
+<p>因此，之前可以执行一个应用程序以缓存 Gatekeeper，然后 <strong>修改应用程序的非可执行文件</strong>（如 Electron asar 或 NIB 文件），如果没有其他保护措施，应用程序将 <strong>执行</strong> 带有 <strong>恶意</strong> 附加内容的版本。</p>
+<p>然而，现在这已不再可能，因为 macOS <strong>防止修改</strong> 应用程序包内的文件。因此，如果您尝试 <a href="../macos-proces-abuse/macos-dirty-nib.html">Dirty NIB</a> 攻击，您会发现不再可能利用它，因为在执行应用程序以缓存 Gatekeeper 后，您将无法修改该包。如果您例如将 Contents 目录的名称更改为 NotCon（如漏洞中所示），然后执行应用程序的主二进制文件以缓存 Gatekeeper，将会触发错误并且无法执行。</p>
+<h2 id="gatekeeper-绕过"><a class="header" href="#gatekeeper-绕过">Gatekeeper 绕过</a></h2>
+<p>任何绕过 Gatekeeper 的方法（设法让用户下载某些内容并在 Gatekeeper 应该禁止时执行它）都被视为 macOS 中的漏洞。这些是一些分配给过去允许绕过 Gatekeeper 的技术的 CVE：</p>
+<h3 id="cve-2021-1810"><a class="header" href="#cve-2021-1810"><a href="https://labs.withsecure.com/publications/the-discovery-of-cve-2021-1810">CVE-2021-1810</a></a></h3>
+<p>观察到如果使用 <strong>Archive Utility</strong> 进行提取，路径超过 <strong>886 个字符</strong> 的文件不会接收 com.apple.quarantine 扩展属性。这种情况无意中允许这些文件 <strong>绕过 Gatekeeper 的</strong> 安全检查。</p>
+<p>查看 <a href="https://labs.withsecure.com/publications/the-discovery-of-cve-2021-1810"><strong>原始报告</strong></a> 以获取更多信息。</p>
+<h3 id="cve-2021-30990"><a class="header" href="#cve-2021-30990"><a href="https://ronmasas.com/posts/bypass-macos-gatekeeper">CVE-2021-30990</a></a></h3>
+<p>当使用 <strong>Automator</strong> 创建应用程序时，关于其执行所需的信息位于 <code>application.app/Contents/document.wflow</code> 中，而不在可执行文件中。可执行文件只是一个名为 <strong>Automator Application Stub</strong> 的通用 Automator 二进制文件。</p>
+<p>因此，您可以使 <code>application.app/Contents/MacOS/Automator\ Application\ Stub</code> <strong>通过符号链接指向系统内的另一个 Automator Application Stub</strong>，它将执行 <code>document.wflow</code> 中的内容（您的脚本） <strong>而不会触发 Gatekeeper</strong>，因为实际的可执行文件没有隔离 xattr。</p>
+<p>示例预期位置：<code>/System/Library/CoreServices/Automator\ Application\ Stub.app/Contents/MacOS/Automator\ Application\ Stub</code></p>
+<p>查看 <a href="https://ronmasas.com/posts/bypass-macos-gatekeeper"><strong>原始报告</strong></a> 以获取更多信息。</p>
+<h3 id="cve-2022-22616"><a class="header" href="#cve-2022-22616"><a href="https://www.jamf.com/blog/jamf-threat-labs-safari-vuln-gatekeeper-bypass/">CVE-2022-22616</a></a></h3>
+<p>在此绕过中，创建了一个 zip 文件，应用程序从 <code>application.app/Contents</code> 开始压缩，而不是从 <code>application.app</code>。因此，<strong>隔离属性</strong> 应用于所有 <strong>来自 <code>application.app/Contents</code> 的文件</strong>，但 <strong>不适用于 <code>application.app</code></strong>，这是 Gatekeeper 检查的内容，因此 Gatekeeper 被绕过，因为当触发 <code>application.app</code> 时 <strong>没有隔离属性。</strong></p>
+<pre><code class="language-bash">zip -r test.app/Contents test.zip
+</code></pre>
+<p>检查<a href="https://www.jamf.com/blog/jamf-threat-labs-safari-vuln-gatekeeper-bypass/"><strong>原始报告</strong></a>以获取更多信息。</p>
+<h3 id="cve-2022-32910"><a class="header" href="#cve-2022-32910"><a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-32910">CVE-2022-32910</a></a></h3>
+<p>即使组件不同，此漏洞的利用与之前的非常相似。在这种情况下，我们将从**<code>application.app/Contents</code><strong>生成一个Apple归档，因此</strong><code>application.app</code>在通过<strong>Archive Utility</strong>解压缩时不会获得隔离属性**。</p>
+<pre><code class="language-bash">aa archive -d test.app/Contents -o test.app.aar
+</code></pre>
+<p>检查<a href="https://www.jamf.com/blog/jamf-threat-labs-macos-archive-utility-vulnerability/"><strong>原始报告</strong></a>以获取更多信息。</p>
+<h3 id="cve-2022-42821"><a class="header" href="#cve-2022-42821"><a href="https://www.microsoft.com/en-us/security/blog/2022/12/19/gatekeepers-achilles-heel-unearthing-a-macos-vulnerability/">CVE-2022-42821</a></a></h3>
+<p>ACL <strong><code>writeextattr</code></strong> 可用于防止任何人向文件中写入属性：</p>
+<pre><code class="language-bash">touch /tmp/no-attr
+chmod +a "everyone deny writeextattr" /tmp/no-attr
+xattr -w attrname vale /tmp/no-attr
+xattr: [Errno 13] Permission denied: '/tmp/no-attr'
+</code></pre>
+<p>此外，<strong>AppleDouble</strong> 文件格式复制了一个文件及其 ACE。</p>
+<p>在 <a href="https://opensource.apple.com/source/Libc/Libc-391/darwin/copyfile.c.auto.html"><strong>源代码</strong></a> 中可以看到，存储在名为 <strong><code>com.apple.acl.text</code></strong> 的 xattr 中的 ACL 文本表示将被设置为解压缩文件中的 ACL。因此，如果您将一个应用程序压缩成一个带有 ACL 的 <strong>AppleDouble</strong> 文件格式的 zip 文件，该 ACL 阻止其他 xattrs 被写入... 那么隔离 xattr 并没有被设置到该应用程序中：</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">chmod +a "everyone deny write,writeattr,writeextattr" /tmp/test
+ditto -c -k test test.zip
+python3 -m http.server
+# Download the zip from the browser and decompress it, the file should be without a quarantine xattr
+</code></pre>
+<p>{% endcode %}</p>
+<p>查看<a href="https://www.microsoft.com/en-us/security/blog/2022/12/19/gatekeepers-achilles-heel-unearthing-a-macos-vulnerability/"><strong>原始报告</strong></a>以获取更多信息。</p>
+<p>请注意，这也可以通过AppleArchives进行利用：</p>
+<pre><code class="language-bash">mkdir app
+touch app/test
+chmod +a "everyone deny write,writeattr,writeextattr" app/test
+aa archive -d app -o test.aar
+</code></pre>
+<h3 id="cve-2023-27943"><a class="header" href="#cve-2023-27943"><a href="https://blog.f-secure.com/discovery-of-gatekeeper-bypass-cve-2023-27943/">CVE-2023-27943</a></a></h3>
+<p>发现<strong>Google Chrome没有为下载的文件设置隔离属性</strong>，这是由于一些macOS内部问题造成的。</p>
+<h3 id="cve-2023-27951"><a class="header" href="#cve-2023-27951"><a href="https://redcanary.com/blog/gatekeeper-bypass-vulnerabilities/">CVE-2023-27951</a></a></h3>
+<p>AppleDouble文件格式将文件的属性存储在一个以<code>._</code>开头的单独文件中，这有助于在<strong>macOS机器之间</strong>复制文件属性。然而，注意到在解压AppleDouble文件后，以<code>._</code>开头的文件<strong>没有被赋予隔离属性</strong>。</p>
+<p>{% code overflow="wrap" %}</p>
+<pre><code class="language-bash">mkdir test
+echo a &gt; test/a
+echo b &gt; test/b
+echo ._a &gt; test/._a
+aa archive -d test/ -o test.aar
+
+# If you downloaded the resulting test.aar and decompress it, the file test/._a won't have a quarantitne attribute
+</code></pre>
+<p>{% endcode %}</p>
+<p>能够创建一个不会被设置为隔离属性的文件，<strong>可以绕过 Gatekeeper。</strong> 这个技巧是<strong>使用 AppleDouble 命名约定创建一个 DMG 文件应用程序</strong>（以 <code>._</code> 开头），并创建一个<strong>作为此隐藏文件的符号链接的可见文件</strong>，而没有隔离属性。<br />
+当<strong>dmg 文件被执行</strong>时，由于它没有隔离属性，它将<strong>绕过 Gatekeeper</strong>。</p>
+<pre><code class="language-bash"># Create an app bundle with the backdoor an call it app.app
+
+echo "[+] creating disk image with app"
+hdiutil create -srcfolder app.app app.dmg
+
+echo "[+] creating directory and files"
+mkdir
+mkdir -p s/app
+cp app.dmg s/app/._app.dmg
+ln -s ._app.dmg s/app/app.dmg
+
+echo "[+] compressing files"
+aa archive -d s/ -o app.aar
+</code></pre>
+<h3 id="uchg-来自这个-演讲"><a class="header" href="#uchg-来自这个-演讲">uchg (来自这个 <a href="https://codeblue.jp/2023/result/pdf/cb23-bypassing-macos-security-and-privacy-mechanisms-from-gatekeeper-to-system-integrity-protection-by-koh-nakagawa.pdf">演讲</a>)</a></h3>
+<ul>
+<li>创建一个包含应用程序的目录。</li>
+<li>将 uchg 添加到应用程序中。</li>
+<li>将应用程序压缩为 tar.gz 文件。</li>
+<li>将 tar.gz 文件发送给受害者。</li>
+<li>受害者打开 tar.gz 文件并运行应用程序。</li>
+<li>Gatekeeper 不会检查该应用程序。</li>
+</ul>
+<h3 id="防止-quarantine-xattr"><a class="header" href="#防止-quarantine-xattr">防止 Quarantine xattr</a></h3>
+<p>在一个 ".app" 包中，如果没有添加 quarantine xattr，当执行时 <strong>Gatekeeper 不会被触发</strong>。</p>
+<figure><img src="https://pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-launch-environment-constraints.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-launch-environment-constraints.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

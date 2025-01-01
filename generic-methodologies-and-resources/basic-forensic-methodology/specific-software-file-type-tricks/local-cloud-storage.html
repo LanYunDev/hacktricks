@@ -1,0 +1,319 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Local Cloud Storage</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="本地云存储"><a class="header" href="#本地云存储">本地云存储</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=local-cloud-storage"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=local-cloud-storage" %}</p>
+<h2 id="onedrive"><a class="header" href="#onedrive">OneDrive</a></h2>
+<p>在 Windows 中，您可以在 <code>\Users\&lt;username&gt;\AppData\Local\Microsoft\OneDrive</code> 找到 OneDrive 文件夹。在 <code>logs\Personal</code> 中可以找到文件 <code>SyncDiagnostics.log</code>，其中包含有关同步文件的一些有趣数据：</p>
+<ul>
+<li>字节大小</li>
+<li>创建日期</li>
+<li>修改日期</li>
+<li>云中的文件数量</li>
+<li>文件夹中的文件数量</li>
+<li><strong>CID</strong>：OneDrive 用户的唯一 ID</li>
+<li>报告生成时间</li>
+<li>操作系统的硬盘大小</li>
+</ul>
+<p>一旦找到 CID，建议 <strong>搜索包含此 ID 的文件</strong>。您可能会找到名为：<em><strong>&lt;CID&gt;.ini</strong></em> 和 <em><strong>&lt;CID&gt;.dat</strong></em> 的文件，这些文件可能包含与 OneDrive 同步的文件名等有趣信息。</p>
+<h2 id="google-drive"><a class="header" href="#google-drive">Google Drive</a></h2>
+<p>在 Windows 中，您可以在 <code>\Users\&lt;username&gt;\AppData\Local\Google\Drive\user_default</code> 找到主要的 Google Drive 文件夹<br />
+此文件夹包含一个名为 Sync_log.log 的文件，其中包含帐户的电子邮件地址、文件名、时间戳、文件的 MD5 哈希等信息。即使是已删除的文件也会出现在该日志文件中及其对应的 MD5。</p>
+<p>文件 <strong><code>Cloud_graph\Cloud_graph.db</code></strong> 是一个 sqlite 数据库，其中包含表 <strong><code>cloud_graph_entry</code></strong>。在此表中，您可以找到 <strong>同步</strong> <strong>文件</strong> 的 <strong>名称</strong>、修改时间、大小和文件的 MD5 校验和。</p>
+<p>数据库 <strong><code>Sync_config.db</code></strong> 的表数据包含帐户的电子邮件地址、共享文件夹的路径和 Google Drive 版本。</p>
+<h2 id="dropbox"><a class="header" href="#dropbox">Dropbox</a></h2>
+<p>Dropbox 使用 <strong>SQLite 数据库</strong> 来管理文件。在此<br />
+您可以在以下文件夹中找到数据库：</p>
+<ul>
+<li><code>\Users\&lt;username&gt;\AppData\Local\Dropbox</code></li>
+<li><code>\Users\&lt;username&gt;\AppData\Local\Dropbox\Instance1</code></li>
+<li><code>\Users\&lt;username&gt;\AppData\Roaming\Dropbox</code></li>
+</ul>
+<p>主要数据库包括：</p>
+<ul>
+<li>Sigstore.dbx</li>
+<li>Filecache.dbx</li>
+<li>Deleted.dbx</li>
+<li>Config.dbx</li>
+</ul>
+<p>“.dbx” 扩展名表示 <strong>数据库</strong> 是 <strong>加密的</strong>。Dropbox 使用 <strong>DPAPI</strong> (<a href="https://docs.microsoft.com/en-us/previous-versions/ms995355(v=msdn.10)?redirectedfrom=MSDN">https://docs.microsoft.com/en-us/previous-versions/ms995355(v=msdn.10)?redirectedfrom=MSDN</a>)</p>
+<p>要更好地理解 Dropbox 使用的加密，您可以阅读 <a href="https://blog.digital-forensics.it/2017/04/brush-up-on-dropbox-dbx-decryption.html">https://blog.digital-forensics.it/2017/04/brush-up-on-dropbox-dbx-decryption.html</a>。</p>
+<p>然而，主要信息是：</p>
+<ul>
+<li><strong>熵</strong>：d114a55212655f74bd772e37e64aee9b</li>
+<li><strong>盐</strong>：0D638C092E8B82FC452883F95F355B8E</li>
+<li><strong>算法</strong>：PBKDF2</li>
+<li><strong>迭代次数</strong>：1066</li>
+</ul>
+<p>除此之外，要解密数据库，您还需要：</p>
+<ul>
+<li><strong>加密的 DPAPI 密钥</strong>：您可以在注册表中找到它，路径为 <code>NTUSER.DAT\Software\Dropbox\ks\client</code>（将此数据导出为二进制）</li>
+<li><strong><code>SYSTEM</code></strong> 和 <strong><code>SECURITY</code></strong> 注册表项</li>
+<li><strong>DPAPI 主密钥</strong>：可以在 <code>\Users\&lt;username&gt;\AppData\Roaming\Microsoft\Protect</code> 找到</li>
+<li>Windows 用户的 <strong>用户名</strong> 和 <strong>密码</strong></li>
+</ul>
+<p>然后您可以使用工具 <a href="https://nirsoft.net/utils/dpapi_data_decryptor.html"><strong>DataProtectionDecryptor</strong></a><strong>:</strong></p>
+<p><img src="../../../.gitbook/assets/image%20(443).png" alt="" /></p>
+<p>如果一切顺利，该工具将指示您需要 <strong>使用以恢复原始密钥</strong>。要恢复原始密钥，只需使用此 <a href="https://gchq.github.io/CyberChef/#recipe=Derive_PBKDF2_key(%7B&#x27;option&#x27;:&#x27;Hex&#x27;,&#x27;string&#x27;:&#x27;98FD6A76ECB87DE8DAB4623123402167&#x27;%7D,128,1066,&#x27;SHA1&#x27;,%7B&#x27;option&#x27;:&#x27;Hex&#x27;,&#x27;string&#x27;:&#x27;0D638C092E8B82FC452883F95F355B8E&#x27;%7D)">cyber_chef 配方</a> 将主密钥作为配方中的“密码短语”。</p>
+<p>结果十六进制是用于加密数据库的最终密钥，可以用来解密：</p>
+<pre><code class="language-bash">sqlite -k &lt;Obtained Key&gt; config.dbx ".backup config.db" #This decompress the config.dbx and creates a clear text backup in config.db
+</code></pre>
+<p>The <strong><code>config.dbx</code></strong> 数据库包含：</p>
+<ul>
+<li><strong>Email</strong>: 用户的电子邮件</li>
+<li><strong>usernamedisplayname</strong>: 用户的名称</li>
+<li><strong>dropbox_path</strong>: Dropbox 文件夹所在的路径</li>
+<li><strong>Host_id: Hash</strong> 用于认证到云端。只能从网页上撤销。</li>
+<li><strong>Root_ns</strong>: 用户标识符</li>
+</ul>
+<p>The <strong><code>filecache.db</code></strong> 数据库包含与 Dropbox 同步的所有文件和文件夹的信息。表 <code>File_journal</code> 是包含更多有用信息的表：</p>
+<ul>
+<li><strong>Server_path</strong>: 文件在服务器内部的路径（该路径前面有客户端的 <code>host_id</code>）。</li>
+<li><strong>local_sjid</strong>: 文件的版本</li>
+<li><strong>local_mtime</strong>: 修改日期</li>
+<li><strong>local_ctime</strong>: 创建日期</li>
+</ul>
+<p>该数据库中的其他表包含更有趣的信息：</p>
+<ul>
+<li><strong>block_cache</strong>: Dropbox 所有文件和文件夹的哈希</li>
+<li><strong>block_ref</strong>: 将表 <code>block_cache</code> 的哈希 ID 与表 <code>file_journal</code> 中的文件 ID 关联</li>
+<li><strong>mount_table</strong>: Dropbox 的共享文件夹</li>
+<li><strong>deleted_fields</strong>: Dropbox 删除的文件</li>
+<li><strong>date_added</strong></li>
+</ul>
+<figure><img src="../../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=text&amp;utm_campaign=ppc&amp;utm_content=local-cloud-storage"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流程</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_source=hacktricks&amp;utm_medium=banner&amp;utm_campaign=ppc&amp;utm_content=local-cloud-storage" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 渗透测试：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 渗透测试： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/desofuscation-vbs-cscript.exe.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/office-file-analysis.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/desofuscation-vbs-cscript.exe.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../generic-methodologies-and-resources/basic-forensic-methodology/specific-software-file-type-tricks/office-file-analysis.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

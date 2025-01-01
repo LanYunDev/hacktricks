@@ -1,0 +1,749 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Active Directory Methodology</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="active-directory-方法论"><a class="header" href="#active-directory-方法论">Active Directory 方法论</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="基本概述"><a class="header" href="#基本概述">基本概述</a></h2>
+<p><strong>Active Directory</strong> 作为基础技术，使 <strong>网络管理员</strong> 能够高效地创建和管理网络中的 <strong>域</strong>、<strong>用户</strong> 和 <strong>对象</strong>。它被设计为可扩展，便于将大量用户组织成可管理的 <strong>组</strong> 和 <strong>子组</strong>，同时在不同级别上控制 <strong>访问权限</strong>。</p>
+<p><strong>Active Directory</strong> 的结构由三个主要层次组成：<strong>域</strong>、<strong>树</strong> 和 <strong>森林</strong>。一个 <strong>域</strong> 包含一组对象，如 <strong>用户</strong> 或 <strong>设备</strong>，共享一个公共数据库。<strong>树</strong> 是这些域的组，按共享结构连接，而 <strong>森林</strong> 代表多个树的集合，通过 <strong>信任关系</strong> 互联，形成组织结构的最上层。可以在每个层次上指定特定的 <strong>访问</strong> 和 <strong>通信权限</strong>。</p>
+<p><strong>Active Directory</strong> 中的关键概念包括：</p>
+<ol>
+<li><strong>目录</strong> – 存储与 Active Directory 对象相关的所有信息。</li>
+<li><strong>对象</strong> – 指目录中的实体，包括 <strong>用户</strong>、<strong>组</strong> 或 <strong>共享文件夹</strong>。</li>
+<li><strong>域</strong> – 作为目录对象的容器，多个域可以在一个 <strong>森林</strong> 中共存，每个域维护自己的对象集合。</li>
+<li><strong>树</strong> – 一组共享公共根域的域。</li>
+<li><strong>森林</strong> – Active Directory 中组织结构的顶点，由多个树组成，彼此之间有 <strong>信任关系</strong>。</li>
+</ol>
+<p><strong>Active Directory 域服务 (AD DS)</strong> 包含一系列对网络内集中管理和通信至关重要的服务。这些服务包括：</p>
+<ol>
+<li><strong>域服务</strong> – 集中数据存储并管理 <strong>用户</strong> 和 <strong>域</strong> 之间的交互，包括 <strong>身份验证</strong> 和 <strong>搜索</strong> 功能。</li>
+<li><strong>证书服务</strong> – 负责安全 <strong>数字证书</strong> 的创建、分发和管理。</li>
+<li><strong>轻量级目录服务</strong> – 通过 <strong>LDAP 协议</strong> 支持目录启用的应用程序。</li>
+<li><strong>目录联合服务</strong> – 提供 <strong>单点登录</strong> 功能，以在单个会话中对多个 Web 应用程序进行用户身份验证。</li>
+<li><strong>权限管理</strong> – 通过规范其未经授权的分发和使用来帮助保护版权材料。</li>
+<li><strong>DNS 服务</strong> – 对 <strong>域名</strong> 的解析至关重要。</li>
+</ol>
+<p>有关更详细的解释，请查看：<a href="https://techterms.com/definition/active_directory"><strong>TechTerms - Active Directory 定义</strong></a></p>
+<h3 id="kerberos-身份验证"><a class="header" href="#kerberos-身份验证"><strong>Kerberos 身份验证</strong></a></h3>
+<p>要学习如何 <strong>攻击 AD</strong>，您需要非常好地 <strong>理解</strong> <strong>Kerberos 身份验证过程</strong>。<br />
+<a href="kerberos-authentication.html"><strong>如果您还不知道它是如何工作的，请阅读此页面。</strong></a></p>
+<h2 id="备忘单"><a class="header" href="#备忘单">备忘单</a></h2>
+<p>您可以访问 <a href="https://wadcoms.github.io">https://wadcoms.github.io/</a> 快速查看可以运行的命令，以枚举/利用 AD。</p>
+<h2 id="侦察-active-directory无凭据会话"><a class="header" href="#侦察-active-directory无凭据会话">侦察 Active Directory（无凭据/会话）</a></h2>
+<p>如果您仅访问 AD 环境，但没有任何凭据/会话，您可以：</p>
+<ul>
+<li><strong>渗透测试网络：</strong></li>
+<li>扫描网络，查找机器和开放端口，并尝试 <strong>利用漏洞</strong> 或 <strong>提取凭据</strong>（例如，<a href="ad-information-in-printers.html">打印机可能是非常有趣的目标</a>）。</li>
+<li>枚举 DNS 可能会提供有关域中关键服务器的信息，如 Web、打印机、共享、VPN、媒体等。</li>
+<li><code>gobuster dns -d domain.local -t 25 -w /opt/Seclist/Discovery/DNS/subdomain-top2000.txt</code></li>
+<li>查看一般的 <a href="../../generic-methodologies-and-resources/pentesting-methodology.html"><strong>渗透测试方法论</strong></a> 以获取有关如何执行此操作的更多信息。</li>
+<li><strong>检查 SMB 服务上的空和访客访问</strong>（这在现代 Windows 版本上不起作用）：</li>
+<li><code>enum4linux -a -u "" -p "" &lt;DC IP&gt; &amp;&amp; enum4linux -a -u "guest" -p "" &lt;DC IP&gt;</code></li>
+<li><code>smbmap -u "" -p "" -P 445 -H &lt;DC IP&gt; &amp;&amp; smbmap -u "guest" -p "" -P 445 -H &lt;DC IP&gt;</code></li>
+<li><code>smbclient -U '%' -L //&lt;DC IP&gt; &amp;&amp; smbclient -U 'guest%' -L //</code></li>
+<li>有关如何枚举 SMB 服务器的更详细指南可以在这里找到：</li>
+</ul>
+<p>{% content-ref url="../../network-services-pentesting/pentesting-smb/" %}
+<a href="../../network-services-pentesting/pentesting-smb/">pentesting-smb</a>
+{% endcontent-ref %}</p>
+<ul>
+<li><strong>枚举 LDAP</strong></li>
+<li><code>nmap -n -sV --script "ldap* and not brute" -p 389 &lt;DC IP&gt;</code></li>
+<li>有关如何枚举 LDAP 的更详细指南可以在这里找到（请 <strong>特别注意匿名访问</strong>）：</li>
+</ul>
+<p>{% content-ref url="../../network-services-pentesting/pentesting-ldap.md" %}
+<a href="../../network-services-pentesting/pentesting-ldap.html">pentesting-ldap.md</a>
+{% endcontent-ref %}</p>
+<ul>
+<li><strong>毒化网络</strong></li>
+<li>收集凭据 <a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html"><strong>通过 Responder 冒充服务</strong></a></li>
+<li>通过 <a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html#relay-attack"><strong>滥用中继攻击</strong></a> 访问主机</li>
+<li>收集凭据 <strong>暴露</strong> <a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-ssdp-and-upnp-devices.html"><strong>假 UPnP 服务与 evil-S</strong></a><a href="https://medium.com/@nickvangilder/exploiting-multifunction-printers-during-a-penetration-test-engagement-28d3840d8856"><strong>SDP</strong></a></li>
+<li><a href="https://book.hacktricks.xyz/external-recon-methodology"><strong>OSINT</strong></a>：</li>
+<li>从内部文档、社交媒体、服务（主要是 Web）中提取用户名/姓名，以及从公开可用的信息中提取。</li>
+<li>如果您找到公司员工的完整姓名，您可以尝试不同的 AD <strong>用户名约定</strong>（<a href="https://activedirectorypro.com/active-directory-user-naming-convention/"><strong>阅读此文</strong></a>）。最常见的约定是：<em>NameSurname</em>、<em>Name.Surname</em>、<em>NamSur</em>（每个 3 个字母）、<em>Nam.Sur</em>、<em>NSurname</em>、<em>N.Surname</em>、<em>SurnameName</em>、<em>Surname.Name</em>、<em>SurnameN</em>、<em>Surname.N</em>、3 个 <em>随机字母和 3 个随机数字</em>（abc123）。</li>
+<li>工具：</li>
+<li><a href="https://github.com/w0Tx/generate-ad-username">w0Tx/generate-ad-username</a></li>
+<li><a href="https://github.com/urbanadventurer/username-anarchy">urbanadventurer/username-anarchy</a></li>
+</ul>
+<h3 id="用户枚举"><a class="header" href="#用户枚举">用户枚举</a></h3>
+<ul>
+<li><strong>匿名 SMB/LDAP 枚举：</strong> 查看 <a href="../../network-services-pentesting/pentesting-smb/"><strong>渗透测试 SMB</strong></a> 和 <a href="../../network-services-pentesting/pentesting-ldap.html"><strong>渗透测试 LDAP</strong></a> 页面。</li>
+<li><strong>Kerbrute 枚举</strong>：当请求 <strong>无效用户名</strong> 时，服务器将使用 <strong>Kerberos 错误</strong> 代码 <em>KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN</em> 响应，允许我们确定用户名无效。<strong>有效用户名</strong> 将引发 <strong>AS-REP</strong> 响应中的 <strong>TGT</strong> 或错误 <em>KRB5KDC_ERR_PREAUTH_REQUIRED</em>，指示用户需要执行预身份验证。</li>
+</ul>
+<pre><code class="language-bash">./kerbrute_linux_amd64 userenum -d lab.ropnop.com --dc 10.10.10.10 usernames.txt #From https://github.com/ropnop/kerbrute/releases
+
+nmap -p 88 --script=krb5-enum-users --script-args="krb5-enum-users.realm='DOMAIN'" &lt;IP&gt;
+Nmap -p 88 --script=krb5-enum-users --script-args krb5-enum-users.realm='&lt;domain&gt;',userdb=/root/Desktop/usernames.txt &lt;IP&gt;
+
+msf&gt; use auxiliary/gather/kerberos_enumusers
+
+crackmapexec smb dominio.es  -u '' -p '' --users | awk '{print $4}' | uniq
+</code></pre>
+<ul>
+<li><strong>OWA (Outlook Web Access) 服务器</strong></li>
+</ul>
+<p>如果您在网络中发现了这些服务器，您也可以对其执行 <strong>用户枚举</strong>。例如，您可以使用工具 <a href="https://github.com/dafthack/MailSniper"><strong>MailSniper</strong></a>:</p>
+<pre><code class="language-bash">ipmo C:\Tools\MailSniper\MailSniper.ps1
+# Get info about the domain
+Invoke-DomainHarvestOWA -ExchHostname [ip]
+# Enumerate valid users from a list of potential usernames
+Invoke-UsernameHarvestOWA -ExchHostname [ip] -Domain [domain] -UserList .\possible-usernames.txt -OutFile valid.txt
+# Password spraying
+Invoke-PasswordSprayOWA -ExchHostname [ip] -UserList .\valid.txt -Password Summer2021
+# Get addresses list from the compromised mail
+Get-GlobalAddressList -ExchHostname [ip] -UserName [domain]\[username] -Password Summer2021 -OutFile gal.txt
+</code></pre>
+<p>{% hint style="warning" %}
+您可以在 <a href="https://github.com/danielmiessler/SecLists/tree/master/Usernames/Names"><strong>这个 GitHub 仓库</strong></a> **** 和这个 (<a href="https://github.com/insidetrust/statistically-likely-usernames"><strong>statistically-likely-usernames</strong></a>) 中找到用户名列表。</p>
+<p>然而，您应该从之前执行的侦查步骤中获得 <strong>公司员工的姓名</strong>。有了名字和姓氏，您可以使用脚本 <a href="https://gist.github.com/superkojiman/11076951"><strong>namemash.py</strong></a> 来生成潜在的有效用户名。
+{% endhint %}</p>
+<h3 id="知道一个或多个用户名"><a class="header" href="#知道一个或多个用户名">知道一个或多个用户名</a></h3>
+<p>好的，您已经知道有一个有效的用户名，但没有密码……那么尝试：</p>
+<ul>
+<li><a href="asreproast.html"><strong>ASREPRoast</strong></a>：如果用户 <strong>没有</strong> 属性 <em>DONT_REQ_PREAUTH</em>，您可以 <strong>请求该用户的 AS_REP 消息</strong>，其中将包含一些由用户密码的派生加密的数据。</li>
+<li><a href="password-spraying.html"><strong>密码喷洒</strong></a>：让我们尝试对每个发现的用户使用最 <strong>常见的密码</strong>，也许某个用户使用了一个糟糕的密码（请记住密码策略！）。</li>
+<li>请注意，您还可以 <strong>喷洒 OWA 服务器</strong>，以尝试访问用户的邮件服务器。</li>
+</ul>
+<p>{% content-ref url="password-spraying.md" %}
+<a href="password-spraying.html">password-spraying.md</a>
+{% endcontent-ref %}</p>
+<h3 id="llmnrnbt-ns-中毒"><a class="header" href="#llmnrnbt-ns-中毒">LLMNR/NBT-NS 中毒</a></h3>
+<p>您可能能够 <strong>获取</strong> 一些挑战 <strong>哈希</strong>，以破解 <strong>中毒</strong> 一些网络协议：</p>
+<p>{% content-ref url="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.md" %}
+<a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html">spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.md</a>
+{% endcontent-ref %}</p>
+<h3 id="ntml-中继"><a class="header" href="#ntml-中继">NTML 中继</a></h3>
+<p>如果您已经成功枚举了活动目录，您将拥有 <strong>更多的电子邮件和对网络的更好理解</strong>。您可能能够强制 NTML <a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html#relay-attack"><strong>中继攻击</strong></a> **** 以访问 AD 环境。</p>
+<h3 id="窃取-ntlm-凭据"><a class="header" href="#窃取-ntlm-凭据">窃取 NTLM 凭据</a></h3>
+<p>如果您可以使用 <strong>空或访客用户</strong> <strong>访问其他 PC 或共享</strong>，您可以 <strong>放置文件</strong>（如 SCF 文件），如果以某种方式访问，将 <strong>触发对您的 NTML 认证</strong>，这样您就可以 <strong>窃取</strong> <strong>NTLM 挑战</strong> 以破解它：</p>
+<p>{% content-ref url="../ntlm/places-to-steal-ntlm-creds.md" %}
+<a href="../ntlm/places-to-steal-ntlm-creds.html">places-to-steal-ntlm-creds.md</a>
+{% endcontent-ref %}</p>
+<h2 id="使用凭据会话枚举活动目录"><a class="header" href="#使用凭据会话枚举活动目录">使用凭据/会话枚举活动目录</a></h2>
+<p>在此阶段，您需要 <strong>获取有效域帐户的凭据或会话。</strong> 如果您有一些有效的凭据或作为域用户的 shell，<strong>您应该记住之前给出的选项仍然是妥协其他用户的选项</strong>。</p>
+<p>在开始经过身份验证的枚举之前，您应该了解 <strong>Kerberos 双跳问题。</strong></p>
+<p>{% content-ref url="kerberos-double-hop-problem.md" %}
+<a href="kerberos-double-hop-problem.html">kerberos-double-hop-problem.md</a>
+{% endcontent-ref %}</p>
+<h3 id="枚举"><a class="header" href="#枚举">枚举</a></h3>
+<p>成功妥协一个帐户是 <strong>开始妥协整个域的重大步骤</strong>，因为您将能够开始 <strong>活动目录枚举：</strong></p>
+<p>关于 <a href="asreproast.html"><strong>ASREPRoast</strong></a>，您现在可以找到每个可能的易受攻击用户，关于 <a href="password-spraying.html"><strong>密码喷洒</strong></a>，您可以获取 <strong>所有用户名的列表</strong>，并尝试妥协帐户的密码、空密码和新的有前景的密码。</p>
+<ul>
+<li>您可以使用 <a href="../basic-cmd-for-pentesters.html#domain-info"><strong>CMD 进行基本侦查</strong></a></li>
+<li>您还可以使用 <a href="../basic-powershell-for-pentesters/"><strong>powershell 进行侦查</strong></a>，这将更加隐蔽</li>
+<li>您还可以 <a href="../basic-powershell-for-pentesters/powerview.html"><strong>使用 powerview</strong></a> 提取更详细的信息</li>
+<li>另一个在活动目录中进行侦查的惊人工具是 <a href="bloodhound.html"><strong>BloodHound</strong></a>。它 <strong>不是很隐蔽</strong>（取决于您使用的收集方法），但 <strong>如果您不在乎</strong>，您应该完全尝试一下。查找用户可以 RDP 的位置，查找其他组的路径等。</li>
+<li><strong>其他自动化 AD 枚举工具包括：</strong> <a href="bloodhound.html#ad-explorer"><strong>AD Explorer</strong></a><strong>,</strong> <a href="bloodhound.html#adrecon"><strong>ADRecon</strong></a><strong>,</strong> <a href="bloodhound.html#group3r"><strong>Group3r</strong></a><strong>,</strong> <a href="bloodhound.html#pingcastle"><strong>PingCastle</strong></a><strong>.</strong></li>
+<li><a href="ad-dns-records.html"><strong>AD 的 DNS 记录</strong></a>，因为它们可能包含有趣的信息。</li>
+<li>您可以使用 <strong>AdExplorer.exe</strong> 作为 <strong>SysInternal</strong> 套件中的 GUI 工具来枚举目录。</li>
+<li>您还可以使用 <strong>ldapsearch</strong> 在 LDAP 数据库中搜索凭据，查找字段 <em>userPassword</em> 和 <em>unixUserPassword</em>，甚至是 <em>Description</em>。请参阅 <a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Active%20Directory%20Attack.md#password-in-ad-user-comment">PayloadsAllTheThings 中的 AD 用户注释中的密码</a> 以获取其他方法。</li>
+<li>如果您使用 <strong>Linux</strong>，您还可以使用 <a href="https://github.com/the-useless-one/pywerview"><strong>pywerview</strong></a> 枚举域。</li>
+<li>您还可以尝试自动化工具，如：</li>
+<li><a href="https://github.com/tomcarver16/ADSearch"><strong>tomcarver16/ADSearch</strong></a></li>
+<li><a href="https://github.com/61106960/adPEAS"><strong>61106960/adPEAS</strong></a></li>
+<li><strong>提取所有域用户</strong></li>
+</ul>
+<p>从 Windows 中获取所有域用户名非常简单（<code>net user /domain</code>，<code>Get-DomainUser</code> 或 <code>wmic useraccount get name,sid</code>）。在 Linux 中，您可以使用：<code>GetADUsers.py -all -dc-ip 10.10.10.110 domain.com/username</code> 或 <code>enum4linux -a -u "user" -p "password" &lt;DC IP&gt;</code></p>
+<blockquote>
+<p>即使这个枚举部分看起来很小，这也是最重要的部分。访问链接（主要是 cmd、powershell、powerview 和 BloodHound 的链接），学习如何枚举域并练习，直到您感到舒适。在评估期间，这将是找到通往 DA 的关键时刻，或者决定没有任何事情可以做。</p>
+</blockquote>
+<h3 id="kerberoast"><a class="header" href="#kerberoast">Kerberoast</a></h3>
+<p>Kerberoasting 涉及获取 <strong>TGS 票证</strong>，这些票证用于与用户帐户相关的服务，并破解其加密——这基于用户密码——<strong>离线</strong>。</p>
+<p>更多信息请参见：</p>
+<p>{% content-ref url="kerberoast.md" %}
+<a href="kerberoast.html">kerberoast.md</a>
+{% endcontent-ref %}</p>
+<h3 id="远程连接-rdp-ssh-ftp-win-rm-等"><a class="header" href="#远程连接-rdp-ssh-ftp-win-rm-等">远程连接 (RDP, SSH, FTP, Win-RM 等)</a></h3>
+<p>一旦您获得了一些凭据，您可以检查是否可以访问任何 <strong>机器</strong>。为此，您可以使用 <strong>CrackMapExec</strong> 尝试通过不同协议连接到多个服务器，具体取决于您的端口扫描结果。</p>
+<h3 id="本地权限提升"><a class="header" href="#本地权限提升">本地权限提升</a></h3>
+<p>如果您已经妥协了凭据或作为常规域用户的会话，并且您可以 <strong>使用此用户访问域中的任何机器</strong>，您应该尝试找到 <strong>本地提升权限和寻找凭据的方法</strong>。这是因为只有在本地管理员权限下，您才能 <strong>在内存中（LSASS）和本地（SAM）转储其他用户的哈希</strong>。</p>
+<p>本书中有一整页关于 <a href="../windows-local-privilege-escalation/"><strong>Windows 中的本地权限提升</strong></a> 和一个 <a href="../checklist-windows-privilege-escalation.html"><strong>检查表</strong></a>。此外，不要忘记使用 <a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite"><strong>WinPEAS</strong></a>。</p>
+<h3 id="当前会话票证"><a class="header" href="#当前会话票证">当前会话票证</a></h3>
+<p>您很 <strong>不可能</strong> 在当前用户中找到 <strong>票证</strong>，使您能够访问意外资源，但您可以检查：</p>
+<pre><code class="language-bash">## List all tickets (if not admin, only current user tickets)
+.\Rubeus.exe triage
+## Dump the interesting one by luid
+.\Rubeus.exe dump /service:krbtgt /luid:&lt;luid&gt; /nowrap
+[IO.File]::WriteAllBytes("ticket.kirbi", [Convert]::FromBase64String("&lt;BASE64_TICKET&gt;"))
+</code></pre>
+<h3 id="ntml-relay"><a class="header" href="#ntml-relay">NTML Relay</a></h3>
+<p>如果你已经成功枚举了活动目录，你将会有<strong>更多的电子邮件和对网络的更好理解</strong>。你可能能够强制进行 NTML <a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html#relay-attack"><strong>中继攻击</strong></a><strong>。</strong></p>
+<h3 id="在计算机共享中查找凭据"><a class="header" href="#在计算机共享中查找凭据"><strong>在计算机共享中查找凭据</strong></a></h3>
+<p>现在你有了一些基本凭据，你应该检查是否可以<strong>找到</strong>任何<strong>在 AD 中共享的有趣文件</strong>。你可以手动进行，但这是一项非常无聊的重复任务（如果你发现数百个文档需要检查，更是如此）。</p>
+<p><a href="../../network-services-pentesting/pentesting-smb/#domain-shared-folders-search"><strong>点击此链接了解你可以使用的工具。</strong></a></p>
+<h3 id="偷取-ntlm-凭据"><a class="header" href="#偷取-ntlm-凭据">偷取 NTLM 凭据</a></h3>
+<p>如果你可以<strong>访问其他 PC 或共享</strong>，你可以<strong>放置文件</strong>（如 SCF 文件），如果以某种方式被访问，将<strong>触发对你的 NTML 认证</strong>，这样你就可以<strong>窃取</strong> <strong>NTLM 挑战</strong>以破解它：</p>
+<p>{% content-ref url="../ntlm/places-to-steal-ntlm-creds.md" %}
+<a href="../ntlm/places-to-steal-ntlm-creds.html">places-to-steal-ntlm-creds.md</a>
+{% endcontent-ref %}</p>
+<h3 id="cve-2021-1675cve-2021-34527-printnightmare"><a class="header" href="#cve-2021-1675cve-2021-34527-printnightmare">CVE-2021-1675/CVE-2021-34527 PrintNightmare</a></h3>
+<p>此漏洞允许任何经过身份验证的用户<strong>破坏域控制器</strong>。</p>
+<p>{% content-ref url="printnightmare.md" %}
+<a href="printnightmare.html">printnightmare.md</a>
+{% endcontent-ref %}</p>
+<h2 id="在具有特权凭据会话的活动目录上进行特权提升"><a class="header" href="#在具有特权凭据会话的活动目录上进行特权提升">在具有特权凭据/会话的活动目录上进行特权提升</a></h2>
+<p><strong>对于以下技术，普通域用户是不够的，你需要一些特殊的特权/凭据来执行这些攻击。</strong></p>
+<h3 id="哈希提取"><a class="header" href="#哈希提取">哈希提取</a></h3>
+<p>希望你已经成功<strong>破坏了一些本地管理员</strong>账户，使用 <a href="asreproast.html">AsRepRoast</a>、<a href="password-spraying.html">Password Spraying</a>、<a href="kerberoast.html">Kerberoast</a>、<a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html">Responder</a> 包括中继、<a href="../../generic-methodologies-and-resources/pentesting-network/spoofing-ssdp-and-upnp-devices.html">EvilSSDP</a>、<a href="../windows-local-privilege-escalation/">本地提升特权</a>。<br />
+然后，是时候转储内存和本地的所有哈希。<br />
+<a href="https://github.com/carlospolop/hacktricks/blob/master/windows-hardening/active-directory-methodology/broken-reference/README.md"><strong>阅读此页面以了解获取哈希的不同方法。</strong></a></p>
+<h3 id="传递哈希"><a class="header" href="#传递哈希">传递哈希</a></h3>
+<p><strong>一旦你拥有用户的哈希</strong>，你可以用它来<strong>冒充</strong>该用户。<br />
+你需要使用一些<strong>工具</strong>来<strong>执行</strong>使用该<strong>哈希的 NTLM 认证</strong>，<strong>或者</strong>你可以创建一个新的<strong>sessionlogon</strong>并<strong>注入</strong>该<strong>哈希</strong>到<strong>LSASS</strong>中，这样当任何<strong>NTLM 认证被执行</strong>时，该**哈希将被使用。**最后一个选项就是 mimikatz 所做的。<br />
+<a href="../ntlm/#pass-the-hash"><strong>阅读此页面以获取更多信息。</strong></a></p>
+<h3 id="超越哈希传递密钥"><a class="header" href="#超越哈希传递密钥">超越哈希/传递密钥</a></h3>
+<p>此攻击旨在<strong>使用用户的 NTLM 哈希请求 Kerberos 票证</strong>，作为常见的 NTLM 协议下的传递哈希的替代方案。因此，这在<strong>禁用 NTLM 协议</strong>且仅允许<strong>Kerberos</strong>作为认证协议的网络中尤其<strong>有用</strong>。</p>
+<p>{% content-ref url="over-pass-the-hash-pass-the-key.md" %}
+<a href="over-pass-the-hash-pass-the-key.html">over-pass-the-hash-pass-the-key.md</a>
+{% endcontent-ref %}</p>
+<h3 id="传递票证"><a class="header" href="#传递票证">传递票证</a></h3>
+<p>在<strong>传递票证 (PTT)</strong> 攻击方法中，攻击者<strong>窃取用户的认证票证</strong>而不是他们的密码或哈希值。然后使用这个被窃取的票证来<strong>冒充用户</strong>，获得对网络中资源和服务的未授权访问。</p>
+<p>{% content-ref url="pass-the-ticket.md" %}
+<a href="pass-the-ticket.html">pass-the-ticket.md</a>
+{% endcontent-ref %}</p>
+<h3 id="凭据重用"><a class="header" href="#凭据重用">凭据重用</a></h3>
+<p>如果你拥有<strong>本地管理员</strong>的<strong>哈希</strong>或<strong>密码</strong>，你应该尝试使用它<strong>本地登录</strong>到其他<strong>PC</strong>。</p>
+<pre><code class="language-bash"># Local Auth Spray (once you found some local admin pass or hash)
+## --local-auth flag indicate to only try 1 time per machine
+crackmapexec smb --local-auth 10.10.10.10/23 -u administrator -H 10298e182387f9cab376ecd08491764a0 | grep +
+</code></pre>
+<p>{% hint style="warning" %}
+注意，这非常<strong>嘈杂</strong>，而且<strong>LAPS</strong>会<strong>减轻</strong>这种情况。
+{% endhint %}</p>
+<h3 id="mssql-滥用与受信任链接"><a class="header" href="#mssql-滥用与受信任链接">MSSQL 滥用与受信任链接</a></h3>
+<p>如果用户有权限<strong>访问 MSSQL 实例</strong>，他可能能够利用它在 MSSQL 主机上<strong>执行命令</strong>（如果以 SA 身份运行），<strong>窃取</strong> NetNTLM <strong>哈希</strong>，甚至执行<strong>中继****攻击</strong>。<br />
+此外，如果一个 MSSQL 实例被另一个 MSSQL 实例信任（数据库链接）。如果用户对受信任的数据库有权限，他将能够<strong>利用信任关系在另一个实例中执行查询</strong>。这些信任可以链式连接，在某些情况下，用户可能能够找到一个配置错误的数据库，在那里他可以执行命令。<br />
+<strong>数据库之间的链接甚至可以跨森林信任工作。</strong></p>
+<p>{% content-ref url="abusing-ad-mssql.md" %}
+<a href="abusing-ad-mssql.html">abusing-ad-mssql.md</a>
+{% endcontent-ref %}</p>
+<h3 id="不受限制的委派"><a class="header" href="#不受限制的委派">不受限制的委派</a></h3>
+<p>如果你发现任何具有属性 <a href="https://msdn.microsoft.com/en-us/library/aa772300(v=vs.85).aspx">ADS_UF_TRUSTED_FOR_DELEGATION</a> 的计算机对象，并且你在该计算机上拥有域权限，你将能够从登录到该计算机的每个用户的内存中转储 TGT。<br />
+因此，如果<strong>域管理员登录到计算机</strong>，你将能够转储他的 TGT，并使用 <a href="pass-the-ticket.html">Pass the Ticket</a> 冒充他。<br />
+得益于受限委派，你甚至可以<strong>自动妥协打印服务器</strong>（希望它是 DC）。</p>
+<p>{% content-ref url="unconstrained-delegation.md" %}
+<a href="unconstrained-delegation.html">unconstrained-delegation.md</a>
+{% endcontent-ref %}</p>
+<h3 id="受限委派"><a class="header" href="#受限委派">受限委派</a></h3>
+<p>如果用户或计算机被允许进行“受限委派”，它将能够<strong>冒充任何用户访问计算机中的某些服务</strong>。<br />
+然后，如果你<strong>妥协</strong>该用户/计算机的哈希，你将能够<strong>冒充任何用户</strong>（甚至是域管理员）访问某些服务。</p>
+<p>{% content-ref url="constrained-delegation.md" %}
+<a href="constrained-delegation.html">constrained-delegation.md</a>
+{% endcontent-ref %}</p>
+<h3 id="基于资源的受限委派"><a class="header" href="#基于资源的受限委派">基于资源的受限委派</a></h3>
+<p>在远程计算机的 Active Directory 对象上拥有<strong>写入</strong>权限可以实现<strong>提升权限</strong>的代码执行：</p>
+<p>{% content-ref url="resource-based-constrained-delegation.md" %}
+<a href="resource-based-constrained-delegation.html">resource-based-constrained-delegation.md</a>
+{% endcontent-ref %}</p>
+<h3 id="acl-滥用"><a class="header" href="#acl-滥用">ACL 滥用</a></h3>
+<p>被妥协的用户可能对某些域对象拥有一些<strong>有趣的权限</strong>，这可能让你<strong>横向移动</strong>/<strong>提升</strong>权限。</p>
+<p>{% content-ref url="acl-persistence-abuse/" %}
+<a href="acl-persistence-abuse/">acl-persistence-abuse</a>
+{% endcontent-ref %}</p>
+<h3 id="打印机后台处理程序服务滥用"><a class="header" href="#打印机后台处理程序服务滥用">打印机后台处理程序服务滥用</a></h3>
+<p>发现域内<strong>后台处理程序服务</strong>的<strong>监听</strong>可以被<strong>滥用</strong>以<strong>获取新凭据</strong>并<strong>提升权限</strong>。</p>
+<p>{% content-ref url="printers-spooler-service-abuse.md" %}
+<a href="printers-spooler-service-abuse.html">printers-spooler-service-abuse.md</a>
+{% endcontent-ref %}</p>
+<h3 id="第三方会话滥用"><a class="header" href="#第三方会话滥用">第三方会话滥用</a></h3>
+<p>如果<strong>其他用户****访问</strong>被<strong>妥协</strong>的机器，可能会<strong>从内存中收集凭据</strong>，甚至<strong>在他们的进程中注入信标</strong>以冒充他们。<br />
+通常用户会通过 RDP 访问系统，因此这里有如何对第三方 RDP 会话执行几种攻击的方法：</p>
+<p>{% content-ref url="rdp-sessions-abuse.md" %}
+<a href="rdp-sessions-abuse.html">rdp-sessions-abuse.md</a>
+{% endcontent-ref %}</p>
+<h3 id="laps"><a class="header" href="#laps">LAPS</a></h3>
+<p><strong>LAPS</strong> 提供了一种管理域加入计算机上<strong>本地管理员密码</strong>的系统，确保其<strong>随机化</strong>、唯一且频繁<strong>更改</strong>。这些密码存储在 Active Directory 中，访问通过 ACL 控制，仅限授权用户。拥有足够权限访问这些密码后，转向其他计算机变得可能。</p>
+<p>{% content-ref url="laps.md" %}
+<a href="laps.html">laps.md</a>
+{% endcontent-ref %}</p>
+<h3 id="证书盗窃"><a class="header" href="#证书盗窃">证书盗窃</a></h3>
+<p><strong>从被妥协的机器收集证书</strong>可能是提升环境内权限的一种方式：</p>
+<p>{% content-ref url="ad-certificates/certificate-theft.md" %}
+<a href="ad-certificates/certificate-theft.html">certificate-theft.md</a>
+{% endcontent-ref %}</p>
+<h3 id="证书模板滥用"><a class="header" href="#证书模板滥用">证书模板滥用</a></h3>
+<p>如果配置了<strong>易受攻击的模板</strong>，可以利用它们来提升权限：</p>
+<p>{% content-ref url="ad-certificates/domain-escalation.md" %}
+<a href="ad-certificates/domain-escalation.html">domain-escalation.md</a>
+{% endcontent-ref %}</p>
+<h2 id="高权限账户的后期利用"><a class="header" href="#高权限账户的后期利用">高权限账户的后期利用</a></h2>
+<h3 id="转储域凭据"><a class="header" href="#转储域凭据">转储域凭据</a></h3>
+<p>一旦你获得了<strong>域管理员</strong>或更好的<strong>企业管理员</strong>权限，你可以<strong>转储****域数据库</strong>：<em>ntds.dit</em>。</p>
+<p><a href="dcsync.html"><strong>有关 DCSync 攻击的更多信息可以在这里找到</strong></a>。</p>
+<p><a href="https://github.com/carlospolop/hacktricks/blob/master/windows-hardening/active-directory-methodology/broken-reference/README.md"><strong>有关如何窃取 NTDS.dit 的更多信息可以在这里找到</strong></a></p>
+<h3 id="权限提升作为持久性"><a class="header" href="#权限提升作为持久性">权限提升作为持久性</a></h3>
+<p>之前讨论的一些技术可以用于持久性。<br />
+例如，你可以：</p>
+<ul>
+<li>使用户易受<a href="kerberoast.html"><strong>Kerberoast</strong></a>攻击</li>
+</ul>
+<pre><code class="language-powershell">Set-DomainObject -Identity &lt;username&gt; -Set @{serviceprincipalname="fake/NOTHING"}r
+</code></pre>
+<ul>
+<li>使用户易受<a href="asreproast.html"><strong>ASREPRoast</strong></a>攻击</li>
+</ul>
+<pre><code class="language-powershell">Set-DomainObject -Identity &lt;username&gt; -XOR @{UserAccountControl=4194304}
+</code></pre>
+<ul>
+<li>授予用户<a href="./#dcsync"><strong>DCSync</strong></a>权限</li>
+</ul>
+<pre><code class="language-powershell">Add-DomainObjectAcl -TargetIdentity "DC=SUB,DC=DOMAIN,DC=LOCAL" -PrincipalIdentity bfarmer -Rights DCSync
+</code></pre>
+<h3 id="银票"><a class="header" href="#银票">银票</a></h3>
+<p><strong>银票攻击</strong>为特定服务创建一个<strong>合法的票据授予服务 (TGS) 票据</strong>，通过使用<strong>NTLM 哈希</strong>（例如，<strong>PC 账户的哈希</strong>）。此方法用于<strong>访问服务权限</strong>。</p>
+<p>{% content-ref url="silver-ticket.md" %}
+<a href="silver-ticket.html">silver-ticket.md</a>
+{% endcontent-ref %}</p>
+<h3 id="金票"><a class="header" href="#金票">金票</a></h3>
+<p><strong>金票攻击</strong>涉及攻击者在 Active Directory (AD) 环境中获取<strong>krbtgt 账户的 NTLM 哈希</strong>。该账户是特殊的，因为它用于签署所有<strong>票据授予票据 (TGT)</strong>，这些票据对于在 AD 网络中进行身份验证至关重要。</p>
+<p>一旦攻击者获得此哈希，他们可以为他们选择的任何账户创建<strong>TGT</strong>（银票攻击）。</p>
+<p>{% content-ref url="golden-ticket.md" %}
+<a href="golden-ticket.html">golden-ticket.md</a>
+{% endcontent-ref %}</p>
+<h3 id="钻石票"><a class="header" href="#钻石票">钻石票</a></h3>
+<p>这些票据类似于金票，但以<strong>绕过常见金票检测机制</strong>的方式伪造。</p>
+<p>{% content-ref url="diamond-ticket.md" %}
+<a href="diamond-ticket.html">diamond-ticket.md</a>
+{% endcontent-ref %}</p>
+<h3 id="证书账户持久性"><a class="header" href="#证书账户持久性"><strong>证书账户持久性</strong></a></h3>
+<p><strong>拥有账户的证书或能够请求它们</strong>是能够在用户账户中持久存在的非常好方法（即使他更改密码）：</p>
+<p>{% content-ref url="ad-certificates/account-persistence.md" %}
+<a href="ad-certificates/account-persistence.html">account-persistence.md</a>
+{% endcontent-ref %}</p>
+<h3 id="证书域持久性"><a class="header" href="#证书域持久性"><strong>证书域持久性</strong></a></h3>
+<p><strong>使用证书也可以在域内以高权限持久存在：</strong></p>
+<p>{% content-ref url="ad-certificates/domain-persistence.md" %}
+<a href="ad-certificates/domain-persistence.html">domain-persistence.md</a>
+{% endcontent-ref %}</p>
+<h3 id="adminsdholder-组"><a class="header" href="#adminsdholder-组">AdminSDHolder 组</a></h3>
+<p>Active Directory 中的 <strong>AdminSDHolder</strong> 对象通过在这些组中应用标准的<strong>访问控制列表 (ACL)</strong> 来确保<strong>特权组</strong>（如域管理员和企业管理员）的安全，以防止未经授权的更改。然而，这一功能可以被利用；如果攻击者修改 AdminSDHolder 的 ACL 以授予普通用户完全访问权限，该用户将获得对所有特权组的广泛控制。这一安全措施本意是保护，但如果不加以监控，可能会适得其反，导致不当访问。</p>
+<p><a href="privileged-groups-and-token-privileges.html#adminsdholder-group"><strong>有关 AdminSDHolder 组的更多信息在这里。</strong></a></p>
+<h3 id="dsrm-凭据"><a class="header" href="#dsrm-凭据">DSRM 凭据</a></h3>
+<p>在每个<strong>域控制器 (DC)</strong> 内，存在一个<strong>本地管理员</strong>账户。通过在这样的机器上获得管理员权限，可以使用<strong>mimikatz</strong>提取本地管理员哈希。随后，需要进行注册表修改以<strong>启用使用此密码</strong>，从而允许远程访问本地管理员账户。</p>
+<p>{% content-ref url="dsrm-credentials.md" %}
+<a href="dsrm-credentials.html">dsrm-credentials.md</a>
+{% endcontent-ref %}</p>
+<h3 id="acl-持久性"><a class="header" href="#acl-持久性">ACL 持久性</a></h3>
+<p>你可以<strong>给予</strong>某个<strong>用户</strong>对某些特定域对象的<strong>特殊权限</strong>，这将使该用户<strong>在未来提升权限</strong>。</p>
+<p>{% content-ref url="acl-persistence-abuse/" %}
+<a href="acl-persistence-abuse/">acl-persistence-abuse</a>
+{% endcontent-ref %}</p>
+<h3 id="安全描述符"><a class="header" href="#安全描述符">安全描述符</a></h3>
+<p><strong>安全描述符</strong>用于<strong>存储</strong>对象对另一个对象的<strong>权限</strong>。如果你能在对象的<strong>安全描述符</strong>中<strong>做一点小改动</strong>，你可以在不需要成为特权组成员的情况下获得对该对象的非常有趣的权限。</p>
+<p>{% content-ref url="security-descriptors.md" %}
+<a href="security-descriptors.html">security-descriptors.md</a>
+{% endcontent-ref %}</p>
+<h3 id="骨架钥匙"><a class="header" href="#骨架钥匙">骨架钥匙</a></h3>
+<p>在内存中更改<strong>LSASS</strong>以建立一个<strong>通用密码</strong>，授予对所有域账户的访问权限。</p>
+<p>{% content-ref url="skeleton-key.md" %}
+<a href="skeleton-key.html">skeleton-key.md</a>
+{% endcontent-ref %}</p>
+<h3 id="自定义-ssp"><a class="header" href="#自定义-ssp">自定义 SSP</a></h3>
+<p><a href="../authentication-credentials-uac-and-efs/#security-support-provider-interface-sspi">在这里了解什么是 SSP（安全支持提供者）。</a><br />
+你可以创建自己的<strong>SSP</strong>以<strong>捕获</strong>用于访问机器的<strong>凭据</strong>的<strong>明文</strong>。\</p>
+<p>{% content-ref url="custom-ssp.md" %}
+<a href="custom-ssp.html">custom-ssp.md</a>
+{% endcontent-ref %}</p>
+<h3 id="dcshadow"><a class="header" href="#dcshadow">DCShadow</a></h3>
+<p>它在 AD 中注册一个<strong>新的域控制器</strong>，并使用它在指定对象上<strong>推送属性</strong>（SIDHistory、SPNs...），<strong>不留</strong>任何关于<strong>修改</strong>的<strong>日志</strong>。你<strong>需要 DA</strong> 权限并在<strong>根域</strong>内。<br />
+注意，如果你使用错误的数据，会出现相当丑陋的日志。</p>
+<p>{% content-ref url="dcshadow.md" %}
+<a href="dcshadow.html">dcshadow.md</a>
+{% endcontent-ref %}</p>
+<h3 id="laps-持久性"><a class="header" href="#laps-持久性">LAPS 持久性</a></h3>
+<p>之前我们讨论了如果你有<strong>足够的权限读取 LAPS 密码</strong>，如何提升权限。然而，这些密码也可以用于<strong>维持持久性</strong>。<br />
+检查：</p>
+<p>{% content-ref url="laps.md" %}
+<a href="laps.html">laps.md</a>
+{% endcontent-ref %}</p>
+<h2 id="森林权限提升---域信任"><a class="header" href="#森林权限提升---域信任">森林权限提升 - 域信任</a></h2>
+<p>微软将<strong>森林</strong>视为安全边界。这意味着<strong>妥协一个域可能导致整个森林被妥协</strong>。</p>
+<h3 id="基本信息"><a class="header" href="#基本信息">基本信息</a></h3>
+<p><a href="http://technet.microsoft.com/en-us/library/cc759554(v=ws.10).aspx"><strong>域信任</strong></a>是一种安全机制，使一个<strong>域</strong>中的用户能够访问另一个<strong>域</strong>中的资源。它本质上在两个域的身份验证系统之间创建了一个链接，允许身份验证验证无缝流动。当域设置信任时，它们在其<strong>域控制器 (DC)</strong> 中交换并保留特定的<strong>密钥</strong>，这些密钥对信任的完整性至关重要。</p>
+<p>在典型场景中，如果用户打算访问<strong>受信任域</strong>中的服务，他们必须首先从自己域的 DC 请求一个称为<strong>跨域 TGT</strong>的特殊票据。此 TGT 使用两个域已达成一致的共享<strong>密钥</strong>进行加密。然后，用户将此 TGT 提交给<strong>受信任域的 DC</strong>以获取服务票据（<strong>TGS</strong>）。在受信任域的 DC 成功验证跨域 TGT 后，它会发出 TGS，授予用户访问该服务的权限。</p>
+<p><strong>步骤</strong>：</p>
+<ol>
+<li><strong>域 1</strong> 中的 <strong>客户端计算机</strong> 使用其 <strong>NTLM 哈希</strong> 向其 <strong>域控制器 (DC1)</strong> 请求 <strong>票据授予票据 (TGT)</strong>，开始该过程。</li>
+<li>如果客户端成功通过身份验证，DC1 会发出新的 TGT。</li>
+<li>客户端然后向 DC1 请求一个 <strong>跨域 TGT</strong>，该 TGT 是访问 <strong>域 2</strong> 中资源所需的。</li>
+<li>跨域 TGT 使用作为双向域信任的一部分在 DC1 和 DC2 之间共享的 <strong>信任密钥</strong>进行加密。</li>
+<li>客户端将跨域 TGT 带到 <strong>域 2 的域控制器 (DC2)</strong>。</li>
+<li>DC2 使用其共享的信任密钥验证跨域 TGT，如果有效，则为客户端想要访问的域 2 中的服务器发出 <strong>票据授予服务 (TGS)</strong>。</li>
+<li>最后，客户端将此 TGS 提交给服务器，该 TGS 使用服务器的账户哈希进行加密，以获取对域 2 中服务的访问权限。</li>
+</ol>
+<h3 id="不同的信任"><a class="header" href="#不同的信任">不同的信任</a></h3>
+<p>重要的是要注意，<strong>信任可以是单向或双向</strong>。在双向选项中，两个域将相互信任，但在<strong>单向</strong>信任关系中，一个域将是<strong>受信任</strong>的，另一个是<strong>信任</strong>的域。在最后一种情况下，<strong>你只能从受信任的域访问信任域内的资源</strong>。</p>
+<p>如果域 A 信任域 B，A 是信任域，B 是受信任域。此外，在<strong>域 A</strong>中，这将是<strong>出站信任</strong>；而在<strong>域 B</strong>中，这将是<strong>入站信任</strong>。</p>
+<p><strong>不同的信任关系</strong></p>
+<ul>
+<li><strong>父子信任</strong>：这是同一森林内的常见设置，子域自动与其父域建立双向传递信任。这意味着身份验证请求可以在父域和子域之间无缝流动。</li>
+<li><strong>交叉链接信任</strong>：被称为“快捷信任”，这些信任在子域之间建立，以加快引用过程。在复杂的森林中，身份验证引用通常必须向森林根节点上行，然后再向目标域下行。通过创建交叉链接，旅程缩短，这在地理分散的环境中特别有利。</li>
+<li><strong>外部信任</strong>：这些信任在不同的、不相关的域之间建立，通常是非传递的。根据<a href="https://technet.microsoft.com/en-us/library/cc773178(v=ws.10).aspx">微软的文档</a>，外部信任对于访问当前森林外的域中的资源非常有用，而该域未通过森林信任连接。通过 SID 过滤增强安全性。</li>
+<li><strong>树根信任</strong>：这些信任在森林根域和新添加的树根之间自动建立。虽然不常见，但树根信任对于将新域树添加到森林中非常重要，使其能够保持唯一的域名并确保双向传递性。有关更多信息，请参见<a href="https://technet.microsoft.com/en-us/library/cc773178(v=ws.10).aspx">微软的指南</a>。</li>
+<li><strong>森林信任</strong>：这种信任是两个森林根域之间的双向传递信任，也实施 SID 过滤以增强安全措施。</li>
+<li><strong>MIT 信任</strong>：这些信任与非 Windows 的<a href="https://tools.ietf.org/html/rfc4120">符合 RFC4120</a> 的 Kerberos 域建立。MIT 信任更为专业，适用于需要与 Windows 生态系统外的基于 Kerberos 的系统集成的环境。</li>
+</ul>
+<h4 id="信任关系中的其他差异"><a class="header" href="#信任关系中的其他差异"><strong>信任关系中的其他差异</strong></a></h4>
+<ul>
+<li>信任关系也可以是<strong>传递的</strong>（A 信任 B，B 信任 C，则 A 信任 C）或<strong>非传递的</strong>。</li>
+<li>信任关系可以设置为<strong>双向信任</strong>（彼此信任）或<strong>单向信任</strong>（只有一个信任另一个）。</li>
+</ul>
+<h3 id="攻击路径"><a class="header" href="#攻击路径">攻击路径</a></h3>
+<ol>
+<li><strong>枚举</strong>信任关系</li>
+<li>检查是否有任何<strong>安全主体</strong>（用户/组/计算机）对<strong>其他域</strong>的资源有<strong>访问</strong>权限，可能通过 ACE 条目或通过在其他域的组中查找。寻找<strong>跨域的关系</strong>（信任可能是为此创建的）。</li>
+<li>在这种情况下，kerberoast 可能是另一个选项。</li>
+<li><strong>妥协</strong>可以<strong>跨域</strong>进行<strong>转移</strong>的<strong>账户</strong>。</li>
+</ol>
+<p>攻击者可以通过三种主要机制访问另一个域中的资源：</p>
+<ul>
+<li><strong>本地组成员资格</strong>：主体可能被添加到机器上的本地组中，例如服务器上的“管理员”组，从而授予他们对该机器的重大控制。</li>
+<li><strong>外部域组成员资格</strong>：主体也可以是外部域中组的成员。然而，这种方法的有效性取决于信任的性质和组的范围。</li>
+<li><strong>访问控制列表 (ACL)</strong>：主体可能在<strong>ACL</strong>中被指定，特别是在<strong>DACL</strong>中的<strong>ACE</strong>内，提供对特定资源的访问权限。对于那些希望深入了解 ACL、DACL 和 ACE 机制的人，名为“<a href="https://specterops.io/assets/resources/an_ace_up_the_sleeve.pdf">An ACE Up The Sleeve</a>”的白皮书是一个宝贵的资源。</li>
+</ul>
+<h3 id="子到父森林权限提升"><a class="header" href="#子到父森林权限提升">子到父森林权限提升</a></h3>
+<pre><code>Get-DomainTrust
+
+SourceName      : sub.domain.local    --&gt; current domain
+TargetName      : domain.local        --&gt; foreign domain
+TrustType       : WINDOWS_ACTIVE_DIRECTORY
+TrustAttributes : WITHIN_FOREST       --&gt; WITHIN_FOREST: Both in the same forest
+TrustDirection  : Bidirectional       --&gt; Trust direction (2ways in this case)
+WhenCreated     : 2/19/2021 1:28:00 PM
+WhenChanged     : 2/19/2021 1:28:00 PM
+</code></pre>
+<p>{% hint style="warning" %}
+有 <strong>2 个受信任的密钥</strong>，一个用于 <em>Child --&gt; Parent</em>，另一个用于 <em>Parent</em> --&gt; <em>Child</em>.<br />
+您可以使用当前域使用的密钥：</p>
+<pre><code class="language-bash">Invoke-Mimikatz -Command '"lsadump::trust /patch"' -ComputerName dc.my.domain.local
+Invoke-Mimikatz -Command '"lsadump::dcsync /user:dcorp\mcorp$"'
+</code></pre>
+<p>{% endhint %}</p>
+<h4 id="sid-history-注入"><a class="header" href="#sid-history-注入">SID-History 注入</a></h4>
+<p>通过 SID-History 注入利用与子域/父域的信任提升为企业管理员：</p>
+<p>{% content-ref url="sid-history-injection.md" %}
+<a href="sid-history-injection.html">sid-history-injection.md</a>
+{% endcontent-ref %}</p>
+<h4 id="利用可写配置-nc"><a class="header" href="#利用可写配置-nc">利用可写配置 NC</a></h4>
+<p>理解如何利用配置命名上下文 (NC) 是至关重要的。配置 NC 作为 Active Directory (AD) 环境中跨森林的配置数据的中央存储库。这些数据会复制到森林中的每个域控制器 (DC)，可写的 DC 保持配置 NC 的可写副本。要利用这一点，必须在 DC 上拥有 <strong>SYSTEM 权限</strong>，最好是子 DC。</p>
+<p><strong>将 GPO 链接到根 DC 站点</strong></p>
+<p>配置 NC 的站点容器包含有关 AD 森林中所有域加入计算机的站点的信息。通过在任何 DC 上以 SYSTEM 权限操作，攻击者可以将 GPO 链接到根 DC 站点。此操作可能通过操纵应用于这些站点的策略来危害根域。</p>
+<p>有关深入信息，可以探索关于 <a href="https://improsec.com/tech-blog/sid-filter-as-security-boundary-between-domains-part-4-bypass-sid-filtering-research">绕过 SID 过滤</a> 的研究。</p>
+<p><strong>危害森林中的任何 gMSA</strong></p>
+<p>一个攻击向量涉及针对域内特权 gMSA。KDS 根密钥是计算 gMSA 密码所必需的，存储在配置 NC 中。通过在任何 DC 上拥有 SYSTEM 权限，可以访问 KDS 根密钥并计算森林中任何 gMSA 的密码。</p>
+<p>详细分析可以在关于 <a href="https://improsec.com/tech-blog/sid-filter-as-security-boundary-between-domains-part-5-golden-gmsa-trust-attack-from-child-to-parent">黄金 gMSA 信任攻击</a> 的讨论中找到。</p>
+<p><strong>架构变更攻击</strong></p>
+<p>此方法需要耐心，等待新特权 AD 对象的创建。通过 SYSTEM 权限，攻击者可以修改 AD 架构，以授予任何用户对所有类的完全控制。这可能导致对新创建的 AD 对象的未经授权的访问和控制。</p>
+<p>进一步阅读可在 <a href="https://improsec.com/tech-blog/sid-filter-as-security-boundary-between-domains-part-6-schema-change-trust-attack-from-child-to-parent">架构变更信任攻击</a> 中找到。</p>
+<p><strong>通过 ADCS ESC5 从 DA 到 EA</strong></p>
+<p>ADCS ESC5 漏洞针对对公钥基础设施 (PKI) 对象的控制，以创建一个证书模板，使其能够作为森林中的任何用户进行身份验证。由于 PKI 对象位于配置 NC 中，危害可写的子 DC 使得执行 ESC5 攻击成为可能。</p>
+<p>有关此内容的更多细节可以在 <a href="https://posts.specterops.io/from-da-to-ea-with-esc5-f9f045aa105c">通过 ESC5 从 DA 到 EA</a> 中阅读。在缺乏 ADCS 的情况下，攻击者有能力设置必要的组件，如 <a href="https://www.pkisolutions.com/escalating-from-child-domains-admins-to-enterprise-admins-in-5-minutes-by-abusing-ad-cs-a-follow-up/">从子域管理员提升到企业管理员</a> 中所讨论的。</p>
+<h3 id="外部森林域---单向-入站-或双向"><a class="header" href="#外部森林域---单向-入站-或双向">外部森林域 - 单向 (入站) 或双向</a></h3>
+<pre><code class="language-powershell">Get-DomainTrust
+SourceName      : a.domain.local   --&gt; Current domain
+TargetName      : domain.external  --&gt; Destination domain
+TrustType       : WINDOWS-ACTIVE_DIRECTORY
+TrustAttributes :
+TrustDirection  : Inbound          --&gt; Inboud trust
+WhenCreated     : 2/19/2021 10:50:56 PM
+WhenChanged     : 2/19/2021 10:50:56 PM
+</code></pre>
+<p>在这种情况下，<strong>您的域被外部域信任</strong>，这给您提供了<strong>不确定的权限</strong>。您需要找出<strong>您的域中的哪些主体对外部域具有哪些访问权限</strong>，然后尝试利用它：</p>
+<p>{% content-ref url="external-forest-domain-oneway-inbound.md" %}
+<a href="external-forest-domain-oneway-inbound.html">external-forest-domain-oneway-inbound.md</a>
+{% endcontent-ref %}</p>
+<h3 id="外部森林域---单向出站"><a class="header" href="#外部森林域---单向出站">外部森林域 - 单向（出站）</a></h3>
+<pre><code class="language-powershell">Get-DomainTrust -Domain current.local
+
+SourceName      : current.local   --&gt; Current domain
+TargetName      : external.local  --&gt; Destination domain
+TrustType       : WINDOWS_ACTIVE_DIRECTORY
+TrustAttributes : FOREST_TRANSITIVE
+TrustDirection  : Outbound        --&gt; Outbound trust
+WhenCreated     : 2/19/2021 10:15:24 PM
+WhenChanged     : 2/19/2021 10:15:24 PM
+</code></pre>
+<p>在这种情况下，<strong>您的域</strong>正在向来自<strong>不同域</strong>的主体<strong>信任</strong>一些<strong>权限</strong>。</p>
+<p>然而，当一个<strong>域被信任</strong>时，受信任的域<strong>创建一个用户</strong>，其<strong>名称是可预测的</strong>，并使用<strong>受信任的密码</strong>作为<strong>密码</strong>。这意味着可以<strong>访问来自信任域的用户以进入受信任域</strong>，以枚举它并尝试提升更多权限：</p>
+<p>{% content-ref url="external-forest-domain-one-way-outbound.md" %}
+<a href="external-forest-domain-one-way-outbound.html">external-forest-domain-one-way-outbound.md</a>
+{% endcontent-ref %}</p>
+<p>另一种妥协受信任域的方法是查找在域信任的<strong>相反方向</strong>创建的<a href="abusing-ad-mssql.html#mssql-trusted-links"><strong>SQL受信任链接</strong></a>（这并不常见）。</p>
+<p>另一种妥协受信任域的方法是在一台<strong>受信任域用户可以访问的</strong>机器上等待，通过<strong>RDP</strong>登录。然后，攻击者可以在RDP会话进程中注入代码，并从那里<strong>访问受害者的源域</strong>。<br />
+此外，如果<strong>受害者挂载了他的硬盘</strong>，攻击者可以在<strong>RDP会话</strong>进程中将<strong>后门</strong>存储在<strong>硬盘的启动文件夹</strong>中。这种技术称为<strong>RDPInception</strong>。</p>
+<p>{% content-ref url="rdp-sessions-abuse.md" %}
+<a href="rdp-sessions-abuse.html">rdp-sessions-abuse.md</a>
+{% endcontent-ref %}</p>
+<h3 id="域信任滥用缓解"><a class="header" href="#域信任滥用缓解">域信任滥用缓解</a></h3>
+<h3 id="sid过滤"><a class="header" href="#sid过滤"><strong>SID过滤：</strong></a></h3>
+<ul>
+<li>通过SID过滤来减轻利用SID历史属性进行攻击的风险，SID过滤在所有跨森林信任中默认启用。这是基于假设，考虑到森林而不是域作为安全边界，认为内部森林信任是安全的，这是微软的立场。</li>
+<li>然而，有一个问题：SID过滤可能会干扰应用程序和用户访问，导致其偶尔被禁用。</li>
+</ul>
+<h3 id="选择性认证"><a class="header" href="#选择性认证"><strong>选择性认证：</strong></a></h3>
+<ul>
+<li>对于跨森林信任，采用选择性认证确保两个森林的用户不会自动被认证。相反，用户需要明确的权限才能访问信任域或森林中的域和服务器。</li>
+<li>重要的是要注意，这些措施并不能保护免受可写配置命名上下文（NC）的利用或对信任帐户的攻击。</li>
+</ul>
+<p><a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/child-domain-da-to-ea-in-parent-domain"><strong>有关域信任的更多信息，请访问ired.team。</strong></a></p>
+<h2 id="ad---azure--azure---ad"><a class="header" href="#ad---azure--azure---ad">AD -&gt; Azure &amp; Azure -&gt; AD</a></h2>
+<p>{% embed url="https://cloud.hacktricks.xyz/pentesting-cloud/azure-security/az-lateral-movements/azure-ad-connect-hybrid-identity" %}</p>
+<h2 id="一些一般防御"><a class="header" href="#一些一般防御">一些一般防御</a></h2>
+<p><a href="../stealing-credentials/credentials-protections.html"><strong>在这里了解更多关于如何保护凭据的信息。</strong></a>\</p>
+<h3 id="凭据保护的防御措施"><a class="header" href="#凭据保护的防御措施"><strong>凭据保护的防御措施</strong></a></h3>
+<ul>
+<li><strong>域管理员限制</strong>：建议仅允许域管理员登录到域控制器，避免在其他主机上使用。</li>
+<li><strong>服务帐户权限</strong>：服务不应以域管理员（DA）权限运行，以保持安全。</li>
+<li><strong>临时权限限制</strong>：对于需要DA权限的任务，应限制其持续时间。这可以通过以下方式实现：<code>Add-ADGroupMember -Identity ‘Domain Admins’ -Members newDA -MemberTimeToLive (New-TimeSpan -Minutes 20)</code></li>
+</ul>
+<h3 id="实施欺骗技术"><a class="header" href="#实施欺骗技术"><strong>实施欺骗技术</strong></a></h3>
+<ul>
+<li>实施欺骗涉及设置陷阱，如诱饵用户或计算机，具有如密码不过期或标记为受信任的委托等特性。详细的方法包括创建具有特定权限的用户或将其添加到高权限组。</li>
+<li>一个实际的例子涉及使用工具：<code>Create-DecoyUser -UserFirstName user -UserLastName manager-uncommon -Password Pass@123 | DeployUserDeception -UserFlag PasswordNeverExpires -GUID d07da11f-8a3d-42b6-b0aa-76c962be719a -Verbose</code></li>
+<li>有关部署欺骗技术的更多信息，请访问<a href="https://github.com/samratashok/Deploy-Deception">Deploy-Deception on GitHub</a>。</li>
+</ul>
+<h3 id="识别欺骗"><a class="header" href="#识别欺骗"><strong>识别欺骗</strong></a></h3>
+<ul>
+<li><strong>对于用户对象</strong>：可疑指标包括不典型的ObjectSID、频率不高的登录、创建日期和低错误密码计数。</li>
+<li><strong>一般指标</strong>：比较潜在诱饵对象的属性与真实对象的属性可以揭示不一致性。像<a href="https://github.com/JavelinNetworks/HoneypotBuster">HoneypotBuster</a>这样的工具可以帮助识别这种欺骗。</li>
+</ul>
+<h3 id="绕过检测系统"><a class="header" href="#绕过检测系统"><strong>绕过检测系统</strong></a></h3>
+<ul>
+<li><strong>Microsoft ATA检测绕过</strong>：</li>
+<li><strong>用户枚举</strong>：避免在域控制器上进行会话枚举，以防止ATA检测。</li>
+<li><strong>票据冒充</strong>：利用<strong>aes</strong>密钥创建票据有助于逃避检测，因为不降级到NTLM。</li>
+<li><strong>DCSync攻击</strong>：建议从非域控制器执行，以避免ATA检测，因为直接从域控制器执行将触发警报。</li>
+</ul>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="http://www.harmj0y.net/blog/redteaming/a-guide-to-attacking-domain-trusts/">http://www.harmj0y.net/blog/redteaming/a-guide-to-attacking-domain-trusts/</a></li>
+<li><a href="https://www.labofapenetrationtester.com/2018/10/deploy-deception.html">https://www.labofapenetrationtester.com/2018/10/deploy-deception.html</a></li>
+<li><a href="https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/child-domain-da-to-ea-in-parent-domain">https://ired.team/offensive-security-experiments/active-directory-kerberos-abuse/child-domain-da-to-ea-in-parent-domain</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践AWS黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks培训AWS红队专家（ARTE）</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践GCP黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks培训GCP红队专家（GRTE）</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持HackTricks</summary>
+<ul>
+<li>查看<a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord小组</strong></a>或<a href="https://t.me/peass"><strong>电报小组</strong></a>或<strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a>和<a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub库提交PR分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/windows-c-payloads.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/acl-persistence-abuse/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/windows-c-payloads.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/active-directory-methodology/acl-persistence-abuse/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DDexec / EverythingExec</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="ddexec--everythingexec"><a class="header" href="#ddexec--everythingexec">DDexec / EverythingExec</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="上下文"><a class="header" href="#上下文">上下文</a></h2>
+<p>在 Linux 中，为了运行一个程序，它必须作为一个文件存在，必须通过文件系统层次以某种方式可访问（这就是 <code>execve()</code> 的工作原理）。这个文件可以存储在磁盘上或在内存中（tmpfs, memfd），但你需要一个文件路径。这使得控制在 Linux 系统上运行的内容变得非常简单，容易检测威胁和攻击者的工具，或者防止他们尝试执行任何他们的程序（例如，不允许无权限用户在任何地方放置可执行文件）。</p>
+<p>但这个技术将改变这一切。如果你无法启动你想要的进程... <strong>那么你就劫持一个已经存在的进程</strong>。</p>
+<p>这个技术允许你 <strong>绕过常见的保护技术，如只读、noexec、文件名白名单、哈希白名单...</strong></p>
+<h2 id="依赖关系"><a class="header" href="#依赖关系">依赖关系</a></h2>
+<p>最终脚本依赖于以下工具才能工作，它们需要在你攻击的系统中可访问（默认情况下，你会在任何地方找到它们）：</p>
+<pre><code>dd
+bash | zsh | ash (busybox)
+head
+tail
+cut
+grep
+od
+readlink
+wc
+tr
+base64
+</code></pre>
+<h2 id="技术"><a class="header" href="#技术">技术</a></h2>
+<p>如果您能够任意修改进程的内存，那么您就可以接管它。这可以用来劫持一个已经存在的进程并用另一个程序替换它。我们可以通过使用 <code>ptrace()</code> 系统调用（这要求您能够执行系统调用或在系统上有 gdb 可用）来实现这一点，或者更有趣的是，写入 <code>/proc/$pid/mem</code>。</p>
+<p>文件 <code>/proc/$pid/mem</code> 是进程整个地址空间的一对一映射（<em>例如</em> 从 <code>0x0000000000000000</code> 到 <code>0x7ffffffffffff000</code> 在 x86-64 中）。这意味着在偏移量 <code>x</code> 处读取或写入此文件与在虚拟地址 <code>x</code> 处读取或修改内容是相同的。</p>
+<p>现在，我们面临四个基本问题：</p>
+<ul>
+<li>通常，只有 root 和文件的程序所有者可以修改它。</li>
+<li>ASLR。</li>
+<li>如果我们尝试读取或写入未映射在程序地址空间中的地址，我们将得到 I/O 错误。</li>
+</ul>
+<p>这些问题有解决方案，尽管它们并不完美，但效果不错：</p>
+<ul>
+<li>大多数 shell 解释器允许创建文件描述符，这些描述符将被子进程继承。我们可以创建一个指向 shell 的 <code>mem</code> 文件的 fd，并赋予写权限……因此使用该 fd 的子进程将能够修改 shell 的内存。</li>
+<li>ASLR 甚至不是问题，我们可以检查 shell 的 <code>maps</code> 文件或 procfs 中的任何其他文件，以获取有关进程地址空间的信息。</li>
+<li>所以我们需要在文件上使用 <code>lseek()</code>。从 shell 中，这不能完成，除非使用臭名昭著的 <code>dd</code>。</li>
+</ul>
+<h3 id="更详细地"><a class="header" href="#更详细地">更详细地</a></h3>
+<p>这些步骤相对简单，不需要任何专业知识来理解：</p>
+<ul>
+<li>解析我们想要运行的二进制文件和加载器，以找出它们需要什么映射。然后制作一个“shell”代码，广义上讲，执行内核在每次调用 <code>execve()</code> 时所做的相同步骤：</li>
+<li>创建上述映射。</li>
+<li>将二进制文件读入其中。</li>
+<li>设置权限。</li>
+<li>最后用程序的参数初始化堆栈，并放置辅助向量（加载器所需）。</li>
+<li>跳转到加载器，让它完成其余工作（加载程序所需的库）。</li>
+<li>从 <code>syscall</code> 文件中获取进程在执行的系统调用后将返回的地址。</li>
+<li>用我们的 shellcode（通过 <code>mem</code> 我们可以修改不可写页面）覆盖该可执行位置。</li>
+<li>将我们想要运行的程序传递给进程的 stdin（将被上述“shell”代码 <code>read()</code>）。</li>
+<li>此时，加载器将负责加载我们程序所需的库并跳转到它。</li>
+</ul>
+<p><strong>查看工具在</strong> <a href="https://github.com/arget13/DDexec"><strong>https://github.com/arget13/DDexec</strong></a></p>
+<h2 id="everythingexec"><a class="header" href="#everythingexec">EverythingExec</a></h2>
+<p>有几种替代 <code>dd</code> 的方法，其中之一 <code>tail</code>，目前是用于通过 <code>mem</code> 文件进行 <code>lseek()</code> 的默认程序（这就是使用 <code>dd</code> 的唯一目的）。这些替代方案是：</p>
+<pre><code class="language-bash">tail
+hexdump
+cmp
+xxd
+</code></pre>
+<p>设置变量 <code>SEEKER</code> 可以更改使用的搜索器，例如：</p>
+<pre><code class="language-bash">SEEKER=cmp bash ddexec.sh ls -l &lt;&lt;&lt; $(base64 -w0 /bin/ls)
+</code></pre>
+<p>如果您找到另一个在脚本中未实现的有效查找器，您仍然可以通过设置 <code>SEEKER_ARGS</code> 变量来使用它：</p>
+<pre><code class="language-bash">SEEKER=xxd SEEKER_ARGS='-s $offset' zsh ddexec.sh ls -l &lt;&lt;&lt; $(base64 -w0 /bin/ls)
+</code></pre>
+<p>Block this, EDRs.</p>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li><a href="https://github.com/arget13/DDexec">https://github.com/arget13/DDexec</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/linux-environment-variables.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/linux-environment-variables.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

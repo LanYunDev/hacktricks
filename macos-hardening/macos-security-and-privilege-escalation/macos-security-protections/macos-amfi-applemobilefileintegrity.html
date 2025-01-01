@@ -1,0 +1,333 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>macOS - AMFI - AppleMobileFileIntegrity</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="macos---amfi---applemobilefileintegrity"><a class="header" href="#macos---amfi---applemobilefileintegrity">macOS - AMFI - AppleMobileFileIntegrity</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="applemobilefileintegritykext-和-amfid"><a class="header" href="#applemobilefileintegritykext-和-amfid">AppleMobileFileIntegrity.kext 和 amfid</a></h2>
+<p>它专注于强制执行系统上运行代码的完整性，提供 XNU 代码签名验证背后的逻辑。它还能够检查权限并处理其他敏感任务，例如允许调试或获取任务端口。</p>
+<p>此外，对于某些操作，kext 更倾向于联系用户空间运行的守护进程 <code>/usr/libexec/amfid</code>。这种信任关系在多个越狱中被滥用。</p>
+<p>AMFI 使用 <strong>MACF</strong> 策略，并在启动时注册其钩子。此外，防止其加载或卸载可能会触发内核崩溃。然而，有一些启动参数可以削弱 AMFI：</p>
+<ul>
+<li><code>amfi_unrestricted_task_for_pid</code>: 允许在没有所需权限的情况下使用 task_for_pid</li>
+<li><code>amfi_allow_any_signature</code>: 允许任何代码签名</li>
+<li><code>cs_enforcement_disable</code>: 用于禁用代码签名强制执行的系统范围参数</li>
+<li><code>amfi_prevent_old_entitled_platform_binaries</code>: 作废具有权限的平台二进制文件</li>
+<li><code>amfi_get_out_of_my_way</code>: 完全禁用 amfi</li>
+</ul>
+<p>以下是它注册的一些 MACF 策略：</p>
+<ul>
+<li><strong><code>cred_check_label_update_execve:</code></strong> 标签更新将被执行并返回 1</li>
+<li><strong><code>cred_label_associate</code></strong>: 用标签更新 AMFI 的 mac 标签槽</li>
+<li><strong><code>cred_label_destroy</code></strong>: 移除 AMFI 的 mac 标签槽</li>
+<li><strong><code>cred_label_init</code></strong>: 在 AMFI 的 mac 标签槽中移动 0</li>
+<li><strong><code>cred_label_update_execve</code>:</strong> 它检查进程的权限以查看是否应允许修改标签。</li>
+<li><strong><code>file_check_mmap</code>:</strong> 它检查 mmap 是否获取内存并将其设置为可执行。如果是这种情况，它会检查是否需要库验证，如果需要，则调用库验证函数。</li>
+<li><strong><code>file_check_library_validation</code></strong>: 调用库验证函数，该函数检查其他内容是否平台二进制文件正在加载另一个平台二进制文件，或者进程和新加载的文件是否具有相同的 TeamID。某些权限也将允许加载任何库。</li>
+<li><strong><code>policy_initbsd</code></strong>: 设置受信任的 NVRAM 密钥</li>
+<li><strong><code>policy_syscall</code></strong>: 它检查 DYLD 策略，例如二进制文件是否具有不受限制的段，是否应允许环境变量……当通过 <code>amfi_check_dyld_policy_self()</code> 启动进程时也会调用此函数。</li>
+<li><strong><code>proc_check_inherit_ipc_ports</code></strong>: 它检查当进程执行新二进制文件时，是否应保留其他具有发送权限的进程对该进程的任务端口。平台二进制文件是允许的，<code>get-task-allow</code> 权限允许它，<code>task_for_pid-allow</code> 权限是允许的，具有相同 TeamID 的二进制文件。</li>
+<li><strong><code>proc_check_expose_task</code></strong>: 强制执行权限</li>
+<li><strong><code>amfi_exc_action_check_exception_send</code></strong>: 向调试器发送异常消息</li>
+<li><strong><code>amfi_exc_action_label_associate &amp; amfi_exc_action_label_copy/populate &amp; amfi_exc_action_label_destroy &amp; amfi_exc_action_label_init &amp; amfi_exc_action_label_update</code></strong>: 异常处理（调试）期间的标签生命周期</li>
+<li><strong><code>proc_check_get_task</code></strong>: 检查权限，如 <code>get-task-allow</code>，允许其他进程获取任务端口，以及 <code>task_for_pid-allow</code>，允许进程获取其他进程的任务端口。如果都没有，它会调用 <code>amfid permitunrestricteddebugging</code> 来检查是否被允许。</li>
+<li><strong><code>proc_check_mprotect</code></strong>: 如果 <code>mprotect</code> 被调用并带有 <code>VM_PROT_TRUSTED</code> 标志，则拒绝，该标志表示该区域必须被视为具有有效的代码签名。</li>
+<li><strong><code>vnode_check_exec</code></strong>: 当可执行文件加载到内存中时被调用，并设置 <code>cs_hard | cs_kill</code>，如果任何页面变为无效，将终止该进程</li>
+<li><strong><code>vnode_check_getextattr</code></strong>: MacOS: 检查 <code>com.apple.root.installed</code> 和 <code>isVnodeQuarantined()</code></li>
+<li><strong><code>vnode_check_setextattr</code></strong>: 作为获取 + com.apple.private.allow-bless 和内部安装程序等效权限</li>
+<li> <strong><code>vnode_check_signature</code></strong>: 调用 XNU 检查代码签名的代码，使用权限、信任缓存和 <code>amfid</code></li>
+<li> <strong><code>proc_check_run_cs_invalid</code></strong>: 拦截 <code>ptrace()</code> 调用（<code>PT_ATTACH</code> 和 <code>PT_TRACE_ME</code>）。它检查任何权限 <code>get-task-allow</code>、<code>run-invalid-allow</code> 和 <code>run-unsigned-code</code>，如果都没有，它会检查是否允许调试。</li>
+<li><strong><code>proc_check_map_anon</code></strong>: 如果 mmap 被调用并带有 <strong><code>MAP_JIT</code></strong> 标志，AMFI 将检查 <code>dynamic-codesigning</code> 权限。</li>
+</ul>
+<p><code>AMFI.kext</code> 还为其他内核扩展公开了一个 API，可以通过以下方式找到其依赖项：</p>
+<pre><code class="language-bash">kextstat | grep " 19 " | cut -c2-5,50- | cut -d '(' -f1
+Executing: /usr/bin/kmutil showloaded
+No variant specified, falling back to release
+8   com.apple.kec.corecrypto
+19   com.apple.driver.AppleMobileFileIntegrity
+22   com.apple.security.sandbox
+24   com.apple.AppleSystemPolicy
+67   com.apple.iokit.IOUSBHostFamily
+70   com.apple.driver.AppleUSBTDM
+71   com.apple.driver.AppleSEPKeyStore
+74   com.apple.iokit.EndpointSecurity
+81   com.apple.iokit.IOUserEthernet
+101   com.apple.iokit.IO80211Family
+102   com.apple.driver.AppleBCMWLANCore
+118   com.apple.driver.AppleEmbeddedUSBHost
+134   com.apple.iokit.IOGPUFamily
+135   com.apple.AGXG13X
+137   com.apple.iokit.IOMobileGraphicsFamily
+138   com.apple.iokit.IOMobileGraphicsFamily-DCP
+162   com.apple.iokit.IONVMeFamily
+</code></pre>
+<h2 id="amfid"><a class="header" href="#amfid">amfid</a></h2>
+<p>这是用户模式下运行的守护进程，<code>AMFI.kext</code> 将使用它来检查用户模式中的代码签名。<br />
+为了让 <code>AMFI.kext</code> 与守护进程通信，它使用通过端口 <code>HOST_AMFID_PORT</code> 的 mach 消息，该端口是特殊端口 <code>18</code>。</p>
+<p>请注意，在 macOS 中，根进程不再能够劫持特殊端口，因为它们受到 <code>SIP</code> 的保护，只有 launchd 可以获取它们。在 iOS 中，会检查发送响应的进程是否具有硬编码的 <code>amfid</code> 的 CDHash。</p>
+<p>可以通过调试 <code>amfid</code> 并在 <code>mach_msg</code> 中设置断点来查看何时请求 <code>amfid</code> 检查二进制文件及其响应。</p>
+<p>一旦通过特殊端口接收到消息，<strong>MIG</strong> 将用于将每个函数发送到它所调用的函数。主要函数已被逆向并在书中进行了说明。</p>
+<h2 id="provisioning-profiles"><a class="header" href="#provisioning-profiles">Provisioning Profiles</a></h2>
+<p>配置文件可用于签署代码。有 <strong>Developer</strong> 配置文件可用于签署代码并进行测试，还有 <strong>Enterprise</strong> 配置文件可用于所有设备。</p>
+<p>在应用提交到 Apple Store 后，如果获得批准，它将由 Apple 签署，并且不再需要配置文件。</p>
+<p>配置文件通常使用扩展名 <code>.mobileprovision</code> 或 <code>.provisionprofile</code>，可以通过以下方式转储：</p>
+<pre><code class="language-bash">openssl asn1parse -inform der -in /path/to/profile
+
+# Or
+
+security cms -D -i /path/to/profile
+</code></pre>
+<p>虽然有时被称为证书，这些配置文件不仅仅是一个证书：</p>
+<ul>
+<li><strong>AppIDName:</strong> 应用程序标识符</li>
+<li><strong>AppleInternalProfile</strong>: 指定为苹果内部配置文件</li>
+<li><strong>ApplicationIdentifierPrefix</strong>: 预加到 AppIDName（与 TeamIdentifier 相同）</li>
+<li><strong>CreationDate</strong>: 日期格式为 <code>YYYY-MM-DDTHH:mm:ssZ</code></li>
+<li><strong>DeveloperCertificates</strong>: 一个（通常是一个）证书的数组，编码为 Base64 数据</li>
+<li><strong>Entitlements</strong>: 此配置文件允许的权限</li>
+<li><strong>ExpirationDate</strong>: 过期日期格式为 <code>YYYY-MM-DDTHH:mm:ssZ</code></li>
+<li><strong>Name</strong>: 应用程序名称，与 AppIDName 相同</li>
+<li><strong>ProvisionedDevices</strong>: 一个（针对开发者证书）此配置文件有效的 UDID 数组</li>
+<li><strong>ProvisionsAllDevices</strong>: 布尔值（企业证书为 true）</li>
+<li><strong>TeamIdentifier</strong>: 一个（通常是一个）字母数字字符串的数组，用于识别开发者以便进行应用间交互</li>
+<li><strong>TeamName</strong>: 用于识别开发者的人类可读名称</li>
+<li><strong>TimeToLive</strong>: 证书的有效期（以天为单位）</li>
+<li><strong>UUID</strong>: 此配置文件的通用唯一标识符</li>
+<li><strong>Version</strong>: 当前设置为 1</li>
+</ul>
+<p>请注意，权限条目将包含一组受限的权限，配置文件只能提供这些特定的权限，以防止提供苹果的私有权限。</p>
+<p>请注意，配置文件通常位于 <code>/var/MobileDeviceProvisioningProfiles</code>，可以使用 <strong><code>security cms -D -i /path/to/profile</code></strong> 检查它们。</p>
+<h2 id="libmisdyld"><a class="header" href="#libmisdyld"><strong>libmis.dyld</strong></a></h2>
+<p>这是 <code>amfid</code> 调用的外部库，用于询问是否应该允许某些操作。历史上，这在越狱中被滥用，通过运行一个后门版本来允许所有操作。</p>
+<p>在 macOS 中，这在 <code>MobileDevice.framework</code> 内部。</p>
+<h2 id="amfi-信任缓存"><a class="header" href="#amfi-信任缓存">AMFI 信任缓存</a></h2>
+<p>iOS AMFI 维护一个已知哈希的列表，这些哈希是临时签名的，称为 <strong>信任缓存</strong>，位于 kext 的 <code>__TEXT.__const</code> 部分。请注意，在非常特定和敏感的操作中，可以使用外部文件扩展此信任缓存。</p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://newosxbook.com/home.html"><strong>*OS Internals Volume III</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-dangerous-entitlements.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-macf-mandatory-access-control-framework.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-dangerous-entitlements.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../macos-hardening/macos-security-and-privilege-escalation/macos-security-protections/macos-macf-mandatory-access-control-framework.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

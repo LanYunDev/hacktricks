@@ -1,0 +1,381 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sensitive Mounts</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../../favicon.png">
+        <link rel="stylesheet" href="../../../../css/variables.css">
+        <link rel="stylesheet" href="../../../../css/general.css">
+        <link rel="stylesheet" href="../../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../../highlight.css">
+        <link rel="stylesheet" href="../../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="敏感挂载"><a class="header" href="#敏感挂载">敏感挂载</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../../..https:/pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>暴露 <code>/proc</code> 和 <code>/sys</code> 而没有适当的命名空间隔离会引入重大安全风险，包括攻击面扩大和信息泄露。这些目录包含敏感文件，如果配置错误或被未经授权的用户访问，可能导致容器逃逸、主机修改或提供有助于进一步攻击的信息。例如，错误地挂载 <code>-v /proc:/host/proc</code> 可能会由于其基于路径的特性绕过 AppArmor 保护，使得 <code>/host/proc</code> 没有保护。</p>
+<p><strong>您可以在</strong> <a href="https://0xn3va.gitbook.io/cheat-sheets/container/escaping/sensitive-mounts"><strong>https://0xn3va.gitbook.io/cheat-sheets/container/escaping/sensitive-mounts</strong></a>** 中找到每个潜在漏洞的更多详细信息。**</p>
+<h2 id="procfs-漏洞"><a class="header" href="#procfs-漏洞">procfs 漏洞</a></h2>
+<h3 id="procsys"><a class="header" href="#procsys"><code>/proc/sys</code></a></h3>
+<p>该目录允许访问以修改内核变量，通常通过 <code>sysctl(2)</code>，并包含几个关注的子目录：</p>
+<h4 id="procsyskernelcore_pattern"><a class="header" href="#procsyskernelcore_pattern"><strong><code>/proc/sys/kernel/core_pattern</code></strong></a></h4>
+<ul>
+<li>在 <a href="https://man7.org/linux/man-pages/man5/core.5.html">core(5)</a> 中描述。</li>
+<li>允许定义在生成核心文件时执行的程序，前 128 字节作为参数。如果文件以管道 <code>|</code> 开头，可能导致代码执行。</li>
+<li><strong>测试和利用示例</strong>：</li>
+</ul>
+<pre><code class="language-bash">[ -w /proc/sys/kernel/core_pattern ] &amp;&amp; echo Yes # 测试写入权限
+cd /proc/sys/kernel
+echo "|$overlay/shell.sh" &gt; core_pattern # 设置自定义处理程序
+sleep 5 &amp;&amp; ./crash &amp; # 触发处理程序
+</code></pre>
+<h4 id="procsyskernelmodprobe"><a class="header" href="#procsyskernelmodprobe"><strong><code>/proc/sys/kernel/modprobe</code></strong></a></h4>
+<ul>
+<li>在 <a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a> 中详细说明。</li>
+<li>包含内核模块加载器的路径，用于加载内核模块。</li>
+<li><strong>检查访问示例</strong>：</li>
+</ul>
+<pre><code class="language-bash">ls -l $(cat /proc/sys/kernel/modprobe) # 检查对 modprobe 的访问
+</code></pre>
+<h4 id="procsysvmpanic_on_oom"><a class="header" href="#procsysvmpanic_on_oom"><strong><code>/proc/sys/vm/panic_on_oom</code></strong></a></h4>
+<ul>
+<li>在 <a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a> 中引用。</li>
+<li>一个全局标志，控制内核在发生 OOM 条件时是否崩溃或调用 OOM 杀手。</li>
+</ul>
+<h4 id="procsysfs"><a class="header" href="#procsysfs"><strong><code>/proc/sys/fs</code></strong></a></h4>
+<ul>
+<li>根据 <a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a>，包含有关文件系统的选项和信息。</li>
+<li>写入权限可能会启用针对主机的各种拒绝服务攻击。</li>
+</ul>
+<h4 id="procsysfsbinfmt_misc"><a class="header" href="#procsysfsbinfmt_misc"><strong><code>/proc/sys/fs/binfmt_misc</code></strong></a></h4>
+<ul>
+<li>允许根据其魔术数字注册非本地二进制格式的解释器。</li>
+<li>如果 <code>/proc/sys/fs/binfmt_misc/register</code> 可写，可能导致特权提升或 root shell 访问。</li>
+<li>相关利用和解释：</li>
+<li><a href="https://github.com/toffan/binfmt_misc">通过 binfmt_misc 的穷人根套件</a></li>
+<li>深入教程：<a href="https://www.youtube.com/watch?v=WBC7hhgMvQQ">视频链接</a></li>
+</ul>
+<h3 id="proc-中的其他内容"><a class="header" href="#proc-中的其他内容"><code>/proc</code> 中的其他内容</a></h3>
+<h4 id="procconfiggz"><a class="header" href="#procconfiggz"><strong><code>/proc/config.gz</code></strong></a></h4>
+<ul>
+<li>如果启用了 <code>CONFIG_IKCONFIG_PROC</code>，可能会泄露内核配置。</li>
+<li>对攻击者识别运行内核中的漏洞非常有用。</li>
+</ul>
+<h4 id="procsysrq-trigger"><a class="header" href="#procsysrq-trigger"><strong><code>/proc/sysrq-trigger</code></strong></a></h4>
+<ul>
+<li>允许调用 Sysrq 命令，可能导致立即重启系统或其他关键操作。</li>
+<li><strong>重启主机示例</strong>：</li>
+</ul>
+<pre><code class="language-bash">echo b &gt; /proc/sysrq-trigger # 重启主机
+</code></pre>
+<h4 id="prockmsg"><a class="header" href="#prockmsg"><strong><code>/proc/kmsg</code></strong></a></h4>
+<ul>
+<li>暴露内核环形缓冲区消息。</li>
+<li>可以帮助内核利用、地址泄露，并提供敏感系统信息。</li>
+</ul>
+<h4 id="prockallsyms"><a class="header" href="#prockallsyms"><strong><code>/proc/kallsyms</code></strong></a></h4>
+<ul>
+<li>列出内核导出符号及其地址。</li>
+<li>对于内核利用开发至关重要，尤其是在克服 KASLR 时。</li>
+<li>地址信息在 <code>kptr_restrict</code> 设置为 <code>1</code> 或 <code>2</code> 时受到限制。</li>
+<li>详细信息见 <a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a>。</li>
+</ul>
+<h4 id="procpidmem"><a class="header" href="#procpidmem"><strong><code>/proc/[pid]/mem</code></strong></a></h4>
+<ul>
+<li>与内核内存设备 <code>/dev/mem</code> 交互。</li>
+<li>历史上容易受到特权提升攻击。</li>
+<li>更多信息见 <a href="https://man7.org/linux/man-pages/man5/proc.5.html">proc(5)</a>。</li>
+</ul>
+<h4 id="prockcore"><a class="header" href="#prockcore"><strong><code>/proc/kcore</code></strong></a></h4>
+<ul>
+<li>以 ELF 核心格式表示系统的物理内存。</li>
+<li>读取可能会泄露主机系统和其他容器的内存内容。</li>
+<li>大文件大小可能导致读取问题或软件崩溃。</li>
+<li>详细用法见 <a href="https://schlafwandler.github.io/posts/dumping-/proc/kcore/">2019 年转储 /proc/kcore</a>。</li>
+</ul>
+<h4 id="prockmem"><a class="header" href="#prockmem"><strong><code>/proc/kmem</code></strong></a></h4>
+<ul>
+<li><code>/dev/kmem</code> 的替代接口，表示内核虚拟内存。</li>
+<li>允许读取和写入，因此可以直接修改内核内存。</li>
+</ul>
+<h4 id="procmem"><a class="header" href="#procmem"><strong><code>/proc/mem</code></strong></a></h4>
+<ul>
+<li><code>/dev/mem</code> 的替代接口，表示物理内存。</li>
+<li>允许读取和写入，修改所有内存需要解析虚拟地址到物理地址。</li>
+</ul>
+<h4 id="procsched_debug"><a class="header" href="#procsched_debug"><strong><code>/proc/sched_debug</code></strong></a></h4>
+<ul>
+<li>返回进程调度信息，绕过 PID 命名空间保护。</li>
+<li>暴露进程名称、ID 和 cgroup 标识符。</li>
+</ul>
+<h4 id="procpidmountinfo"><a class="header" href="#procpidmountinfo"><strong><code>/proc/[pid]/mountinfo</code></strong></a></h4>
+<ul>
+<li>提供有关进程挂载命名空间中挂载点的信息。</li>
+<li>暴露容器 <code>rootfs</code> 或镜像的位置。</li>
+</ul>
+<h3 id="sys-漏洞"><a class="header" href="#sys-漏洞"><code>/sys</code> 漏洞</a></h3>
+<h4 id="syskerneluevent_helper"><a class="header" href="#syskerneluevent_helper"><strong><code>/sys/kernel/uevent_helper</code></strong></a></h4>
+<ul>
+<li>用于处理内核设备 <code>uevents</code>。</li>
+<li>写入 <code>/sys/kernel/uevent_helper</code> 可以在 <code>uevent</code> 触发时执行任意脚本。</li>
+<li><strong>利用示例</strong>： %%%bash</li>
+</ul>
+<h4 id="创建有效载荷"><a class="header" href="#创建有效载荷">创建有效载荷</a></h4>
+<p>echo "#!/bin/sh" &gt; /evil-helper echo "ps &gt; /output" &gt;&gt; /evil-helper chmod +x /evil-helper</p>
+<h4 id="从-overlayfs-挂载中查找主机路径"><a class="header" href="#从-overlayfs-挂载中查找主机路径">从 OverlayFS 挂载中查找主机路径</a></h4>
+<p>host_path=$(sed -n 's/.<em>\perdir=([^,]</em>).*/\1/p' /etc/mtab)</p>
+<h4 id="将-uevent_helper-设置为恶意助手"><a class="header" href="#将-uevent_helper-设置为恶意助手">将 uevent_helper 设置为恶意助手</a></h4>
+<p>echo "$host_path/evil-helper" &gt; /sys/kernel/uevent_helper</p>
+<h4 id="触发-uevent"><a class="header" href="#触发-uevent">触发 uevent</a></h4>
+<p>echo change &gt; /sys/class/mem/null/uevent</p>
+<h4 id="读取输出"><a class="header" href="#读取输出">读取输出</a></h4>
+<p>cat /output %%%</p>
+<h4 id="sysclassthermal"><a class="header" href="#sysclassthermal"><strong><code>/sys/class/thermal</code></strong></a></h4>
+<ul>
+<li>控制温度设置，可能导致 DoS 攻击或物理损坏。</li>
+</ul>
+<h4 id="syskernelvmcoreinfo"><a class="header" href="#syskernelvmcoreinfo"><strong><code>/sys/kernel/vmcoreinfo</code></strong></a></h4>
+<ul>
+<li>泄露内核地址，可能危及 KASLR。</li>
+</ul>
+<h4 id="syskernelsecurity"><a class="header" href="#syskernelsecurity"><strong><code>/sys/kernel/security</code></strong></a></h4>
+<ul>
+<li>存放 <code>securityfs</code> 接口，允许配置 Linux 安全模块，如 AppArmor。</li>
+<li>访问可能使容器能够禁用其 MAC 系统。</li>
+</ul>
+<h4 id="sysfirmwareefivars-和-sysfirmwareefiefivars"><a class="header" href="#sysfirmwareefivars-和-sysfirmwareefiefivars"><strong><code>/sys/firmware/efi/vars</code> 和 <code>/sys/firmware/efi/efivars</code></strong></a></h4>
+<ul>
+<li>暴露与 NVRAM 中 EFI 变量交互的接口。</li>
+<li>配置错误或利用可能导致笔记本电脑砖化或主机无法启动。</li>
+</ul>
+<h4 id="syskerneldebug"><a class="header" href="#syskerneldebug"><strong><code>/sys/kernel/debug</code></strong></a></h4>
+<ul>
+<li><code>debugfs</code> 提供了一个“无规则”的内核调试接口。</li>
+<li>由于其不受限制的特性，历史上存在安全问题。</li>
+</ul>
+<h3 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h3>
+<ul>
+<li><a href="https://0xn3va.gitbook.io/cheat-sheets/container/escaping/sensitive-mounts">https://0xn3va.gitbook.io/cheat-sheets/container/escaping/sensitive-mounts</a></li>
+<li><a href="https://research.nccgroup.com/wp-content/uploads/2020/07/ncc_group_understanding_hardening_linux_containers-1-1.pdf">理解和强化 Linux 容器</a></li>
+<li><a href="https://www.nccgroup.com/globalassets/our-research/us/whitepapers/2016/june/container_whitepaper.pdf">滥用特权和非特权 Linux 容器</a></li>
+</ul>
+<figure><img src="../../../..https:/pentest.eu/RENDER_WebSec_10fps_21sec_9MB_29042024.gif" alt=""><figcaption></figcaption></figure>
+<p>{% embed url="https://websec.nl/" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a>** 上关注我们。**</li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../../linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/docker-release_agent-cgroups-escape.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../../linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation/docker-release_agent-cgroups-escape.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../../linux-hardening/privilege-escalation/docker-security/namespaces/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../../elasticlunr.min.js"></script>
+        <script src="../../../../mark.min.js"></script>
+        <script src="../../../../searcher.js"></script>
+
+        <script src="../../../../clipboard.min.js"></script>
+        <script src="../../../../highlight.js"></script>
+        <script src="../../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

