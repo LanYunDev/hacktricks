@@ -6,3 +6,5 @@ For information about [**WinRM read this page**](../../network-services-pentesti
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

@@ -63,3 +63,5 @@ Other little tricks defenders can do is **alert on 4769's for sensitive users** 
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

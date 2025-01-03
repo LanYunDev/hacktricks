@@ -16,3 +16,5 @@ There are different different ways to execute commands in external systems, here
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

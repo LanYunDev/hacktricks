@@ -130,3 +130,5 @@ iOS AMFI maintains a lost of known hashes which are signed ad-hoc, called the **
 
 {{#include ../../../banners/hacktricks-training.md}}
 
+
+

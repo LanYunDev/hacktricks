@@ -442,3 +442,6 @@ dup2:
 ```
 
 {{#include ../../../banners/hacktricks-training.md}}
+
+
+

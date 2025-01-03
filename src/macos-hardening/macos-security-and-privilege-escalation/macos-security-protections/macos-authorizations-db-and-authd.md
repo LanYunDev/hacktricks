@@ -87,3 +87,5 @@ That will fork and exec `/usr/libexec/security_authtrampoline /bin/ls` as root, 
 
 {{#include ../../../banners/hacktricks-training.md}}
 
+
+

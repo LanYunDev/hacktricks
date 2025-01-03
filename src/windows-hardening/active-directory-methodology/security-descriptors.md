@@ -50,3 +50,5 @@ Check [**Silver Tickets**](silver-ticket.md) to learn how you could use the hash
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

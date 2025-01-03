@@ -34,3 +34,5 @@ If possible, vulnerabilities within startup scripts can be exploited to gain per
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

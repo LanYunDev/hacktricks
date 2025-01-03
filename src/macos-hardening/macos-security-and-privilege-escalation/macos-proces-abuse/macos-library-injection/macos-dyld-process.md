@@ -315,3 +315,5 @@ find . -type f | xargs grep strcmp| grep key,\ \" | cut -d'"' -f2 | sort -u
 
 {{#include ../../../../banners/hacktricks-training.md}}
 
+
+

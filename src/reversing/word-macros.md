@@ -17,3 +17,5 @@ Using the **GetObject** function it's possible to obtain data from forms of the 
 
 {{#include ../banners/hacktricks-training.md}}
 
+
+

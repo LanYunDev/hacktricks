@@ -795,3 +795,6 @@ call_execve:
 ```
 
 {{#include ../../../banners/hacktricks-training.md}}
+
+
+

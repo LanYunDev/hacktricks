@@ -66,3 +66,5 @@ An example of malicious implementation would involve an attacker, who has **elev
 
 {{#include ../../../banners/hacktricks-training.md}}
 
+
+

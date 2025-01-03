@@ -54,3 +54,5 @@ This approach allows for an **extended persistence** method, minimizing the risk
 
 {{#include ../../../banners/hacktricks-training.md}}
 
+
+

@@ -8,3 +8,5 @@ Check: [**https://ired.team/offensive-security/privilege-escalation/windows-name
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

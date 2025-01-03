@@ -73,3 +73,5 @@ Notice that in this case you need to make **several changes,** not just one. So,
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

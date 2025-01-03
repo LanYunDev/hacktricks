@@ -56,3 +56,5 @@ A new BitLocker recovery key can be added through social engineering tactics, co
 
 {{#include ../banners/hacktricks-training.md}}
 
+
+

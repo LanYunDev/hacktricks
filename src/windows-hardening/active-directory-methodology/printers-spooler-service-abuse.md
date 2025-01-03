@@ -129,3 +129,5 @@ If you can capture [NTLMv1 challenges read here how to crack them](../ntlm/#ntlm
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

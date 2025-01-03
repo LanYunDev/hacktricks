@@ -51,3 +51,5 @@ The thing is that even if **`python`** was signed by Apple, it **won't execute**
 
 {{#include ../../../../../banners/hacktricks-training.md}}
 
+
+

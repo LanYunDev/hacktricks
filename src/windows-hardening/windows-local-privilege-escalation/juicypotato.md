@@ -132,3 +132,5 @@ Then download [test_clsid.bat ](https://github.com/ohpe/juicy-potato/blob/master
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

@@ -74,3 +74,5 @@ beacon> upload C:\Payloads\pivot.exe
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+

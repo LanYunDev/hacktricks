@@ -253,3 +253,5 @@ To practice discovering vulnerabilities in firmware, use the following vulnerabl
 
 {{#include ../../banners/hacktricks-training.md}}
 
+
+
