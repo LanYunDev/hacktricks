@@ -375,7 +375,7 @@ If you **belongs to some privileged group you may be able to escalate privileges
 
 ### Token manipulation
 
-**Learn more** about what is a **token** in this page: [**Windows Tokens**](../authentication-credentials-uac-and-efs/#access-tokens).\
+**Learn more** about what is a **token** in this page: [**Windows Tokens**](../authentication-credentials-uac-and-efs/index.html#access-tokens).\
 Check the following page to **learn about interesting tokens** and how to abuse them:
 
 {{#ref}}
@@ -413,7 +413,7 @@ powershell -command "Get-Clipboard"
 ### File and Folder Permissions
 
 First of all, listing the processes **check for passwords inside the command line of the process**.\
-Check if you can **overwrite some binary running** or if you have write permissions of the binary folder to exploit possible [**DLL Hijacking attacks**](dll-hijacking/):
+Check if you can **overwrite some binary running** or if you have write permissions of the binary folder to exploit possible [**DLL Hijacking attacks**](dll-hijacking/index.html):
 
 ```bash
 Tasklist /SVC #List processes running and services
@@ -439,7 +439,7 @@ for /f "tokens=2 delims='='" %%x in ('wmic process list full^|find /i "executabl
 )
 ```
 
-**Checking permissions of the folders of the processes binaries (**[**DLL Hijacking**](dll-hijacking/)**)**
+**Checking permissions of the folders of the processes binaries (**[**DLL Hijacking**](dll-hijacking/index.html)**)**
 
 ```bash
 for /f "tokens=2 delims='='" %%x in ('wmic process list full^|find /i "executablepath"^|find /i /v
@@ -552,7 +552,7 @@ For the detection and exploitation of this vulnerability, the _exploit/windows/l
 
 ### Services binaries weak permissions
 
-**Check if you can modify the binary that is executed by a service** or if you have **write permissions on the folder** where the binary is located ([**DLL Hijacking**](dll-hijacking/))**.**\
+**Check if you can modify the binary that is executed by a service** or if you have **write permissions on the folder** where the binary is located ([**DLL Hijacking**](dll-hijacking/index.html))**.**\
 You can get every binary that is executed by a service using **wmic** (not in system32) and check your permissions using **icacls**:
 
 ```bash
@@ -647,7 +647,7 @@ Windows allows users to specify actions to be taken if a service fails. This fea
 
 ### Installed Applications
 
-Check **permissions of the binaries** (maybe you can overwrite one and escalate privileges) and of the **folders** ([DLL Hijacking](dll-hijacking/)).
+Check **permissions of the binaries** (maybe you can overwrite one and escalate privileges) and of the **folders** ([DLL Hijacking](dll-hijacking/index.html)).
 
 ```bash
 dir /a "C:\Program Files"
@@ -1415,7 +1415,7 @@ Shared memory segments, referred to as **pipes**, enable process communication a
 
 Windows provides a feature called **Named Pipes**, allowing unrelated processes to share data, even over different networks. This resembles a client/server architecture, with roles defined as **named pipe server** and **named pipe client**.
 
-When data is sent through a pipe by a **client**, the **server** that set up the pipe has the ability to **take on the identity** of the **client**, assuming it has the necessary **SeImpersonate** rights. Identifying a **privileged process** that communicates via a pipe you can mimic provides an opportunity to **gain higher privileges** by adopting the identity of that process once it interacts with the pipe you established. For instructions on executing such an attack, helpful guides can be found [**here**](named-pipe-client-impersonation.md) and [**here**](./#from-high-integrity-to-system).
+When data is sent through a pipe by a **client**, the **server** that set up the pipe has the ability to **take on the identity** of the **client**, assuming it has the necessary **SeImpersonate** rights. Identifying a **privileged process** that communicates via a pipe you can mimic provides an opportunity to **gain higher privileges** by adopting the identity of that process once it interacts with the pipe you established. For instructions on executing such an attack, helpful guides can be found [**here**](named-pipe-client-impersonation.md) and [**here**](#from-high-integrity-to-system).
 
 Also the following tool allows to **intercept a named pipe communication with a tool like burp:** [**https://github.com/gabriel-sztejnworcel/pipe-intercept**](https://github.com/gabriel-sztejnworcel/pipe-intercept) **and this tool allows to list and see all the pipes to find privescs** [**https://github.com/cyberark/PipeViewer**](https://github.com/cyberark/PipeViewer)
 
@@ -1519,7 +1519,7 @@ sc start newservicename
 ### AlwaysInstallElevated
 
 From a High Integrity process you could try to **enable the AlwaysInstallElevated registry entries** and **install** a reverse shell using a _**.msi**_ wrapper.\
-[More information about the registry keys involved and how to install a _.msi_ package here.](./#alwaysinstallelevated)
+[More information about the registry keys involved and how to install a _.msi_ package here.](#alwaysinstallelevated)
 
 ### High + SeImpersonate privilege to System
 
@@ -1534,13 +1534,13 @@ Using this technique is usually **selected any process running as SYSTEM with al
 ### **Named Pipes**
 
 This technique is used by meterpreter to escalate in `getsystem`. The technique consists on **creating a pipe and then create/abuse a service to write on that pipe**. Then, the **server** that created the pipe using the **`SeImpersonate`** privilege will be able to **impersonate the token** of the pipe client (the service) obtaining SYSTEM privileges.\
-If you want to [**learn more about name pipes you should read this**](./#named-pipe-client-impersonation).\
+If you want to [**learn more about name pipes you should read this**](#named-pipe-client-impersonation).\
 If you want to read an example of [**how to go from high integrity to System using name pipes you should read this**](from-high-integrity-to-system-with-name-pipes.md).
 
 ### Dll Hijacking
 
 If you manages to **hijack a dll** being **loaded** by a **process** running as **SYSTEM** you will be able to execute arbitrary code with those permissions. Therefore Dll Hijacking is also useful to this kind of privilege escalation, and, moreover, if far **more easy to achieve from a high integrity process** as it will have **write permissions** on the folders used to load dlls.\
-**You can** [**learn more about Dll hijacking here**](dll-hijacking/)**.**
+**You can** [**learn more about Dll hijacking here**](dll-hijacking/index.html)**.**
 
 ### **From Administrator or Network Service to System**
 
