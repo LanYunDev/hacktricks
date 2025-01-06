@@ -9,7 +9,7 @@
 ### Basic Config
 
 After installing there are a few things that you could consider configuring.\
-In settings (the second tab button) you can select the **SDR device** or **select a file** to read and which frequency to syntonise and the Sample rate (recommended to up to 2.56Msps if your PC support it)\\
+In settings (the second tab button) you can select the **SDR device** or **select a file** to read and which frequency to syntonise and the Sample rate (recommended to up to 2.56Msps if your PC support it)
 
 ![](<../../images/image (245).png>)
 
@@ -64,7 +64,9 @@ If you are checking a signal there are different ways to try to figure out what 
 
 ## AM Example
 
-{% file src="../../images/sigdigger_20220308_165547Z_2560000_433500000_float32_iq.raw" %}
+{{#file}}
+sigdigger_20220308_165547Z_2560000_433500000_float32_iq.raw
+{{#endfile}}
 
 ### Uncovering AM
 
@@ -141,7 +143,9 @@ Also, use **codifications** such as **Manchester**, and **up+down** can be **1 o
 
 ## FM Example
 
-{% file src="../../images/sigdigger_20220308_170858Z_2560000_433500000_float32_iq.raw" %}
+{{#file}}
+sigdigger_20220308_170858Z_2560000_433500000_float32_iq.raw
+{{#endfile}}
 
 ### Uncovering FM
 
@@ -196,6 +200,3 @@ You can use the **same technique as the one used in the AM example** to get the 
 You can use the **same technique as the one used in the AM example** to get the bits once you have **found the signal is modulated in frequency** and the **symbol rate**.
 
 {{#include ../../banners/hacktricks-training.md}}
-
-
-
