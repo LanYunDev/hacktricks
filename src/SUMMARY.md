@@ -284,9 +284,10 @@
   - [Places to steal NTLM creds](windows-hardening/ntlm/places-to-steal-ntlm-creds.md)
 - [Lateral Movement](windows-hardening/lateral-movement/README.md)
   - [AtExec / SchtasksExec](windows-hardening/lateral-movement/atexec.md)
-  - [DCOM Exec](windows-hardening/lateral-movement/dcom-exec.md)
+  - [DCOM Exec](windows-hardening/lateral-movement/dcomexec.md)
   - [PsExec/Winexec/ScExec](windows-hardening/lateral-movement/psexec-and-winexec.md)
-  - [SmbExec/ScExec](windows-hardening/lateral-movement/smbexec.md)
+  - [RDPexec](windows-hardening/lateral-movement/rdpexec.md)
+  - [SCMexec](windows-hardening/lateral-movement/scmexec.md)
   - [WinRM](windows-hardening/lateral-movement/winrm.md)
   - [WmiExec](windows-hardening/lateral-movement/wmiexec.md)
 - [Pivoting to the Cloud$$external:https://cloud.hacktricks.wiki/en/pentesting-cloud/azure-security/az-lateral-movement-cloud-on-prem/index.html$$]()
@@ -299,6 +300,7 @@
   - [PowerView/SharpView](windows-hardening/basic-powershell-for-pentesters/powerview.md)
 - [Antivirus (AV) Bypass](windows-hardening/av-bypass.md)
 - [Cobalt Strike](windows-hardening/cobalt-strike.md)
+- [Mythic](windows-hardening/mythic.md)
 
 # 📱 Mobile Pentesting
 
