@@ -75,12 +75,9 @@ jobs:
           if [ -f "book/searchindex.js" ]; then
             cp book/searchindex.js searchindex.js
           fi
-          if [ -f "book/searchindex.json" ]; then
-            cp book/searchindex.json searchindex.json
-          fi
-          git add searchindex.js searchindex.json
-          git commit -m "Update searchindex for $BRANCH"
-          git push
+          (git add searchindex.js;
+          git commit -m "Update searchindex";
+          git push) || echo "No changes to searchindex.js"
       
       # Login in AWs
       - name: Configure AWS credentials using OIDC
